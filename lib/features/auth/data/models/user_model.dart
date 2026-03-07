@@ -10,9 +10,9 @@ abstract class User with _$User {
 
   const factory User({
     required int id,
+    @JsonKey(name: 'first_name') required String firstName,
+    @JsonKey(name: 'last_name') required String lastName,
     required String login,
-    required String firstName,
-    required String lastName,
     // @Default(null) String? avatarUrl,
   }) = _User;
 
