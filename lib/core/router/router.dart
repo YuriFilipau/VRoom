@@ -20,20 +20,33 @@ class AppRouter {
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
     redirect: (context, state) {
       final authState = authBloc.state;
-      final isGoingToLogin = state.matchedLocation == AppRoutes.login.path;
-      final isGoingToSplash = state.matchedLocation == AppRoutes.splash.path;
+      final currentPath = state.matchedLocation;
 
-      // Если состояние Initial - остаемся на splash (ждем загрузки)
-      if (authState is Initial) {
-        return null; // остаемся на splash
+      final publicPaths = [
+        AppRoutes.splash.path,
+        AppRoutes.login.path,
+        AppRoutes.register.path,
+      ];
+
+      if (authState is Initial || authState is Loading) {
+        return null;
       }
 
       if (authState is Unauthenticated || authState is Error) {
-        return isGoingToLogin ? null : AppRoutes.login.path;
+        if (currentPath == AppRoutes.splash.path) {
+          return AppRoutes.login.path;
+        }
+        if (publicPaths.contains(currentPath)) {
+          return null;
+        }
+        return AppRoutes.login.path;
       }
 
       if (authState is Authenticated) {
-        return isGoingToSplash ? null : AppRoutes.home.path;
+        if (publicPaths.contains(currentPath)) {
+          return AppRoutes.home.path;
+        }
+        return null;
       }
 
       return null;
@@ -66,9 +79,8 @@ class AppRouter {
               GoRoute(
                 path: AppRoutes.home.path,
                 name: AppRoutes.home.name,
-                pageBuilder: (context, state) => NoTransitionPage(
-                  child: HomeScreen(),
-                ),
+                pageBuilder: (context, state) =>
+                    NoTransitionPage(child: HomeScreen()),
               ),
             ],
           ),
