@@ -92,8 +92,6 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(Failure.validation(e.message, null));
     } on ServerException {
       return Left(const Failure.server('Ошибка сервера при регистрации'));
-    } catch (e) {
-      return Left(const Failure.server('Неизвестная ошибка'));
     }
   }
 }

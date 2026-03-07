@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _buildInfoRow('ID', user.id),
+          _buildInfoRow('ID', user.id.toString()),
           _buildInfoRow('Логин', user.login),
           _buildInfoRow('Имя', user.firstName),
           _buildInfoRow('Фамилия', user.lastName),

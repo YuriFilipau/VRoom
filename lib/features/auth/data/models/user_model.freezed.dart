@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get login; String get firstName; String get lastName; String? get avatarUrl;
+ int get id; String get login; String get firstName; String get lastName; String? get avatarUrl;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String login, String firstName, String lastName, String? avatarUrl
+ int id, String login, String firstName, String lastName, String? avatarUrl
 });
 
 
@@ -68,7 +68,7 @@ class _$UserCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? login = null,Object? firstName = null,Object? lastName = null,Object? avatarUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
+as int,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String login,  String firstName,  String lastName,  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String login,  String firstName,  String lastName,  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.avatarUrl);case _:
@@ -178,7 +178,7 @@ return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.avatar
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String login,  String firstName,  String lastName,  String? avatarUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String login,  String firstName,  String lastName,  String? avatarUrl)  $default,) {final _that = this;
 switch (_that) {
 case _User():
 return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.avatarUrl);case _:
@@ -198,7 +198,7 @@ return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.avatar
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String login,  String firstName,  String lastName,  String? avatarUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String login,  String firstName,  String lastName,  String? avatarUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.avatarUrl);case _:
@@ -216,7 +216,7 @@ class _User extends User {
   const _User({required this.id, required this.login, required this.firstName, required this.lastName, this.avatarUrl = null}): super._();
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
-@override final  String id;
+@override final  int id;
 @override final  String login;
 @override final  String firstName;
 @override final  String lastName;
@@ -255,7 +255,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String login, String firstName, String lastName, String? avatarUrl
+ int id, String login, String firstName, String lastName, String? avatarUrl
 });
 
 
@@ -275,7 +275,7 @@ class __$UserCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? login = null,Object? firstName = null,Object? lastName = null,Object? avatarUrl = freezed,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
+as int,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable

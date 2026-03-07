@@ -9,7 +9,7 @@ abstract class User with _$User {
   const User._();
 
   const factory User({
-    required String id,
+    required int id,
     required String login,
     required String firstName,
     required String lastName,

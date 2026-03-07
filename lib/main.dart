@@ -26,7 +26,7 @@ void main() async {
   // Initialize dependency injection
   await di.init(
     dio: dio,
-    baseUrl: 'https://http://localhost:8000',
+    baseUrl: 'http://localhost:8000',
     secureStorage: secureStorage,
     sharedPreferences: sharedPreferences,
   );
