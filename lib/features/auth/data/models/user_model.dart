@@ -13,20 +13,20 @@ abstract class User with _$User {
     required String login,
     required String firstName,
     required String lastName,
-    @Default(null) String? avatarUrl,
+    // @Default(null) String? avatarUrl,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) =>
       _$UserFromJson(json);
 
   String get fullName => '$firstName $lastName';
-  bool get hasAvatar => avatarUrl != null && avatarUrl!.isNotEmpty;
+  //bool get hasAvatar => avatarUrl != null && avatarUrl!.isNotEmpty;
 
   UserEntity toEntity() => UserEntity(
     id: id,
     login: login,
     firstName: firstName,
     lastName: lastName,
-    avatarUrl: avatarUrl,
+    // avatarUrl: avatarUrl,
   );
 }
