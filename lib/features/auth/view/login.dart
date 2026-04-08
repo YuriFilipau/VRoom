@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/core/constants/app_colors.dart';
+import 'package:vroom/core/constants/app_sizes.dart';
 import 'package:vroom/core/router/app_routes.dart';
+import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
+import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(message),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
               ),
             );
           },
@@ -45,60 +48,78 @@ class _LoginScreenState extends State<LoginScreen> {
               loading: () => true,
               orElse: () => false,
             );
+            final textTheme = Theme.of(context).textTheme;
 
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: _loginController,
-                    decoration: const InputDecoration(
-                      labelText: 'Логин',
-                      border: OutlineInputBorder(),
-                    ),
-                    enabled: !isLoading,
+            return SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(
+                    AppSizes.screenHorizontalPadding,
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Пароль',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                        context.read<AuthBloc>().add(
-                          AuthEvent.login(
-                            login: _loginController.text,
-                            password: _passwordController.text,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 460),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('VRoom', style: textTheme.headlineSmall),
+                        const SizedBox(height: AppSizes.spacing12),
+                        Text(
+                          'Войдите, чтобы продолжить обучение и проходить AR-квесты.',
+                          style: textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: AppSizes.spacing32),
+                        TextField(
+                          controller: _loginController,
+                          decoration: const InputDecoration(labelText: 'Логин'),
+                          enabled: !isLoading,
+                        ),
+                        const SizedBox(height: AppSizes.spacing16),
+                        TextField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Пароль',
                           ),
-                        );
-                      },
-                      child: isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('Войти'),
+                          obscureText: true,
+                          enabled: !isLoading,
+                        ),
+                        const SizedBox(height: AppSizes.spacing24),
+                        AppGradientButton(
+                          label: 'Войти',
+                          isLoading: isLoading,
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  context.read<AuthBloc>().add(
+                                    AuthEvent.login(
+                                      login: _loginController.text,
+                                      password: _passwordController.text,
+                                    ),
+                                  );
+                                },
+                        ),
+                        const SizedBox(height: AppSizes.spacing12),
+                        TextButton(
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  context.push(AppRoutes.register.path);
+                                },
+                          child: const Text('Нет аккаунта? Зарегистрироваться'),
+                        ),
+                        const SizedBox(height: AppSizes.spacing24),
+                        const Divider(color: AppColors.border),
+                        const SizedBox(height: AppSizes.spacing16),
+                        Text(
+                          'После первого запуска онбординг больше не показывается.',
+                          textAlign: TextAlign.center,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                      context.push(AppRoutes.register.path);
-                    },
-                    child: const Text('Нет аккаунта? Зарегистрироваться'),
-                  ),
-                ],
+                ),
               ),
             );
           },

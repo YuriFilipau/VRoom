@@ -14,6 +14,10 @@ import 'package:vroom/features/auth/domain/usecases/login_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/register_usecase.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/features/onboarding/data/datasource/impl/onboarding_local_datasource_impl.dart';
+import 'package:vroom/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:vroom/features/onboarding/data/repository/onboarding_repository_impl.dart';
+import 'package:vroom/features/onboarding/domain/repository/onboarding_repository.dart';
 
 final locator = GetIt.instance;
 
@@ -44,12 +48,22 @@ Future<void> init({
     ),
   );
 
+  locator.registerLazySingleton<OnboardingLocalDataSource>(
+    () => OnboardingLocalDataSourceImpl(
+      sharedPreferences: locator<SharedPreferences>(),
+    ),
+  );
+
   // repositories
   locator.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       remoteDatasource: locator(),
       localDatasource: locator(),
     ),
+  );
+
+  locator.registerLazySingleton<OnboardingRepository>(
+    () => OnboardingRepositoryImpl(localDataSource: locator()),
   );
 
   // use cases

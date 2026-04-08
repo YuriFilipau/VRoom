@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/core/constants/app_colors.dart';
+import 'package:vroom/core/constants/app_sizes.dart';
 import 'package:vroom/core/router/app_routes.dart';
+import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
+import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -32,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(message),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
               ),
             );
           },
@@ -47,82 +50,83 @@ class _RegisterScreenState extends State<RegisterScreen> {
               loading: () => true,
               orElse: () => false,
             );
+            final textTheme = Theme.of(context).textTheme;
 
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _firstNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Имя',
-                        border: OutlineInputBorder(),
-                      ),
-                      enabled: !isLoading,
+            return SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(
+                    AppSizes.screenHorizontalPadding,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 460),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Создать аккаунт', style: textTheme.headlineSmall),
+                        const SizedBox(height: AppSizes.spacing12),
+                        Text(
+                          'Зарегистрируйтесь, чтобы сохранить прогресс и достижения.',
+                          style: textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: AppSizes.spacing32),
+                        TextField(
+                          controller: _firstNameController,
+                          decoration: const InputDecoration(labelText: 'Имя'),
+                          enabled: !isLoading,
+                        ),
+                        const SizedBox(height: AppSizes.spacing16),
+                        TextField(
+                          controller: _lastNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Фамилия',
+                          ),
+                          enabled: !isLoading,
+                        ),
+                        const SizedBox(height: AppSizes.spacing16),
+                        TextField(
+                          controller: _loginController,
+                          decoration: const InputDecoration(labelText: 'Логин'),
+                          enabled: !isLoading,
+                        ),
+                        const SizedBox(height: AppSizes.spacing16),
+                        TextField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Пароль',
+                          ),
+                          obscureText: true,
+                          enabled: !isLoading,
+                        ),
+                        const SizedBox(height: AppSizes.spacing24),
+                        AppGradientButton(
+                          label: 'Зарегистрироваться',
+                          isLoading: isLoading,
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  context.read<AuthBloc>().add(
+                                    AuthEvent.register(
+                                      login: _loginController.text,
+                                      password: _passwordController.text,
+                                      firstName: _firstNameController.text,
+                                      lastName: _lastNameController.text,
+                                    ),
+                                  );
+                                },
+                        ),
+                        const SizedBox(height: AppSizes.spacing12),
+                        TextButton(
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  context.pop();
+                                },
+                          child: const Text('Уже есть аккаунт? Войти'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _lastNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Фамилия',
-                        border: OutlineInputBorder(),
-                      ),
-                      enabled: !isLoading,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _loginController,
-                      decoration: const InputDecoration(
-                        labelText: 'Логин',
-                        border: OutlineInputBorder(),
-                      ),
-                      enabled: !isLoading,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(
-                        labelText: 'Пароль',
-                        border: OutlineInputBorder(),
-                      ),
-                      obscureText: true,
-                      enabled: !isLoading,
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: isLoading
-                            ? null
-                            : () {
-                          context.read<AuthBloc>().add(
-                            AuthEvent.register(
-                              login: _loginController.text,
-                              password: _passwordController.text,
-                              firstName: _firstNameController.text,
-                              lastName: _lastNameController.text,
-                            ),
-                          );
-                        },
-                        child: isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text('Зарегистрироваться'),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                        context.pop();
-                      },
-                      child: const Text('Уже есть аккаунт? Войти'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );

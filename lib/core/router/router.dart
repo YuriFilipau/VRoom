@@ -7,13 +7,19 @@ import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 import 'package:vroom/features/auth/view/home.dart';
 import 'package:vroom/features/auth/view/login.dart';
 import 'package:vroom/features/auth/view/register.dart';
+import 'package:vroom/features/onboarding/domain/repository/onboarding_repository.dart';
+import 'package:vroom/features/onboarding/view/onboarding_screen.dart';
 
 import 'app_routes.dart';
 
 class AppRouter {
   final AuthBloc authBloc;
+  final OnboardingRepository onboardingRepository;
 
-  AppRouter({required this.authBloc});
+  AppRouter({
+    required this.authBloc,
+    required this.onboardingRepository,
+  });
 
   GoRouter get router => GoRouter(
     initialLocation: AppRoutes.splash.path,
@@ -21,25 +27,18 @@ class AppRouter {
     redirect: (context, state) {
       final authState = authBloc.state;
       final currentPath = state.matchedLocation;
+      final shouldShowOnboarding = onboardingRepository.shouldShowOnboarding();
+      final isOnboardingPath = currentPath == AppRoutes.onboarding.path;
 
       final publicPaths = [
         AppRoutes.splash.path,
+        AppRoutes.onboarding.path,
         AppRoutes.login.path,
         AppRoutes.register.path,
       ];
 
       if (authState is Initial || authState is Loading) {
         return null;
-      }
-
-      if (authState is Unauthenticated || authState is Error) {
-        if (currentPath == AppRoutes.splash.path) {
-          return AppRoutes.login.path;
-        }
-        if (publicPaths.contains(currentPath)) {
-          return null;
-        }
-        return AppRoutes.login.path;
       }
 
       if (authState is Authenticated) {
@@ -49,25 +48,53 @@ class AppRouter {
         return null;
       }
 
+      if (authState is Unauthenticated || authState is Error) {
+        if (currentPath == AppRoutes.splash.path) {
+          return shouldShowOnboarding
+              ? AppRoutes.onboarding.path
+              : AppRoutes.login.path;
+        }
+        if (shouldShowOnboarding && !isOnboardingPath) {
+          return AppRoutes.onboarding.path;
+        }
+        if (!shouldShowOnboarding && isOnboardingPath) {
+          return AppRoutes.login.path;
+        }
+        if (publicPaths.contains(currentPath)) {
+          return null;
+        }
+        return AppRoutes.login.path;
+      }
+
       return null;
     },
     routes: [
       GoRoute(
         path: AppRoutes.splash.path,
         builder: (context, state) {
-          return Scaffold(body: Center(child: Text('SPLASH')));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding.path,
+        builder: (context, state) {
+          return OnboardingScreen(
+            onboardingRepository: onboardingRepository,
+          );
         },
       ),
       GoRoute(
         path: AppRoutes.login.path,
         builder: (context, state) {
-          return LoginScreen();
+          return const LoginScreen();
         },
       ),
       GoRoute(
         path: AppRoutes.register.path,
         builder: (context, state) {
-          return RegisterScreen();
+          return const RegisterScreen();
         },
       ),
       StatefulShellRoute.indexedStack(
@@ -80,7 +107,7 @@ class AppRouter {
                 path: AppRoutes.home.path,
                 name: AppRoutes.home.name,
                 pageBuilder: (context, state) =>
-                    NoTransitionPage(child: HomeScreen()),
+                    const NoTransitionPage(child: HomeScreen()),
               ),
             ],
           ),
