@@ -7,11 +7,20 @@ import 'package:vroom/features/auth/data/models/user_model.dart';
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final Dio dio;
   final String baseUrl;
+  final bool useMockData;
 
-  AuthRemoteDatasourceImpl({required this.dio, required this.baseUrl});
+  AuthRemoteDatasourceImpl({
+    required this.dio,
+    required this.baseUrl,
+    this.useMockData = true,
+  });
 
   @override
   Future<AuthResponse> login(String login, String password) async {
+    if (useMockData) {
+      return _mockAuthResponse(login: login);
+    }
+
     try {
       final response = await dio.post(
         '$baseUrl/api/auth/login',
@@ -43,6 +52,14 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String firstName,
     required String lastName,
   }) async {
+    if (useMockData) {
+      return _mockAuthResponse(
+        login: login,
+        firstName: firstName,
+        lastName: lastName,
+      );
+    }
+
     try {
       final response = await dio.post(
         '$baseUrl/api/auth/register',
@@ -74,6 +91,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
   @override
   Future<User> getCurrentUser() async {
+    if (useMockData) {
+      return User.mock();
+    }
+
     try {
       final response = await dio.get('$baseUrl/api/me');
 
@@ -92,6 +113,14 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
   @override
   Future<AuthResponse> refreshToken(String refreshToken) async {
+    if (useMockData) {
+      return AuthResponse(
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+        user: User.mock(),
+      );
+    }
+
     try {
       final response = await dio.post(
         '$baseUrl/api/auth/refresh',
@@ -119,5 +148,21 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<void> logout() async {
     return Future.value();
+  }
+
+  AuthResponse _mockAuthResponse({
+    required String login,
+    String firstName = 'Алексей',
+    String lastName = 'Петров',
+  }) {
+    return AuthResponse(
+      accessToken: 'mock-access-token',
+      refreshToken: 'mock-refresh-token',
+      user: User.mock(
+        login: login.isEmpty ? 'alexey_p' : login,
+        firstName: firstName,
+        lastName: lastName,
+      ),
+    );
   }
 }

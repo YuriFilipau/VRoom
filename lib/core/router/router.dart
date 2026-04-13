@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vroom/core/shared/widgets/bottom_navigation.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
-import 'package:vroom/features/auth/view/home.dart';
 import 'package:vroom/features/auth/view/login.dart';
 import 'package:vroom/features/auth/view/register.dart';
+import 'package:vroom/features/home/view/home_screen.dart';
 import 'package:vroom/features/onboarding/domain/repository/onboarding_repository.dart';
 import 'package:vroom/features/onboarding/view/onboarding_screen.dart';
+import 'package:vroom/features/profile/view/profile_screen.dart';
 
 import 'app_routes.dart';
 
@@ -114,21 +115,10 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutes.scanner.path,
-                name: AppRoutes.scanner.name,
-                pageBuilder: (context, state) => NoTransitionPage(
-                  child: Scaffold(body: Center(child: Text('scanner'))),
-                ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: AppRoutes.profile.path,
                 name: AppRoutes.profile.name,
-                pageBuilder: (context, state) => NoTransitionPage(
-                  child: Scaffold(body: Center(child: Text('profile'))),
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: ProfileScreen(),
                 ),
               ),
             ],

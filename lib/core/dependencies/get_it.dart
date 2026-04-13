@@ -14,6 +14,7 @@ import 'package:vroom/features/auth/domain/usecases/login_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/register_usecase.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/core/theme/bloc/theme_bloc.dart';
 import 'package:vroom/features/onboarding/data/datasource/impl/onboarding_local_datasource_impl.dart';
 import 'package:vroom/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vroom/features/onboarding/data/repository/onboarding_repository_impl.dart';
@@ -84,5 +85,9 @@ Future<void> init({
       getCurrentUserUseCase: locator(),
       checkAuthUseCase: locator(),
     ),
+  );
+
+  locator.registerFactory(
+    () => ThemeBloc(sharedPreferences: locator<SharedPreferences>()),
   );
 }

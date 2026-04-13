@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/constants/app_sizes.dart';
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
@@ -96,14 +97,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _isSubmitting ? null : _finishOnboarding,
-                  child: const Text('Пропустить'),
+                child: Visibility(
+                  visible: !_isLastPage,
+                  maintainState: true,
+                  maintainAnimation: true,
+                  maintainSize: true,
+                  child: TextButton(
+                    onPressed: _isSubmitting ? null : _finishOnboarding,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      disabledForegroundColor: AppColors.textSecondary,
+                    ),
+                    child: const Text('Пропустить'),
+                  ),
                 ),
               ),
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: _pages.length,
                   onPageChanged: (index) {
                     setState(() {

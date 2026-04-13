@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- int get id;@JsonKey(name: 'first_name') String get firstName;@JsonKey(name: 'last_name') String get lastName; String get login;
+ int get id;@JsonKey(name: 'first_name') String get firstName;@JsonKey(name: 'last_name') String get lastName; String get login; List<UserQuest> get quests; List<UserAchievement> get achievements;@JsonKey(name: 'recent_activities') List<UserActivity> get recentActivities;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.login, login) || other.login == login));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.login, login) || other.login == login)&&const DeepCollectionEquality().equals(other.quests, quests)&&const DeepCollectionEquality().equals(other.achievements, achievements)&&const DeepCollectionEquality().equals(other.recentActivities, recentActivities));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,firstName,lastName,login);
+int get hashCode => Object.hash(runtimeType,id,firstName,lastName,login,const DeepCollectionEquality().hash(quests),const DeepCollectionEquality().hash(achievements),const DeepCollectionEquality().hash(recentActivities));
 
 @override
 String toString() {
-  return 'User(id: $id, firstName: $firstName, lastName: $lastName, login: $login)';
+  return 'User(id: $id, firstName: $firstName, lastName: $lastName, login: $login, quests: $quests, achievements: $achievements, recentActivities: $recentActivities)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- int id,@JsonKey(name: 'first_name') String firstName,@JsonKey(name: 'last_name') String lastName, String login
+ int id,@JsonKey(name: 'first_name') String firstName,@JsonKey(name: 'last_name') String lastName, String login, List<UserQuest> quests, List<UserAchievement> achievements,@JsonKey(name: 'recent_activities') List<UserActivity> recentActivities
 });
 
 
@@ -65,13 +65,16 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? firstName = null,Object? lastName = null,Object? login = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? firstName = null,Object? lastName = null,Object? login = null,Object? quests = null,Object? achievements = null,Object? recentActivities = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
-as String,
+as String,quests: null == quests ? _self.quests : quests // ignore: cast_nullable_to_non_nullable
+as List<UserQuest>,achievements: null == achievements ? _self.achievements : achievements // ignore: cast_nullable_to_non_nullable
+as List<UserAchievement>,recentActivities: null == recentActivities ? _self.recentActivities : recentActivities // ignore: cast_nullable_to_non_nullable
+as List<UserActivity>,
   ));
 }
 
@@ -156,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String firstName, @JsonKey(name: 'last_name')  String lastName,  String login)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String firstName, @JsonKey(name: 'last_name')  String lastName,  String login,  List<UserQuest> quests,  List<UserAchievement> achievements, @JsonKey(name: 'recent_activities')  List<UserActivity> recentActivities)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.firstName,_that.lastName,_that.login);case _:
+return $default(_that.id,_that.firstName,_that.lastName,_that.login,_that.quests,_that.achievements,_that.recentActivities);case _:
   return orElse();
 
 }
@@ -177,10 +180,10 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.login);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String firstName, @JsonKey(name: 'last_name')  String lastName,  String login)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'first_name')  String firstName, @JsonKey(name: 'last_name')  String lastName,  String login,  List<UserQuest> quests,  List<UserAchievement> achievements, @JsonKey(name: 'recent_activities')  List<UserActivity> recentActivities)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.firstName,_that.lastName,_that.login);case _:
+return $default(_that.id,_that.firstName,_that.lastName,_that.login,_that.quests,_that.achievements,_that.recentActivities);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +200,10 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.login);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'first_name')  String firstName, @JsonKey(name: 'last_name')  String lastName,  String login)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'first_name')  String firstName, @JsonKey(name: 'last_name')  String lastName,  String login,  List<UserQuest> quests,  List<UserAchievement> achievements, @JsonKey(name: 'recent_activities')  List<UserActivity> recentActivities)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.firstName,_that.lastName,_that.login);case _:
+return $default(_that.id,_that.firstName,_that.lastName,_that.login,_that.quests,_that.achievements,_that.recentActivities);case _:
   return null;
 
 }
@@ -212,13 +215,34 @@ return $default(_that.id,_that.firstName,_that.lastName,_that.login);case _:
 @JsonSerializable()
 
 class _User extends User {
-  const _User({required this.id, @JsonKey(name: 'first_name') required this.firstName, @JsonKey(name: 'last_name') required this.lastName, required this.login}): super._();
+  const _User({required this.id, @JsonKey(name: 'first_name') required this.firstName, @JsonKey(name: 'last_name') required this.lastName, required this.login, final  List<UserQuest> quests = const [], final  List<UserAchievement> achievements = const [], @JsonKey(name: 'recent_activities') final  List<UserActivity> recentActivities = const []}): _quests = quests,_achievements = achievements,_recentActivities = recentActivities,super._();
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  int id;
 @override@JsonKey(name: 'first_name') final  String firstName;
 @override@JsonKey(name: 'last_name') final  String lastName;
 @override final  String login;
+ final  List<UserQuest> _quests;
+@override@JsonKey() List<UserQuest> get quests {
+  if (_quests is EqualUnmodifiableListView) return _quests;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_quests);
+}
+
+ final  List<UserAchievement> _achievements;
+@override@JsonKey() List<UserAchievement> get achievements {
+  if (_achievements is EqualUnmodifiableListView) return _achievements;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_achievements);
+}
+
+ final  List<UserActivity> _recentActivities;
+@override@JsonKey(name: 'recent_activities') List<UserActivity> get recentActivities {
+  if (_recentActivities is EqualUnmodifiableListView) return _recentActivities;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_recentActivities);
+}
+
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.login, login) || other.login == login));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.login, login) || other.login == login)&&const DeepCollectionEquality().equals(other._quests, _quests)&&const DeepCollectionEquality().equals(other._achievements, _achievements)&&const DeepCollectionEquality().equals(other._recentActivities, _recentActivities));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,firstName,lastName,login);
+int get hashCode => Object.hash(runtimeType,id,firstName,lastName,login,const DeepCollectionEquality().hash(_quests),const DeepCollectionEquality().hash(_achievements),const DeepCollectionEquality().hash(_recentActivities));
 
 @override
 String toString() {
-  return 'User(id: $id, firstName: $firstName, lastName: $lastName, login: $login)';
+  return 'User(id: $id, firstName: $firstName, lastName: $lastName, login: $login, quests: $quests, achievements: $achievements, recentActivities: $recentActivities)';
 }
 
 
@@ -253,7 +277,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- int id,@JsonKey(name: 'first_name') String firstName,@JsonKey(name: 'last_name') String lastName, String login
+ int id,@JsonKey(name: 'first_name') String firstName,@JsonKey(name: 'last_name') String lastName, String login, List<UserQuest> quests, List<UserAchievement> achievements,@JsonKey(name: 'recent_activities') List<UserActivity> recentActivities
 });
 
 
@@ -270,13 +294,16 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? firstName = null,Object? lastName = null,Object? login = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? firstName = null,Object? lastName = null,Object? login = null,Object? quests = null,Object? achievements = null,Object? recentActivities = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
-as String,
+as String,quests: null == quests ? _self._quests : quests // ignore: cast_nullable_to_non_nullable
+as List<UserQuest>,achievements: null == achievements ? _self._achievements : achievements // ignore: cast_nullable_to_non_nullable
+as List<UserAchievement>,recentActivities: null == recentActivities ? _self._recentActivities : recentActivities // ignore: cast_nullable_to_non_nullable
+as List<UserActivity>,
   ));
 }
 

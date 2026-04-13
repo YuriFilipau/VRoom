@@ -33,6 +33,7 @@ class AppGradientButton extends StatelessWidget {
             onPressed: disabled ? null : onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
+              foregroundColor: AppColors.textPrimary,
               shadowColor: Colors.transparent,
               disabledBackgroundColor: Colors.transparent,
               disabledForegroundColor: AppColors.textPrimary,
@@ -51,7 +52,12 @@ class AppGradientButton extends StatelessWidget {
                       ),
                     ),
                   )
-                : Text(label),
+                : Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
           ),
         ),
       ),
