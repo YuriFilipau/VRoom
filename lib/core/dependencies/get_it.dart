@@ -15,10 +15,19 @@ import 'package:vroom/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/register_usecase.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 import 'package:vroom/core/theme/bloc/theme_bloc.dart';
+import 'package:vroom/features/ar_session/data/repository/ar_repository_impl.dart';
+import 'package:vroom/features/ar_session/domain/repository/ar_repository.dart';
+import 'package:vroom/features/ar_session/domain/usecases/get_ar_event_usecase.dart';
+import 'package:vroom/features/ar_session/domain/usecases/save_ar_layout_usecase.dart';
+import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
 import 'package:vroom/features/onboarding/data/datasource/impl/onboarding_local_datasource_impl.dart';
 import 'package:vroom/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vroom/features/onboarding/data/repository/onboarding_repository_impl.dart';
 import 'package:vroom/features/onboarding/domain/repository/onboarding_repository.dart';
+import 'package:vroom/features/qr_scanner/data/repository/qr_scanner_repository_impl.dart';
+import 'package:vroom/features/qr_scanner/domain/repository/qr_scanner_repository.dart';
+import 'package:vroom/features/qr_scanner/domain/usecases/resolve_qr_event_code_usecase.dart';
+import 'package:vroom/features/qr_scanner/view/bloc/qr_scanner_bloc.dart';
 
 final locator = GetIt.instance;
 
@@ -67,6 +76,14 @@ Future<void> init({
     () => OnboardingRepositoryImpl(localDataSource: locator()),
   );
 
+  locator.registerLazySingleton<QrScannerRepository>(
+    () => QrScannerRepositoryImpl(),
+  );
+
+  locator.registerLazySingleton<ArRepository>(
+    () => ArRepositoryImpl(sharedPreferences: locator<SharedPreferences>()),
+  );
+
   // use cases
   locator.registerLazySingleton(() => LoginUseCase(repository: locator()));
   locator.registerLazySingleton(() => LogoutUseCase(repository: locator()));
@@ -75,6 +92,13 @@ Future<void> init({
     () => GetCurrentUserUseCase(repository: locator()),
   );
   locator.registerLazySingleton(() => CheckAuthUseCase(repository: locator()));
+  locator.registerLazySingleton(
+    () => ResolveQrEventCodeUseCase(repository: locator()),
+  );
+  locator.registerLazySingleton(() => GetArEventUseCase(repository: locator()));
+  locator.registerLazySingleton(
+    () => SaveArLayoutUseCase(repository: locator()),
+  );
 
   // bloc
   locator.registerFactory(
@@ -89,5 +113,16 @@ Future<void> init({
 
   locator.registerFactory(
     () => ThemeBloc(sharedPreferences: locator<SharedPreferences>()),
+  );
+
+  locator.registerFactory(
+    () => QrScannerBloc(resolveQrEventCodeUseCase: locator()),
+  );
+
+  locator.registerFactory(
+    () => ArSessionBloc(
+      getArEventUseCase: locator(),
+      saveArLayoutUseCase: locator(),
+    ),
   );
 }

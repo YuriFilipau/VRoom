@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vroom/core/constants/app_colors.dart';
+import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/core/theme/dashboard_material_theme.dart';
 
 class BottomNavigationScaffold extends StatelessWidget {
@@ -13,12 +14,7 @@ class BottomNavigationScaffold extends StatelessWidget {
   }
 
   void _onQRScan(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Сканер QR-кода открыт'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    context.push(AppRoutes.scanner.path);
   }
 
   @override

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vroom/core/shared/widgets/bottom_navigation.dart';
+import 'package:vroom/features/ar_session/domain/entities/ar_session_mode.dart';
+import 'package:vroom/features/ar_session/view/ar_session_screen.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 import 'package:vroom/features/auth/view/login.dart';
 import 'package:vroom/features/auth/view/register.dart';
@@ -10,6 +12,7 @@ import 'package:vroom/features/home/view/home_screen.dart';
 import 'package:vroom/features/onboarding/domain/repository/onboarding_repository.dart';
 import 'package:vroom/features/onboarding/view/onboarding_screen.dart';
 import 'package:vroom/features/profile/view/profile_screen.dart';
+import 'package:vroom/features/qr_scanner/view/qr_scanner_screen.dart';
 
 import 'app_routes.dart';
 
@@ -17,10 +20,7 @@ class AppRouter {
   final AuthBloc authBloc;
   final OnboardingRepository onboardingRepository;
 
-  AppRouter({
-    required this.authBloc,
-    required this.onboardingRepository,
-  });
+  AppRouter({required this.authBloc, required this.onboardingRepository});
 
   GoRouter get router => GoRouter(
     initialLocation: AppRoutes.splash.path,
@@ -81,9 +81,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.onboarding.path,
         builder: (context, state) {
-          return OnboardingScreen(
-            onboardingRepository: onboardingRepository,
-          );
+          return OnboardingScreen(onboardingRepository: onboardingRepository);
         },
       ),
       GoRoute(
@@ -96,6 +94,28 @@ class AppRouter {
         path: AppRoutes.register.path,
         builder: (context, state) {
           return const RegisterScreen();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.scanner.path,
+        name: AppRoutes.scanner.name,
+        builder: (context, state) {
+          return const QrScannerScreen();
+        },
+      ),
+      GoRoute(
+        path: '${AppRoutes.ar.path}/:eventCode',
+        name: AppRoutes.ar.name,
+        builder: (context, state) {
+          final mode = switch (state.uri.queryParameters['mode']) {
+            'admin' => ArSessionMode.admin,
+            _ => ArSessionMode.user,
+          };
+
+          return ArSessionScreen(
+            eventCode: state.pathParameters['eventCode'] ?? 'demo-event',
+            mode: mode,
+          );
         },
       ),
       StatefulShellRoute.indexedStack(
@@ -117,9 +137,8 @@ class AppRouter {
               GoRoute(
                 path: AppRoutes.profile.path,
                 name: AppRoutes.profile.name,
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: ProfileScreen(),
-                ),
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: ProfileScreen()),
               ),
             ],
           ),

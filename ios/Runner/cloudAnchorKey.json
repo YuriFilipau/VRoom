@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "vr-quest-ar",
+  "private_key_id": "3ac27cd7906173ecb2bd8177780801df6ec15f63",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCcvXquDgUAj3Cf\n88s1WESNynp+aMkyU9jSo21rkc5/2AoULFpn2dQqEkF1VzsAAnkwCvezW7rHeWcJ\nSP/x/9CgcqTt0gmHKXWoJ7kV05cugbDkGvxb9TeC1e9LRt6K9uU/FOCbMqWmF6Qu\nMKGkntzkOtM55wMUPb8ecJUzysfZDiplR9+dkWkCoWfoUFWUf4o+VBdKBxFPii1p\nC7mnsnrKNOTPlohrkEI9hCTlDqlUsB4RRb5R06CNszmrSUbe2Ba53T8Pc10NhiHf\nWUHsJ5jH98mlzir+NaXiA8WB2RGsLsWyG+Ahn14gZ8ICwDcwRPFi+h/xrOUtc094\nX52DMU6xAgMBAAECggEAEkz9Wf1BEEOvPr3UaDIaLwQJMWFCvKGVm2KBkCHCHqM2\n6gwTsjR41UC0a+L3fJTNWZKuQT7gnBHMugTP/Y2E6nb4UtxHSITKvAuHTMkbyc5S\nvQ95j7Md/CTGf9+SdF9HfQoO/4/2T2JLRSlgdjwmRm+n4gbbES30drVmdlmi4/DY\nsaua1TdEf83KB4WHw4QCmfPAM3/giBKt2F5H/QcobuoOUVnrPsHqw8banj5Gxl5R\n88wYgt3OtGrXSUC0GxFk3WMGQs4E/SF+Vq0fJ3n2Y4l2RAOEPbicJakq+YDpJHRL\nBFYSAegKgLpwNy/uhf1SM9nVgHnrxGcV+/RgGV2HUQKBgQDLvnCVj1kil+KFdeix\n9DVGKNawpE9xUF6LBULU4mNSeDpQD5XjqYUapmKSzx0p2i9B+DxVW7F9YSVPJgqv\nOI5KCEX9SPhYY4V7/5R7Gyco72vjHeWMcmLxl5ecnIuVrydjYcmeKHpDrZxUBMwP\nMqRD8hD06Yftz4T7Gm2t/07JYwKBgQDE8NWIY4cJ07f/k3kxk1EnYWvuooDB2u5p\n8vge30yQ5itic/vwnKsnZl21x36C77GxmwrfKQqqhtT8LodYflwAY7Xp7WnDHr7T\nXh0r1NhcqMb9OytjONNPlMh5omVZjPjy9BUF42W5q4DcEo6pmWaXuQoK+KP0WFlO\ngsz/yHsN2wKBgQC5xMNMaq6gDxKYE4D+uKbWeKf/2WEh9WCuqzZbequK51pr4zoM\noWVefjTEnRl/LpQGN3tzbK5xnmDxQMNfLlb2g4KlRaJCnUN5YviUIpbbCSo6o+jH\n3QgANfMj9cyDx3dHc0Ls9QU9rg8qwFD6znbeCNmTJVct6xfaCCfXDUFd9wKBgE1S\njVP+V6+ZC53xxdycDXnbuye3b7ws+/xnI9njLEmbxR7jkOBYcq6Gd3Z+fAJmn6qu\nx+b0Uza+t3LHxeYNvot8mpjc2PB96shMJEHoUIaY0X/tMkzDq9uL++Ydx5MQUVH6\nWSK1tGPgnThKpO6bxvb89J94Hc86vN2hZ2Fp0j6PAoGBAIu65vLb+St0FiAqxaH+\nxKl20kxnE6QU6QrUPEjkvYxnzm0e1p83c2LV2UzoK3/hjt3PKLr2Hv4m7dWflcRA\nbv3GqXSNjldBWyQvEIu46pnYWwEkPTR5HgoLF4T8TXNBSwOukMsQ4pAB/G2il5M4\n0jDft24eIw3dv33TB0zm6eh7\n-----END PRIVATE KEY-----\n",
+  "client_email": "cloud-anchor-backend@vr-quest-ar.iam.gserviceaccount.com",
+  "client_id": "116895430098309018466",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-anchor-backend%40vr-quest-ar.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
