@@ -23,6 +23,28 @@ final class ArSessionPlacementUpserted extends ArSessionEvent {
   final ArAssetPlacementEntity placement;
 }
 
+final class ArSessionSceneAnchorUpdated extends ArSessionEvent {
+  const ArSessionSceneAnchorUpdated({
+    this.anchorName,
+    this.cloudAnchorId,
+    this.anchorTransform,
+    this.ttl,
+    this.clearCloudAnchorId = false,
+    this.clearAnchorTransform = false,
+    this.clearAnchorName = false,
+    this.clearTtl = false,
+  });
+
+  final String? anchorName;
+  final String? cloudAnchorId;
+  final List<double>? anchorTransform;
+  final int? ttl;
+  final bool clearCloudAnchorId;
+  final bool clearAnchorTransform;
+  final bool clearAnchorName;
+  final bool clearTtl;
+}
+
 final class ArSessionSaveRequested extends ArSessionEvent {
   const ArSessionSaveRequested();
 }

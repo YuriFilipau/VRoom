@@ -19,6 +19,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     on<ArSessionLoadRequested>(_onLoadRequested);
     on<ArSessionAssetSelected>(_onAssetSelected);
     on<ArSessionPlacementUpserted>(_onPlacementUpserted);
+    on<ArSessionSceneAnchorUpdated>(_onSceneAnchorUpdated);
     on<ArSessionSaveRequested>(_onSaveRequested);
     on<ArSessionSnackbarConsumed>(_onSnackbarConsumed);
   }
@@ -53,6 +54,10 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
           eventTitle: scene.title,
           assets: scene.assets,
           placements: scene.placements,
+          sceneAnchorName: scene.sceneAnchorName,
+          sceneCloudAnchorId: scene.sceneCloudAnchorId,
+          sceneAnchorTransform: scene.sceneAnchorTransform,
+          sceneAnchorTtl: scene.sceneAnchorTtl,
           selectedAssetId: scene.assets.isEmpty ? null : scene.assets.first.id,
         ),
       );
@@ -97,6 +102,26 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     );
   }
 
+  void _onSceneAnchorUpdated(
+    ArSessionSceneAnchorUpdated event,
+    Emitter<ArSessionState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        status: ArSessionStatus.ready,
+        sceneAnchorName: event.anchorName,
+        sceneCloudAnchorId: event.cloudAnchorId,
+        sceneAnchorTransform: event.anchorTransform,
+        sceneAnchorTtl: event.ttl,
+        clearSceneAnchorName: event.clearAnchorName,
+        clearSceneCloudAnchorId: event.clearCloudAnchorId,
+        clearSceneAnchorTransform: event.clearAnchorTransform,
+        clearSceneAnchorTtl: event.clearTtl,
+        clearMessage: true,
+      ),
+    );
+  }
+
   Future<void> _onSaveRequested(
     ArSessionSaveRequested event,
     Emitter<ArSessionState> emit,
@@ -106,13 +131,18 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     try {
       await _saveArLayoutUseCase(
         eventCode: state.eventCode,
+        sceneAnchorName: state.sceneAnchorName,
+        sceneCloudAnchorId: state.sceneCloudAnchorId,
+        sceneAnchorTransform: state.sceneAnchorTransform,
+        sceneAnchorTtl: state.sceneAnchorTtl,
         placements: state.placements,
       );
 
       emit(
         state.copyWith(
           status: ArSessionStatus.saved,
-          message: 'Сцена сохранена. Заглушка отправила данные в консоль.',
+          message:
+              'Сцена сохранена с persistent anchor. Заглушка вывела payload в консоль.',
         ),
       );
       emit(state.copyWith(status: ArSessionStatus.ready, clearMessage: true));

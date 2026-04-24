@@ -14,7 +14,7 @@ class ArRepositoryImpl implements ArRepository {
 
   final SharedPreferences _sharedPreferences;
 
-  static const _placementsKeyPrefix = 'ar_qr_origin_event_placements_v2_';
+  static const _sceneKeyPrefix = 'ar_persistent_scene_v3_';
 
   @override
   Future<ArEventSceneEntity> loadEventScene({
@@ -50,32 +50,55 @@ class ArRepositoryImpl implements ArRepository {
       ),
     ];
 
-    final placements = _readPlacements(eventCode);
+    final scenePayload = _readScenePayload(eventCode);
+    final placements = _readPlacements(scenePayload);
 
     return ArEventSceneEntity(
       eventCode: eventCode,
       title: 'AR-сцена: $eventCode',
       assets: assets,
       placements: placements,
+      sceneAnchorName: scenePayload['sceneAnchorName'] as String?,
+      sceneCloudAnchorId: scenePayload['sceneCloudAnchorId'] as String?,
+      sceneAnchorTransform:
+          (scenePayload['sceneAnchorTransform'] as List<dynamic>?)
+              ?.map((value) => (value as num).toDouble())
+              .toList(),
+      sceneAnchorTtl: scenePayload['sceneAnchorTtl'] as int?,
     );
   }
 
   @override
   Future<void> saveEventScene({
     required String eventCode,
+    required String? sceneAnchorName,
+    required String? sceneCloudAnchorId,
+    required List<double>? sceneAnchorTransform,
+    required int? sceneAnchorTtl,
     required List<ArAssetPlacementEntity> placements,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
+    final payload = {
+      'sceneAnchorName': sceneAnchorName,
+      'sceneCloudAnchorId': sceneCloudAnchorId,
+      'sceneAnchorTransform': sceneAnchorTransform,
+      'sceneAnchorTtl': sceneAnchorTtl,
+      'placements': placements.map((placement) => placement.toJson()).toList(),
+    };
     await _sharedPreferences.setString(
-      '$_placementsKeyPrefix$eventCode',
-      jsonEncode(placements.map((placement) => placement.toJson()).toList()),
+      '$_sceneKeyPrefix$eventCode',
+      jsonEncode(payload),
     );
 
     developer.log(
-      'AR QR-origin layout save',
+      'AR persistent scene save',
       name: 'ArRepository',
       error: {
         'eventCode': eventCode,
+        'sceneAnchorName': sceneAnchorName,
+        'sceneCloudAnchorId': sceneCloudAnchorId,
+        'sceneAnchorTransform': sceneAnchorTransform,
+        'sceneAnchorTtl': sceneAnchorTtl,
         'placements': placements
             .map((placement) => placement.toJson())
             .toList(),
@@ -98,14 +121,22 @@ class ArRepositoryImpl implements ArRepository {
         .toList();
   }
 
-  List<ArAssetPlacementEntity> _readPlacements(String eventCode) {
-    final raw = _sharedPreferences.getString('$_placementsKeyPrefix$eventCode');
+  Map<String, dynamic> _readScenePayload(String eventCode) {
+    final raw = _sharedPreferences.getString('$_sceneKeyPrefix$eventCode');
     if (raw == null || raw.isEmpty) {
-      return const [];
+      return const {};
     }
 
     try {
-      final decoded = jsonDecode(raw) as List<dynamic>;
+      return Map<String, dynamic>.from(jsonDecode(raw) as Map);
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  List<ArAssetPlacementEntity> _readPlacements(Map<String, dynamic> payload) {
+    try {
+      final decoded = payload['placements'] as List<dynamic>? ?? const [];
       final placements = decoded
           .map(
             (item) => ArAssetPlacementEntity.fromJson(

@@ -10,6 +10,10 @@ abstract interface class ArRepository {
 
   Future<void> saveEventScene({
     required String eventCode,
+    required String? sceneAnchorName,
+    required String? sceneCloudAnchorId,
+    required List<double>? sceneAnchorTransform,
+    required int? sceneAnchorTtl,
     required List<ArAssetPlacementEntity> placements,
   });
 }

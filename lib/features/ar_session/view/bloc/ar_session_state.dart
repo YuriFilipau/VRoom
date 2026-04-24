@@ -10,6 +10,10 @@ final class ArSessionState extends Equatable {
     this.eventTitle = '',
     this.assets = const [],
     this.placements = const [],
+    this.sceneAnchorName,
+    this.sceneCloudAnchorId,
+    this.sceneAnchorTransform,
+    this.sceneAnchorTtl,
     this.selectedAssetId,
     this.message,
   });
@@ -20,6 +24,10 @@ final class ArSessionState extends Equatable {
   final String eventTitle;
   final List<ArAssetEntity> assets;
   final List<ArAssetPlacementEntity> placements;
+  final String? sceneAnchorName;
+  final String? sceneCloudAnchorId;
+  final List<double>? sceneAnchorTransform;
+  final int? sceneAnchorTtl;
   final String? selectedAssetId;
   final String? message;
 
@@ -43,6 +51,14 @@ final class ArSessionState extends Equatable {
     String? eventTitle,
     List<ArAssetEntity>? assets,
     List<ArAssetPlacementEntity>? placements,
+    String? sceneAnchorName,
+    String? sceneCloudAnchorId,
+    List<double>? sceneAnchorTransform,
+    int? sceneAnchorTtl,
+    bool clearSceneAnchorName = false,
+    bool clearSceneCloudAnchorId = false,
+    bool clearSceneAnchorTransform = false,
+    bool clearSceneAnchorTtl = false,
     String? selectedAssetId,
     String? message,
     bool clearMessage = false,
@@ -54,6 +70,18 @@ final class ArSessionState extends Equatable {
       eventTitle: eventTitle ?? this.eventTitle,
       assets: assets ?? this.assets,
       placements: placements ?? this.placements,
+      sceneAnchorName: clearSceneAnchorName
+          ? null
+          : sceneAnchorName ?? this.sceneAnchorName,
+      sceneCloudAnchorId: clearSceneCloudAnchorId
+          ? null
+          : sceneCloudAnchorId ?? this.sceneCloudAnchorId,
+      sceneAnchorTransform: clearSceneAnchorTransform
+          ? null
+          : sceneAnchorTransform ?? this.sceneAnchorTransform,
+      sceneAnchorTtl: clearSceneAnchorTtl
+          ? null
+          : sceneAnchorTtl ?? this.sceneAnchorTtl,
       selectedAssetId: selectedAssetId ?? this.selectedAssetId,
       message: clearMessage ? null : message ?? this.message,
     );
@@ -67,6 +95,10 @@ final class ArSessionState extends Equatable {
     eventTitle,
     assets,
     placements,
+    sceneAnchorName,
+    sceneCloudAnchorId,
+    sceneAnchorTransform,
+    sceneAnchorTtl,
     selectedAssetId,
     message,
   ];

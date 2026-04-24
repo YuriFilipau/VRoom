@@ -61,13 +61,17 @@ class _ArSessionViewState extends State<_ArSessionView> {
   ARAnchorManager? _arAnchorManager;
 
   final Map<String, ARNode> _renderedNodes = {};
-  ARPlaneAnchor? _sceneOriginAnchor;
-  Matrix4? _sceneOriginTransform;
+  ARPlaneAnchor? _sceneRootAnchor;
+  Matrix4? _sceneRootTransform;
   bool _isPlacingNode = false;
+  bool _isResolvingSceneAnchor = false;
+  bool _isUploadingSceneAnchor = false;
+  bool _saveAfterSceneAnchorUpload = false;
+  bool _hasRequestedSceneAnchorDownload = false;
   int _detectedPlaneCount = 0;
 
   bool get _supportsAr => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
-  bool get _isOriginCalibrated => _sceneOriginAnchor != null;
+  bool get _hasSceneRootAnchor => _sceneRootAnchor != null;
 
   @override
   void dispose() {
@@ -104,17 +108,22 @@ class _ArSessionViewState extends State<_ArSessionView> {
       handleRotation: widget.mode == ArSessionMode.admin,
     );
     await objectManager.onInitialize();
+    await anchorManager.initGoogleCloudAnchorMode();
 
     sessionManager.onPlaneOrPointTap = _onPlaneOrPointTapped;
     objectManager.onPanEnd = _onPanEnded;
     objectManager.onRotationEnd = _onRotationEnded;
     objectManager.onNodeTap = _onNodeTapped;
+    anchorManager.onAnchorUploaded = _onAnchorUploaded;
+    anchorManager.onAnchorDownloaded = _onAnchorDownloaded;
 
     if (!mounted) {
       return;
     }
 
-    await _syncSceneWithState(context.read<ArSessionBloc>().state);
+    final state = context.read<ArSessionBloc>().state;
+    await _ensureSceneRootAnchor(state);
+    await _syncSceneWithState(state);
   }
 
   ARHitTestResult? _extractPlaneHit(List<ARHitTestResult> results) {
@@ -126,25 +135,25 @@ class _ArSessionViewState extends State<_ArSessionView> {
     return results.isEmpty ? null : results.first;
   }
 
-  Future<Matrix4?> _resolveSceneOriginTransform() async {
-    final anchor = _sceneOriginAnchor;
+  Future<Matrix4?> _resolveSceneRootTransform() async {
+    final anchor = _sceneRootAnchor;
     if (anchor == null) {
       return null;
     }
 
     final resolvedTransform = await _arSessionManager?.getPose(anchor);
     if (resolvedTransform != null) {
-      _sceneOriginTransform = Matrix4.copy(resolvedTransform);
-      return _sceneOriginTransform;
+      _sceneRootTransform = Matrix4.copy(resolvedTransform);
+      return _sceneRootTransform;
     }
 
-    return _sceneOriginTransform == null
+    return _sceneRootTransform == null
         ? null
-        : Matrix4.copy(_sceneOriginTransform!);
+        : Matrix4.copy(_sceneRootTransform!);
   }
 
   Future<Matrix4?> _buildLocalTransform(Matrix4 worldTransform) async {
-    final originTransform = await _resolveSceneOriginTransform();
+    final originTransform = await _resolveSceneRootTransform();
     if (originTransform == null) {
       return null;
     }
@@ -158,39 +167,50 @@ class _ArSessionViewState extends State<_ArSessionView> {
     return invertedOrigin * worldTransform;
   }
 
-  Future<void> _clearSceneOrigin() async {
-    final currentOrigin = _sceneOriginAnchor;
-    if (currentOrigin != null) {
-      _arAnchorManager?.removeAnchor(currentOrigin);
+  Future<void> _clearSceneRootAnchor() async {
+    final currentRoot = _sceneRootAnchor;
+    if (currentRoot != null) {
+      _arAnchorManager?.removeAnchor(currentRoot);
     }
 
-    _sceneOriginAnchor = null;
-    _sceneOriginTransform = null;
+    _sceneRootAnchor = null;
+    _sceneRootTransform = null;
+    _hasRequestedSceneAnchorDownload = false;
     _renderedNodes.clear();
   }
 
-  Future<void> _setSceneOrigin(
+  Future<void> _setSceneRootAnchor(
     Matrix4 worldTransform, {
     required bool showFeedback,
   }) async {
     if (_arAnchorManager == null) {
       return;
     }
+    final bloc = context.read<ArSessionBloc>();
 
-    await _clearSceneOrigin();
+    await _clearSceneRootAnchor();
 
     final anchor = ARPlaneAnchor(
       transformation: worldTransform,
-      name: 'scene-origin-${DateTime.now().millisecondsSinceEpoch}',
+      name: 'scene-root-${DateTime.now().millisecondsSinceEpoch}',
+      ttl: 1,
     );
-    final didAddOrigin = await _arAnchorManager!.addAnchor(anchor) ?? false;
-    if (!didAddOrigin) {
-      _showMessage('Не удалось привязать сцену к QR-точке');
+    final didAddRoot = await _arAnchorManager!.addAnchor(anchor) ?? false;
+    if (!didAddRoot) {
+      _showMessage('Не удалось создать корневой anchor сцены');
       return;
     }
 
-    _sceneOriginAnchor = anchor;
-    _sceneOriginTransform = Matrix4.copy(worldTransform);
+    _sceneRootAnchor = anchor;
+    _sceneRootTransform = Matrix4.copy(worldTransform);
+    bloc.add(
+      ArSessionSceneAnchorUpdated(
+        anchorName: anchor.name,
+        anchorTransform: anchor.transformation.storage.toList(),
+        ttl: anchor.ttl,
+        clearCloudAnchorId: true,
+      ),
+    );
 
     if (!mounted) {
       return;
@@ -202,21 +222,86 @@ class _ArSessionViewState extends State<_ArSessionView> {
     if (showFeedback) {
       _showMessage(
         widget.mode == ArSessionMode.admin
-            ? 'Сцена привязана к QR-коду. Теперь можно расставлять объекты.'
-            : 'Сцена привязана к QR-коду. Загружаю сохраненные объекты.',
+            ? 'Корневой anchor создан в точке QR. Теперь можно расставлять объекты.'
+            : 'Anchor сцены восстановлен. Загружаю сохраненные объекты.',
       );
     }
   }
 
-  Future<void> _resetSceneOrigin() async {
-    await _clearSceneOrigin();
+  Matrix4? _matrixFromSerializedAnchor(Map<String, dynamic> serializedAnchor) {
+    final rawTransformation = serializedAnchor['transformation'];
+    if (rawTransformation is! List) {
+      return null;
+    }
+
+    final values = rawTransformation
+        .map((value) => (value as num).toDouble())
+        .toList();
+    if (values.length != 16) {
+      return null;
+    }
+
+    return Matrix4.fromList(values);
+  }
+
+  Future<void> _ensureSceneRootAnchor(ArSessionState state) async {
+    if (_arAnchorManager == null || state.status == ArSessionStatus.loading) {
+      return;
+    }
+
+    if (_sceneRootAnchor != null) {
+      return;
+    }
+
+    if (state.sceneCloudAnchorId != null &&
+        state.sceneCloudAnchorId!.isNotEmpty &&
+        !_hasRequestedSceneAnchorDownload) {
+      _hasRequestedSceneAnchorDownload = true;
+      _isResolvingSceneAnchor = true;
+      if (mounted) {
+        setState(() {});
+      }
+      await _arAnchorManager!.downloadAnchor(state.sceneCloudAnchorId!);
+      return;
+    }
+
+    if (state.sceneAnchorTransform != null) {
+      final anchor = ARPlaneAnchor(
+        transformation: Matrix4.fromList(state.sceneAnchorTransform!),
+        name: state.sceneAnchorName ?? 'scene-root-local',
+        cloudanchorid: state.sceneCloudAnchorId,
+        ttl: state.sceneAnchorTtl,
+      );
+      final didAddRoot = await _arAnchorManager!.addAnchor(anchor) ?? false;
+      if (didAddRoot) {
+        _sceneRootAnchor = anchor;
+        _sceneRootTransform = Matrix4.copy(anchor.transformation);
+        _isResolvingSceneAnchor = false;
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    }
+  }
+
+  Future<void> _resetSceneRootAnchor(ArSessionState state) async {
+    await _clearSceneRootAnchor();
     if (!mounted) {
       return;
     }
 
     setState(() {});
+    if (state.sceneCloudAnchorId != null &&
+        state.sceneCloudAnchorId!.isNotEmpty) {
+      await _ensureSceneRootAnchor(state);
+      _showMessage(
+        'Повторно пытаюсь разрешить persistent anchor сцены. Наведите камеру на зону QR и окружение вокруг нее.',
+      );
+      return;
+    }
+
     _showMessage(
-      'Наведите камеру на место, где расположен QR-код, и тапните по поверхности, чтобы привязать сцену заново.',
+      'Наведите камеру на место, где расположен QR-код, и тапните по поверхности, чтобы создать корневой anchor сцены.',
     );
   }
 
@@ -235,15 +320,20 @@ class _ArSessionViewState extends State<_ArSessionView> {
       return;
     }
 
-    if (!_isOriginCalibrated) {
-      await _setSceneOrigin(
-        Matrix4.fromList(planeHit.worldTransform.storage),
-        showFeedback: true,
-      );
+    if (widget.mode != ArSessionMode.admin) {
+      if (!_hasSceneRootAnchor) {
+        _showMessage(
+          'Сцена еще не разрешила persistent anchor. Наведите камеру на зону QR и дождитесь привязки.',
+        );
+      }
       return;
     }
 
-    if (widget.mode != ArSessionMode.admin) {
+    if (!_hasSceneRootAnchor) {
+      await _setSceneRootAnchor(
+        Matrix4.fromList(planeHit.worldTransform.storage),
+        showFeedback: true,
+      );
       return;
     }
 
@@ -261,9 +351,9 @@ class _ArSessionViewState extends State<_ArSessionView> {
     final localTransform = await _buildLocalTransform(
       Matrix4.fromList(planeHit.worldTransform.storage),
     );
-    if (localTransform == null || _sceneOriginAnchor == null) {
+    if (localTransform == null || _sceneRootAnchor == null) {
       _isPlacingNode = false;
-      _showMessage('Сначала привяжите сцену к QR-коду');
+      _showMessage('Сначала создайте и сохраните корневой anchor сцены');
       return;
     }
 
@@ -277,10 +367,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
     node.scale = Vector3.all(selectedAsset.scale);
 
     final didAddNode =
-        await _arObjectManager!.addNode(
-          node,
-          planeAnchor: _sceneOriginAnchor!,
-        ) ??
+        await _arObjectManager!.addNode(node, planeAnchor: _sceneRootAnchor!) ??
         false;
     if (!didAddNode) {
       _isPlacingNode = false;
@@ -296,7 +383,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
           assetId: selectedAsset.id,
           nodeName: placementId,
           transform: node.transform.storage.toList(),
-          anchorName: _sceneOriginAnchor!.name,
+          anchorName: _sceneRootAnchor!.name,
         ),
       ),
     );
@@ -346,7 +433,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
 
   Future<void> _syncSceneWithState(ArSessionState state) async {
     if (_arObjectManager == null ||
-        _sceneOriginAnchor == null ||
+        _sceneRootAnchor == null ||
         state.status == ArSessionStatus.loading) {
       return;
     }
@@ -373,7 +460,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
       final didAddNode =
           await _arObjectManager!.addNode(
             node,
-            planeAnchor: _sceneOriginAnchor!,
+            planeAnchor: _sceneRootAnchor!,
           ) ??
           false;
       if (didAddNode) {
@@ -382,9 +469,87 @@ class _ArSessionViewState extends State<_ArSessionView> {
     }
   }
 
+  void _onAnchorUploaded(ARAnchor anchor) {
+    if (!mounted || anchor is! ARPlaneAnchor) {
+      return;
+    }
+
+    final state = context.read<ArSessionBloc>().state;
+    if (state.sceneAnchorName != anchor.name) {
+      return;
+    }
+
+    context.read<ArSessionBloc>().add(
+      ArSessionSceneAnchorUpdated(
+        anchorName: anchor.name,
+        cloudAnchorId: anchor.cloudanchorid,
+        anchorTransform: anchor.transformation.storage.toList(),
+        ttl: anchor.ttl,
+      ),
+    );
+
+    _isUploadingSceneAnchor = false;
+    if (_saveAfterSceneAnchorUpload) {
+      _saveAfterSceneAnchorUpload = false;
+      context.read<ArSessionBloc>().add(const ArSessionSaveRequested());
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  ARAnchor _onAnchorDownloaded(Map<String, dynamic> serializedAnchor) {
+    final state = context.read<ArSessionBloc>().state;
+    final resolvedTransform = _matrixFromSerializedAnchor(serializedAnchor);
+    final anchor = ARPlaneAnchor(
+      transformation:
+          resolvedTransform ??
+          (state.sceneAnchorTransform == null
+              ? Matrix4.identity()
+              : Matrix4.fromList(state.sceneAnchorTransform!)),
+      name:
+          serializedAnchor['name']?.toString() ??
+          state.sceneAnchorName ??
+          'scene-root-resolved',
+      cloudanchorid: state.sceneCloudAnchorId,
+      ttl: state.sceneAnchorTtl,
+    );
+
+    _sceneRootAnchor = anchor;
+    _sceneRootTransform = Matrix4.copy(anchor.transformation);
+    _isResolvingSceneAnchor = false;
+    context.read<ArSessionBloc>().add(
+      ArSessionSceneAnchorUpdated(
+        anchorName: anchor.name,
+        cloudAnchorId: state.sceneCloudAnchorId,
+        anchorTransform: anchor.transformation.storage.toList(),
+        ttl: state.sceneAnchorTtl,
+      ),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+      await _syncSceneWithState(context.read<ArSessionBloc>().state);
+    });
+
+    return anchor;
+  }
+
   void _onSessionError(String error) {
     if (!mounted) {
       return;
+    }
+
+    if (_isResolvingSceneAnchor || _isUploadingSceneAnchor) {
+      setState(() {
+        _isResolvingSceneAnchor = false;
+        _isUploadingSceneAnchor = false;
+        _saveAfterSceneAnchorUpload = false;
+      });
     }
 
     _showMessage(error);
@@ -395,8 +560,29 @@ class _ArSessionViewState extends State<_ArSessionView> {
       return;
     }
 
-    if (!_isOriginCalibrated) {
-      _showMessage('Сначала привяжите сцену к физическому QR-коду');
+    if (!_hasSceneRootAnchor) {
+      _showMessage('Сначала создайте корневой anchor сцены в точке QR-кода');
+      return;
+    }
+
+    if ((state.sceneCloudAnchorId == null ||
+            state.sceneCloudAnchorId!.isEmpty) &&
+        _sceneRootAnchor != null) {
+      _isUploadingSceneAnchor = true;
+      _saveAfterSceneAnchorUpload = true;
+      if (mounted) {
+        setState(() {});
+      }
+      final didStartUpload =
+          await _arAnchorManager?.uploadAnchor(_sceneRootAnchor!) ?? false;
+      if (!didStartUpload) {
+        _isUploadingSceneAnchor = false;
+        _saveAfterSceneAnchorUpload = false;
+        if (mounted) {
+          setState(() {});
+        }
+        _showMessage('Не удалось запустить upload persistent anchor');
+      }
       return;
     }
 
@@ -432,6 +618,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
         }
 
         if (_supportsAr) {
+          await _ensureSceneRootAnchor(state);
           await _syncSceneWithState(state);
         }
       },
@@ -505,7 +692,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
                             ? 'Режим администратора'
                             : 'Просмотр сцены мероприятия',
                         planeCount: _detectedPlaneCount,
-                        isOriginCalibrated: _isOriginCalibrated,
+                        hasSceneRootAnchor: _hasSceneRootAnchor,
                       ),
                     ),
                   ),
@@ -513,7 +700,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
               ),
               if (_supportsAr &&
                   state.status != ArSessionStatus.loading &&
-                  !_isOriginCalibrated)
+                  !_hasSceneRootAnchor)
                 Positioned(
                   left: 16,
                   right: 16,
@@ -521,7 +708,12 @@ class _ArSessionViewState extends State<_ArSessionView> {
                   child: SafeArea(
                     bottom: false,
                     child: IgnorePointer(
-                      child: _OriginHintCard(mode: widget.mode),
+                      child: _OriginHintCard(
+                        mode: widget.mode,
+                        isResolvingSceneAnchor: _isResolvingSceneAnchor,
+                        hasPersistentAnchor:
+                            (state.sceneCloudAnchorId?.isNotEmpty ?? false),
+                      ),
                     ),
                   ),
                 ),
@@ -538,9 +730,11 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     state: state,
                     supportsAr: _supportsAr,
                     iconBuilder: _assetIcon,
-                    isOriginCalibrated: _isOriginCalibrated,
+                    hasSceneRootAnchor: _hasSceneRootAnchor,
+                    isResolvingSceneAnchor: _isResolvingSceneAnchor,
+                    isUploadingSceneAnchor: _isUploadingSceneAnchor,
                     onSave: () => _onSavePressed(state),
-                    onResetOrigin: _resetSceneOrigin,
+                    onResetSceneAnchor: () => _resetSceneRootAnchor(state),
                   ),
                 ),
               ),
@@ -557,13 +751,13 @@ class _ArHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.planeCount,
-    required this.isOriginCalibrated,
+    required this.hasSceneRootAnchor,
   });
 
   final String title;
   final String subtitle;
   final int planeCount;
-  final bool isOriginCalibrated;
+  final bool hasSceneRootAnchor;
 
   @override
   Widget build(BuildContext context) {
@@ -606,11 +800,11 @@ class _ArHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isOriginCalibrated
-                        ? 'QR-точка сцены привязана. Найдено плоскостей: $planeCount'
+                    hasSceneRootAnchor
+                        ? 'Persistent anchor сцены активен. Найдено плоскостей: $planeCount'
                         : planeCount > 0
-                        ? 'Найдено плоскостей: $planeCount. Тапните по месту QR-кода.'
-                        : 'Сканируйте поверхность и тапните по месту QR-кода',
+                        ? 'Найдено плоскостей: $planeCount. Ищу корневой anchor сцены.'
+                        : 'Сканируйте окружение вокруг QR до успешной привязки',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.62),
                       fontSize: 12,
@@ -631,17 +825,21 @@ class _ArBottomSheet extends StatelessWidget {
     required this.state,
     required this.supportsAr,
     required this.iconBuilder,
-    required this.isOriginCalibrated,
+    required this.hasSceneRootAnchor,
+    required this.isResolvingSceneAnchor,
+    required this.isUploadingSceneAnchor,
     required this.onSave,
-    required this.onResetOrigin,
+    required this.onResetSceneAnchor,
   });
 
   final ArSessionState state;
   final bool supportsAr;
   final IconData Function(ArAssetPreviewIcon placeholder) iconBuilder;
-  final bool isOriginCalibrated;
+  final bool hasSceneRootAnchor;
+  final bool isResolvingSceneAnchor;
+  final bool isUploadingSceneAnchor;
   final VoidCallback onSave;
-  final VoidCallback onResetOrigin;
+  final VoidCallback onResetSceneAnchor;
 
   @override
   Widget build(BuildContext context) {
@@ -649,7 +847,8 @@ class _ArBottomSheet extends StatelessWidget {
     final canSave =
         state.isAdmin &&
         supportsAr &&
-        isOriginCalibrated &&
+        hasSceneRootAnchor &&
+        !isUploadingSceneAnchor &&
         state.status != ArSessionStatus.loading &&
         state.status != ArSessionStatus.saving;
 
@@ -685,11 +884,13 @@ class _ArBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    isOriginCalibrated
+                    hasSceneRootAnchor
                         ? state.isAdmin
-                              ? 'Сцена привязана к QR. Теперь можно расставлять ассеты'
-                              : 'Сцена привязана к QR и готова к просмотру'
-                        : 'Сначала привяжите сцену к физическому QR-коду',
+                              ? 'Persistent anchor сцены готов. Теперь можно расставлять ассеты'
+                              : 'Anchor сцены разрешен, можно показывать объекты'
+                        : isResolvingSceneAnchor
+                        ? 'Идет relocalization сцены'
+                        : 'Сцена ждет корневой persistent anchor',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -697,13 +898,17 @@ class _ArBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isOriginCalibrated
+                    hasSceneRootAnchor
                         ? state.isAdmin
-                              ? 'QR-код работает как единый origin сцены. Все объекты сохраняются в локальных координатах относительно этой точки.'
+                              ? 'Все объекты сохраняются как local transform относительно корневого anchor сцены, а не в мировых координатах камеры.'
                               : state.placements.isEmpty
                               ? 'Для этого события пока нет сохраненных объектов. Организатору нужно сначала расставить и сохранить сцену.'
-                              : 'Объекты загружаются относительно QR-origin, поэтому после повторной привязки сцена должна восстанавливаться стабильнее.'
-                        : 'После входа по QR наведите камеру на место, где этот QR закреплен в реальности, и один раз тапните по поверхности.',
+                              : 'Объекты появятся только после успешного resolve/relocalization корневого anchor сцены.'
+                        : isResolvingSceneAnchor
+                        ? 'Наведите камеру на QR-зону и окружение вокруг нее. Пока resolve не завершится, объекты намеренно не показываются.'
+                        : state.isAdmin
+                        ? 'Сначала поставьте root anchor в точке QR-кода, затем сохраните сцену. После сохранения anchor получит persistent id.'
+                        : 'У этой сцены еще нет persistent anchor или он не был разрешен.',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.72),
                     ),
@@ -745,10 +950,12 @@ class _ArBottomSheet extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _MetricBadge(
-                          title: isOriginCalibrated ? 'Объекты' : 'Origin',
-                          value: isOriginCalibrated
+                          title: hasSceneRootAnchor ? 'Объекты' : 'Anchor',
+                          value: hasSceneRootAnchor
                               ? '${state.placements.length}'
-                              : 'QR',
+                              : isResolvingSceneAnchor
+                              ? 'Resolve'
+                              : 'Нет',
                         ),
                       ),
                     ],
@@ -757,7 +964,7 @@ class _ArBottomSheet extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: supportsAr ? onResetOrigin : null,
+                      onPressed: supportsAr ? onResetSceneAnchor : null,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: BorderSide(
@@ -769,9 +976,11 @@ class _ArBottomSheet extends StatelessWidget {
                         minimumSize: const Size.fromHeight(50),
                       ),
                       child: Text(
-                        isOriginCalibrated
-                            ? 'Привязать к QR заново'
-                            : 'Жду привязки к QR',
+                        hasSceneRootAnchor
+                            ? 'Повторно разрешить anchor'
+                            : state.isAdmin
+                            ? 'Создать root anchor'
+                            : 'Повторить поиск anchor',
                       ),
                     ),
                   ),
@@ -791,7 +1000,9 @@ class _ArBottomSheet extends StatelessWidget {
                           ),
                           minimumSize: const Size.fromHeight(54),
                         ),
-                        child: state.status == ArSessionStatus.saving
+                        child:
+                            state.status == ArSessionStatus.saving ||
+                                isUploadingSceneAnchor
                             ? const SizedBox(
                                 width: 22,
                                 height: 22,
@@ -800,7 +1011,11 @@ class _ArBottomSheet extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Сохранить сцену'),
+                            : Text(
+                                state.sceneCloudAnchorId?.isNotEmpty ?? false
+                                    ? 'Сохранить сцену'
+                                    : 'Создать persistent anchor и сохранить',
+                              ),
                       ),
                     ),
                   ],
@@ -815,9 +1030,15 @@ class _ArBottomSheet extends StatelessWidget {
 }
 
 class _OriginHintCard extends StatelessWidget {
-  const _OriginHintCard({required this.mode});
+  const _OriginHintCard({
+    required this.mode,
+    required this.isResolvingSceneAnchor,
+    required this.hasPersistentAnchor,
+  });
 
   final ArSessionMode mode;
+  final bool isResolvingSceneAnchor;
+  final bool hasPersistentAnchor;
 
   @override
   Widget build(BuildContext context) {
@@ -839,9 +1060,13 @@ class _OriginHintCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                mode == ArSessionMode.admin
-                    ? 'Наведите камеру на реальный QR-код события и тапните по поверхности в его центре. Это будет origin всей сцены.'
-                    : 'Снова найдите тот же QR-код события в реальном мире и тапните по поверхности в его центре, чтобы выровнять сцену.',
+                isResolvingSceneAnchor
+                    ? 'Ищу persistent anchor сцены. Медленно наведите камеру на QR-зону и окружение, где админ сохранял сцену.'
+                    : mode == ArSessionMode.admin
+                    ? 'Наведите камеру на реальный QR-код события и тапните по поверхности в его центре. Это создаст root anchor всей сцены.'
+                    : hasPersistentAnchor
+                    ? 'У сцены есть persistent anchor. Если объекты не появились, медленно осмотрите зону QR, пока relocalization не завершится.'
+                    : 'У сцены пока нет persistent anchor. Сначала администратор должен сохранить сцену.',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 13,

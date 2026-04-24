@@ -9,10 +9,18 @@ class SaveArLayoutUseCase {
 
   Future<void> call({
     required String eventCode,
+    required String? sceneAnchorName,
+    required String? sceneCloudAnchorId,
+    required List<double>? sceneAnchorTransform,
+    required int? sceneAnchorTtl,
     required List<ArAssetPlacementEntity> placements,
   }) {
     return _repository.saveEventScene(
       eventCode: eventCode,
+      sceneAnchorName: sceneAnchorName,
+      sceneCloudAnchorId: sceneCloudAnchorId,
+      sceneAnchorTransform: sceneAnchorTransform,
+      sceneAnchorTtl: sceneAnchorTtl,
       placements: placements,
     );
   }
