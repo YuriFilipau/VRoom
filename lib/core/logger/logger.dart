@@ -6,7 +6,6 @@ class AppLogger {
 }
 
 final class _CustomPrinter extends LogPrinter {
-
   _CustomPrinter(this.className);
   final String className;
 

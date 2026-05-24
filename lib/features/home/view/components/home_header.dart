@@ -22,19 +22,18 @@ class HomeHeader extends StatelessWidget {
               Text('Привет,', style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 2),
               Text(
-                '${user.firstName} 👋',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontSize: 34 / 1.5,
-                ),
+                user.firstName,
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineSmall?.copyWith(fontSize: 34 / 1.5),
               ),
             ],
           ),
         ),
         _RoundIconButton(
           icon: isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-          onTap: () => context.read<ThemeBloc>().add(
-            const ThemeEvent.toggled(),
-          ),
+          onTap: () =>
+              context.read<ThemeBloc>().add(const ThemeEvent.toggled()),
         ),
         const SizedBox(width: 8),
         const _RoundIconButton(icon: Icons.notifications_none),
@@ -51,7 +50,9 @@ class _RoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardTheme = Theme.of(context).extension<DashboardMaterialTheme>()!;
+    final dashboardTheme = Theme.of(
+      context,
+    ).extension<DashboardMaterialTheme>()!;
 
     return Material(
       color: dashboardTheme.softSurface,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vroom/core/dependencies/get_it.dart' as di;
+import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/features/participant/domain/repository/participant_repository.dart';
 import 'package:vroom/features/profile/view/components/profile_content.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -21,7 +24,29 @@ class ProfileScreen extends StatelessWidget {
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               return state.maybeWhen(
-                authenticated: (user) => ProfileContent(user: user),
+                authenticated: (_) => FutureBuilder(
+                  future: di.locator<ParticipantRepository>().getProfile(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      final error = snapshot.error;
+                      final message = error is ApiException
+                          ? error.message
+                          : 'Не удалось загрузить профиль';
+                      return Center(child: Text(message));
+                    }
+
+                    final profile = snapshot.data;
+                    if (profile == null) {
+                      return const Center(child: Text('Профиль недоступен'));
+                    }
+
+                    return ProfileContent(user: profile);
+                  },
+                ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 orElse: () => const Center(child: Text('Что-то пошло не так')),
               );

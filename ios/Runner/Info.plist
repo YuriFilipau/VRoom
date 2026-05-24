@@ -28,6 +28,13 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Камера нужна для сканирования QR-кодов и работы AR-режима.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Приложению нужен доступ к локальной сети для подключения к VR-квесту.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

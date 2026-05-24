@@ -1,14 +1,12 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/features/qr_scanner/view/bloc/qr_scanner_bloc.dart';
+import 'package:vroom/features/qr_scanner/view/components/qr_scanner_controls.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -19,6 +17,7 @@ class QrScannerScreen extends StatefulWidget {
 
 class _QrScannerScreenState extends State<QrScannerScreen> {
   late final MobileScannerController _controller;
+  final TextEditingController _manualCodeController = TextEditingController();
 
   @override
   void initState() {
@@ -33,11 +32,46 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _manualCodeController.dispose();
     super.dispose();
   }
 
-  void _openAdminAr(BuildContext context) {
-    context.push('${AppRoutes.ar.path}/demo-event?mode=admin');
+  Future<void> _openManualEntry(BuildContext context) async {
+    final bloc = context.read<QrScannerBloc>();
+    final value = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Введите QR-код'),
+          content: TextField(
+            controller: _manualCodeController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Токен или значение QR',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Отмена'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(
+                dialogContext,
+              ).pop(_manualCodeController.text.trim()),
+              child: const Text('Открыть'),
+            ),
+          ],
+        );
+      },
+    );
+
+    _manualCodeController.clear();
+    if (!mounted || value == null || value.isEmpty) {
+      return;
+    }
+
+    bloc.add(QrScannerDetected(value));
   }
 
   @override
@@ -65,8 +99,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       child: BlocConsumer<QrScannerBloc, QrScannerState>(
         listener: (context, state) {
           if (state.status == QrScannerStatus.success &&
-              state.eventCode != null) {
-            context.push('${AppRoutes.ar.path}/${state.eventCode}');
+              state.questId != null) {
+            context.push('${AppRoutes.ar.path}/${state.questId}');
           }
 
           if (state.status == QrScannerStatus.failure &&
@@ -108,7 +142,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                       children: [
                         Row(
                           children: [
-                            _RoundIconButton(
+                            QrRoundIconButton(
                               backgroundColor: iconButtonColor,
                               iconColor: foregroundColor,
                               onTap: () => context.pop(),
@@ -129,7 +163,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           ],
                         ),
                         const Spacer(),
-                        const _ScannerFocusFrame(),
+                        const ScannerFocusFrame(),
                         const SizedBox(height: 28),
                         Text(
                           'Наведите камеру на QR-код',
@@ -145,7 +179,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           child: FilledButton.icon(
                             onPressed: isBusy
                                 ? null
-                                : () => _openAdminAr(context),
+                                : () => _openManualEntry(context),
                             style: FilledButton.styleFrom(
                               backgroundColor: buttonColor,
                               foregroundColor: foregroundColor,
@@ -194,141 +228,4 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       ),
     );
   }
-}
-
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({
-    required this.backgroundColor,
-    required this.iconColor,
-    required this.onTap,
-    required this.icon,
-  });
-
-  final Color backgroundColor;
-  final Color iconColor;
-  final VoidCallback onTap;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: backgroundColor,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: SizedBox(
-          width: 48,
-          height: 48,
-          child: Icon(icon, color: iconColor),
-        ),
-      ),
-    );
-  }
-}
-
-class _ScannerFocusFrame extends StatelessWidget {
-  const _ScannerFocusFrame();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 280,
-      height: 280,
-      child: CustomPaint(
-        painter: _ScannerFocusPainter(),
-        child: Center(
-          child: ClipOval(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-              child: Container(
-                width: 118,
-                height: 118,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primaryCyan.withValues(alpha: 0.16),
-                  ),
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.primaryBlue.withValues(alpha: 0.06),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ScannerFocusPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final softAccent = Paint()
-      ..color = AppColors.primaryCyan.withValues(alpha: 0.18)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    final corner = Paint()
-      ..shader = AppColors.primaryGradient.createShader(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-      )
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-
-    final frameRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(size.width / 2, size.height / 2),
-        width: 250,
-        height: 190,
-      ),
-      const Radius.circular(26),
-    );
-
-    canvas.drawRRect(frameRect, softAccent);
-    final circlePaint = Paint()
-      ..color = AppColors.primaryBlue.withValues(alpha: 0.07)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 58, circlePaint);
-
-    const length = 28.0;
-    const radius = 10.0;
-    final rect = frameRect.outerRect;
-    final path = Path()
-      ..moveTo(rect.left, rect.top + length)
-      ..lineTo(rect.left, rect.top + radius)
-      ..quadraticBezierTo(rect.left, rect.top, rect.left + radius, rect.top)
-      ..lineTo(rect.left + length, rect.top)
-      ..moveTo(rect.right - length, rect.top)
-      ..lineTo(rect.right - radius, rect.top)
-      ..quadraticBezierTo(rect.right, rect.top, rect.right, rect.top + radius)
-      ..lineTo(rect.right, rect.top + length)
-      ..moveTo(rect.left, rect.bottom - length)
-      ..lineTo(rect.left, rect.bottom - radius)
-      ..quadraticBezierTo(
-        rect.left,
-        rect.bottom,
-        rect.left + radius,
-        rect.bottom,
-      )
-      ..lineTo(rect.left + length, rect.bottom)
-      ..moveTo(rect.right - length, rect.bottom)
-      ..lineTo(rect.right - radius, rect.bottom)
-      ..quadraticBezierTo(
-        rect.right,
-        rect.bottom,
-        rect.right,
-        rect.bottom - radius,
-      )
-      ..lineTo(rect.right, rect.bottom - length);
-
-    canvas.drawPath(path, corner);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

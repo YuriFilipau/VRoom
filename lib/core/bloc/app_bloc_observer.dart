@@ -3,7 +3,6 @@ import 'package:logger/logger.dart';
 import 'package:vroom/core/logger/logger.dart';
 
 class AppBlocObserver extends BlocObserver {
-
   AppBlocObserver(AppLogger logger) : _logger = logger.logger(AppBlocObserver);
   late final Logger _logger;
 

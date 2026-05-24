@@ -684,7 +684,7 @@ $Res call({
 });
 
 
-
+$UserEntityCopyWith<$Res> get user;
 
 }
 /// @nodoc
@@ -704,7 +704,16 @@ as UserEntity,
   ));
 }
 
-
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserEntityCopyWith<$Res> get user {
+  
+  return $UserEntityCopyWith<$Res>(_self.user, (value) {
+    return _then(_self.copyWith(user: value));
+  });
+}
 }
 
 /// @nodoc

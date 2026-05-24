@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/shared/widgets/staggered_appear.dart';
 import 'package:vroom/core/theme/dashboard_material_theme.dart';
-import 'package:vroom/features/auth/domain/entities/user_entity.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/features/participant/domain/entities/participant_profile_entity.dart';
 import 'package:vroom/features/profile/view/components/profile_achievement_tile.dart';
 import 'package:vroom/features/profile/view/components/profile_activity_tile.dart';
 import 'package:vroom/features/profile/view/components/profile_header.dart';
@@ -13,12 +13,13 @@ import 'package:vroom/features/profile/view/components/profile_stat_card.dart';
 class ProfileContent extends StatelessWidget {
   const ProfileContent({required this.user, super.key});
 
-  final UserEntity user;
+  final ParticipantProfileEntity user;
 
   @override
   Widget build(BuildContext context) {
-    final dashboardTheme = Theme.of(context).extension<DashboardMaterialTheme>()!;
-    final unlockedCount = user.achievements.where((a) => a.isUnlocked).length;
+    final dashboardTheme = Theme.of(
+      context,
+    ).extension<DashboardMaterialTheme>()!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
@@ -36,15 +37,15 @@ class ProfileContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: ProfileStatCard(
-                    title: '${user.quests.length}',
-                    subtitle: 'Квестов пройдено',
+                    title: '${user.joinedEventsCount}',
+                    subtitle: 'Мероприятий',
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: ProfileStatCard(
-                    title: '$unlockedCount',
-                    subtitle: 'Достижения',
+                    title: '${user.completedQuestsCount}',
+                    subtitle: 'Сканированных квестов',
                   ),
                 ),
               ],

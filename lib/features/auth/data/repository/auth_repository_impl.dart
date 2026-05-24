@@ -18,8 +18,24 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
     try {
-      final user = await localDatasource.getCachedUser();
-      return Right(user?.toEntity());
+      final cachedUser = await localDatasource.getCachedUser();
+      if (cachedUser != null) {
+        return Right(cachedUser.toEntity());
+      }
+
+      final accessToken = await localDatasource.getCachedToken();
+      if (accessToken == null) {
+        return const Right(null);
+      }
+
+      final remoteUser = await remoteDatasource.getCurrentUser();
+      await localDatasource.cacheUser(remoteUser);
+      return Right(remoteUser.toEntity());
+    } on AuthException {
+      await localDatasource.clearToken();
+      return const Right(null);
+    } on ServerException {
+      return Left(const Failure.server('Не удалось загрузить профиль'));
     } catch (e) {
       return Left(CacheFailure());
     }

@@ -1,19 +1,21 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vroom/features/qr_scanner/domain/usecases/resolve_qr_event_code_usecase.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:vroom/core/network/api_exception.dart';
+import 'package:vroom/features/qr_scanner/domain/usecases/process_qr_code_usecase.dart';
 
+part 'qr_scanner_bloc.freezed.dart';
 part 'qr_scanner_event.dart';
 part 'qr_scanner_state.dart';
 
 class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
-  QrScannerBloc({required ResolveQrEventCodeUseCase resolveQrEventCodeUseCase})
-    : _resolveQrEventCodeUseCase = resolveQrEventCodeUseCase,
+  QrScannerBloc({required ProcessQrCodeUseCase processQrCodeUseCase})
+    : _processQrCodeUseCase = processQrCodeUseCase,
       super(const QrScannerState()) {
     on<QrScannerDetected>(_onDetected);
     on<QrScannerReset>(_onReset);
   }
 
-  final ResolveQrEventCodeUseCase _resolveQrEventCodeUseCase;
+  final ProcessQrCodeUseCase _processQrCodeUseCase;
 
   Future<void> _onDetected(
     QrScannerDetected event,
@@ -24,19 +26,19 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        status: QrScannerStatus.resolving,
-        clearErrorMessage: true,
-      ),
-    );
+    emit(state.copyWith(status: QrScannerStatus.resolving, errorMessage: null));
 
     try {
-      final eventCode = await _resolveQrEventCodeUseCase(event.rawValue);
+      final result = await _processQrCodeUseCase(event.rawValue);
       emit(
-        state.copyWith(status: QrScannerStatus.success, eventCode: eventCode),
+        state.copyWith(
+          status: QrScannerStatus.success,
+          questId: result.questId,
+          eventId: result.eventId,
+          scanSessionId: result.scanSessionId,
+        ),
       );
-    } on FormatException catch (error) {
+    } on ApiException catch (error) {
       emit(
         state.copyWith(
           status: QrScannerStatus.failure,
@@ -47,7 +49,7 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
       emit(
         state.copyWith(
           status: QrScannerStatus.failure,
-          errorMessage: 'Не удалось распознать QR-код',
+          errorMessage: 'Не удалось обработать QR-код',
         ),
       );
     }
@@ -57,8 +59,10 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
     emit(
       state.copyWith(
         status: QrScannerStatus.idle,
-        clearEventCode: true,
-        clearErrorMessage: true,
+        questId: null,
+        eventId: null,
+        scanSessionId: null,
+        errorMessage: null,
       ),
     );
   }

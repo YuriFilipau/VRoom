@@ -2,6 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vroom/core/network/auth_interceptor.dart';
+import 'package:vroom/core/network/backend_discovery_service.dart';
+import 'package:vroom/core/theme/bloc/theme_bloc.dart';
+import 'package:vroom/features/ar_session/data/repository/ar_repository_impl.dart';
+import 'package:vroom/features/ar_session/domain/repository/ar_repository.dart';
+import 'package:vroom/features/ar_session/domain/usecases/get_ar_scene_usecase.dart';
+import 'package:vroom/features/ar_session/domain/usecases/save_ar_layout_usecase.dart';
+import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
 import 'package:vroom/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:vroom/features/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:vroom/features/auth/data/datasource/impl/auth_local_datasource_impl.dart';
@@ -14,19 +22,17 @@ import 'package:vroom/features/auth/domain/usecases/login_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:vroom/features/auth/domain/usecases/register_usecase.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
-import 'package:vroom/core/theme/bloc/theme_bloc.dart';
-import 'package:vroom/features/ar_session/data/repository/ar_repository_impl.dart';
-import 'package:vroom/features/ar_session/domain/repository/ar_repository.dart';
-import 'package:vroom/features/ar_session/domain/usecases/get_ar_event_usecase.dart';
-import 'package:vroom/features/ar_session/domain/usecases/save_ar_layout_usecase.dart';
-import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
 import 'package:vroom/features/onboarding/data/datasource/impl/onboarding_local_datasource_impl.dart';
 import 'package:vroom/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vroom/features/onboarding/data/repository/onboarding_repository_impl.dart';
 import 'package:vroom/features/onboarding/domain/repository/onboarding_repository.dart';
+import 'package:vroom/features/organizer/data/repository/organizer_repository_impl.dart';
+import 'package:vroom/features/organizer/domain/repository/organizer_repository.dart';
+import 'package:vroom/features/participant/data/repository/participant_repository_impl.dart';
+import 'package:vroom/features/participant/domain/repository/participant_repository.dart';
 import 'package:vroom/features/qr_scanner/data/repository/qr_scanner_repository_impl.dart';
 import 'package:vroom/features/qr_scanner/domain/repository/qr_scanner_repository.dart';
-import 'package:vroom/features/qr_scanner/domain/usecases/resolve_qr_event_code_usecase.dart';
+import 'package:vroom/features/qr_scanner/domain/usecases/process_qr_code_usecase.dart';
 import 'package:vroom/features/qr_scanner/view/bloc/qr_scanner_bloc.dart';
 
 final locator = GetIt.instance;
@@ -34,22 +40,21 @@ final locator = GetIt.instance;
 Future<void> init({
   required Dio dio,
   required String baseUrl,
+  required BackendDiscoveryService backendDiscoveryService,
   required FlutterSecureStorage secureStorage,
   required SharedPreferences sharedPreferences,
 }) async {
-  // Register all external dependencies
+  if (locator.isRegistered<Dio>()) {
+    return;
+  }
+
   locator.registerLazySingleton<Dio>(() => dio);
   locator.registerLazySingleton<String>(() => baseUrl, instanceName: 'baseUrl');
+  locator.registerLazySingleton<BackendDiscoveryService>(
+    () => backendDiscoveryService,
+  );
   locator.registerLazySingleton<FlutterSecureStorage>(() => secureStorage);
   locator.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
-
-  // datasource
-  locator.registerLazySingleton<AuthRemoteDatasource>(
-    () => AuthRemoteDatasourceImpl(
-      dio: locator<Dio>(),
-      baseUrl: locator<String>(instanceName: 'baseUrl'),
-    ),
-  );
 
   locator.registerLazySingleton<AuthLocalDatasource>(
     () => AuthLocalDatasourceImpl(
@@ -58,33 +63,48 @@ Future<void> init({
     ),
   );
 
+  dio.interceptors.add(
+    AuthInterceptor(
+      dio: dio,
+      authLocalDatasource: locator<AuthLocalDatasource>(),
+    ),
+  );
+
+  locator.registerLazySingleton<AuthRemoteDatasource>(
+    () => AuthRemoteDatasourceImpl(dio: locator<Dio>()),
+  );
+
   locator.registerLazySingleton<OnboardingLocalDataSource>(
     () => OnboardingLocalDataSourceImpl(
       sharedPreferences: locator<SharedPreferences>(),
     ),
   );
 
-  // repositories
   locator.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       remoteDatasource: locator(),
       localDatasource: locator(),
     ),
   );
-
   locator.registerLazySingleton<OnboardingRepository>(
     () => OnboardingRepositoryImpl(localDataSource: locator()),
   );
-
+  locator.registerLazySingleton<ParticipantRepository>(
+    () => ParticipantRepositoryImpl(dio: locator<Dio>()),
+  );
+  locator.registerLazySingleton<OrganizerRepository>(
+    () => OrganizerRepositoryImpl(dio: locator<Dio>()),
+  );
   locator.registerLazySingleton<QrScannerRepository>(
-    () => QrScannerRepositoryImpl(),
+    () => QrScannerRepositoryImpl(dio: locator<Dio>()),
   );
-
   locator.registerLazySingleton<ArRepository>(
-    () => ArRepositoryImpl(sharedPreferences: locator<SharedPreferences>()),
+    () => ArRepositoryImpl(
+      dio: locator<Dio>(),
+      sharedPreferences: locator<SharedPreferences>(),
+    ),
   );
 
-  // use cases
   locator.registerLazySingleton(() => LoginUseCase(repository: locator()));
   locator.registerLazySingleton(() => LogoutUseCase(repository: locator()));
   locator.registerLazySingleton(() => RegisterUseCase(repository: locator()));
@@ -93,14 +113,13 @@ Future<void> init({
   );
   locator.registerLazySingleton(() => CheckAuthUseCase(repository: locator()));
   locator.registerLazySingleton(
-    () => ResolveQrEventCodeUseCase(repository: locator()),
+    () => ProcessQrCodeUseCase(repository: locator()),
   );
-  locator.registerLazySingleton(() => GetArEventUseCase(repository: locator()));
+  locator.registerLazySingleton(() => GetArSceneUseCase(repository: locator()));
   locator.registerLazySingleton(
     () => SaveArLayoutUseCase(repository: locator()),
   );
 
-  // bloc
   locator.registerFactory(
     () => AuthBloc(
       loginUseCase: locator(),
@@ -110,18 +129,13 @@ Future<void> init({
       checkAuthUseCase: locator(),
     ),
   );
-
   locator.registerFactory(
     () => ThemeBloc(sharedPreferences: locator<SharedPreferences>()),
   );
-
-  locator.registerFactory(
-    () => QrScannerBloc(resolveQrEventCodeUseCase: locator()),
-  );
-
+  locator.registerFactory(() => QrScannerBloc(processQrCodeUseCase: locator()));
   locator.registerFactory(
     () => ArSessionBloc(
-      getArEventUseCase: locator(),
+      getArSceneUseCase: locator(),
       saveArLayoutUseCase: locator(),
     ),
   );

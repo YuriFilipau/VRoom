@@ -1,22 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ArAssetEntity extends Equatable {
-  const ArAssetEntity({
-    required this.id,
-    required this.name,
-    required this.modelUri,
-    required this.scale,
-    required this.previewIcon,
-  });
+part 'ar_asset_entity.freezed.dart';
 
-  final String id;
-  final String name;
-  final String modelUri;
-  final double scale;
-  final ArAssetPreviewIcon previewIcon;
-
-  @override
-  List<Object?> get props => [id, name, modelUri, scale, previewIcon];
+@freezed
+abstract class ArAssetEntity with _$ArAssetEntity {
+  const factory ArAssetEntity({
+    required int id,
+    required String name,
+    required String modelUri,
+    required double scale,
+    required ArAssetPreviewIcon previewIcon,
+  }) = _ArAssetEntity;
 }
 
 enum ArAssetPreviewIcon { cube, globe, rocket }

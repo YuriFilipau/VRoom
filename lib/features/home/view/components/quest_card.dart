@@ -46,7 +46,9 @@ class QuestCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, _, __) {
                   return const DecoratedBox(
-                    decoration: BoxDecoration(gradient: AppColors.primaryGradient),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                    ),
                     child: Center(
                       child: Icon(
                         Icons.image_not_supported_outlined,

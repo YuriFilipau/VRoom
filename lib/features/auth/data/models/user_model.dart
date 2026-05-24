@@ -16,15 +16,16 @@ abstract class User with _$User {
     @JsonKey(name: 'first_name') required String firstName,
     @JsonKey(name: 'last_name') required String lastName,
     required String login,
+    @JsonKey(name: 'is_staff') @Default(false) bool isStaff,
     @Default([]) List<UserQuest> quests,
     @Default([]) List<UserAchievement> achievements,
-    @JsonKey(name: 'recent_activities') @Default([])
+    @JsonKey(name: 'recent_activities')
+    @Default([])
     List<UserActivity> recentActivities,
     // @Default(null) String? avatarUrl,
   }) = _User;
 
-  factory User.fromJson(Map<String, dynamic> json) =>
-      _$UserFromJson(json);
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   factory User.mock({
     int id = 1,
@@ -37,17 +38,20 @@ abstract class User with _$User {
       login: login,
       firstName: firstName,
       lastName: lastName,
+      isStaff: false,
       quests: const [
         UserQuest(
           id: 101,
           title: 'Инженер-робототехник',
-          imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758',
+          imageUrl:
+              'https://images.unsplash.com/photo-1581092160607-ee22621dd758',
           progressPercent: 75,
         ),
         UserQuest(
           id: 102,
           title: 'Врач-исследователь',
-          imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69',
+          imageUrl:
+              'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69',
           progressPercent: 40,
         ),
         UserQuest(
@@ -135,6 +139,7 @@ abstract class User with _$User {
     login: login,
     firstName: firstName,
     lastName: lastName,
+    isStaff: isStaff,
     quests: quests.map((quest) => quest.toEntity()).toList(growable: false),
     achievements: achievements
         .map((achievement) => achievement.toEntity())

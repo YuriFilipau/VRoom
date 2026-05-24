@@ -35,7 +35,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Добро пожаловать, ${user.login}!')),
             );
-            context.go(AppRoutes.home.path);
+            context.go(
+              user.isStaff
+                  ? AppRoutes.organizerEvents.path
+                  : AppRoutes.home.path,
+            );
           },
           error: (message) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -76,7 +80,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               minHeight: 24,
                             ),
                             visualDensity: VisualDensity.compact,
-                            icon: Icon(Icons.arrow_back, color: authTheme.iconColor),
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: authTheme.iconColor,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 56),

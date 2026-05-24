@@ -1,29 +1,31 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vroom/core/app.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vroom/core/network/backend_discovery_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const App());
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('stores normalized backend base URL', () async {
+    SharedPreferences.setMockInitialValues({});
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final service = BackendDiscoveryService(
+      sharedPreferences: sharedPreferences,
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await service.saveResolvedBaseUrl('http://192.168.43.10:8000/');
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(
+      await service.getSavedBaseUrl(),
+      equals('http://192.168.43.10:8000'),
+    );
+  });
+
+  test('keeps backend lookup error nontechnical', () {
+    expect(
+      backendServerNotFoundMessage,
+      equals(
+        'Сервер не найден. Проверьте, что телефон подключён к корректной сети, и попробуйте снова.',
+      ),
+    );
   });
 }

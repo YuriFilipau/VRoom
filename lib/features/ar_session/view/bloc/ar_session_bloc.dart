@@ -1,19 +1,22 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
+import 'package:vroom/features/ar_session/domain/entities/ar_scene_root_anchor_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_session_mode.dart';
-import 'package:vroom/features/ar_session/domain/usecases/get_ar_event_usecase.dart';
+import 'package:vroom/features/ar_session/domain/usecases/get_ar_scene_usecase.dart';
 import 'package:vroom/features/ar_session/domain/usecases/save_ar_layout_usecase.dart';
 
+part 'ar_session_bloc.freezed.dart';
 part 'ar_session_event.dart';
 part 'ar_session_state.dart';
 
 class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
   ArSessionBloc({
-    required GetArEventUseCase getArEventUseCase,
+    required GetArSceneUseCase getArSceneUseCase,
     required SaveArLayoutUseCase saveArLayoutUseCase,
-  }) : _getArEventUseCase = getArEventUseCase,
+  }) : _getArSceneUseCase = getArSceneUseCase,
        _saveArLayoutUseCase = saveArLayoutUseCase,
        super(const ArSessionState()) {
     on<ArSessionLoadRequested>(_onLoadRequested);
@@ -24,7 +27,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     on<ArSessionSnackbarConsumed>(_onSnackbarConsumed);
   }
 
-  final GetArEventUseCase _getArEventUseCase;
+  final GetArSceneUseCase _getArSceneUseCase;
   final SaveArLayoutUseCase _saveArLayoutUseCase;
 
   Future<void> _onLoadRequested(
@@ -34,15 +37,15 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     emit(
       state.copyWith(
         status: ArSessionStatus.loading,
-        eventCode: event.eventCode,
+        questId: event.questId,
         mode: event.mode,
-        clearMessage: true,
+        message: null,
       ),
     );
 
     try {
-      final scene = await _getArEventUseCase(
-        eventCode: event.eventCode,
+      final scene = await _getArSceneUseCase(
+        questId: event.questId,
         mode: event.mode,
       );
 
@@ -50,16 +53,24 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
         state.copyWith(
           status: ArSessionStatus.ready,
           mode: event.mode,
-          eventCode: scene.eventCode,
+          sceneId: scene.sceneId,
+          questId: scene.questId,
+          eventId: scene.eventId,
           eventTitle: scene.title,
           assets: scene.assets,
-          placements: scene.placements,
-          sceneAnchorName: scene.sceneAnchorName,
-          sceneCloudAnchorId: scene.sceneCloudAnchorId,
-          sceneAnchorTransform: scene.sceneAnchorTransform,
-          sceneAnchorTtl: scene.sceneAnchorTtl,
+          placements: scene.objects,
+          version: scene.version,
+          updatedAt: scene.updatedAt,
+          createdBy: scene.createdBy,
+          isPublished: scene.isPublished,
+          rootAnchor: scene.rootAnchor,
+          arcoreToken: scene.arcoreToken,
           selectedAssetId: scene.assets.isEmpty ? null : scene.assets.first.id,
         ),
+      );
+    } on ApiException catch (error) {
+      emit(
+        state.copyWith(status: ArSessionStatus.failure, message: error.message),
       );
     } catch (_) {
       emit(
@@ -75,7 +86,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     ArSessionAssetSelected event,
     Emitter<ArSessionState> emit,
   ) {
-    emit(state.copyWith(selectedAssetId: event.assetId, clearMessage: true));
+    emit(state.copyWith(selectedAssetId: event.assetId, message: null));
   }
 
   void _onPlacementUpserted(
@@ -97,7 +108,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
       state.copyWith(
         status: ArSessionStatus.ready,
         placements: nextPlacements,
-        clearMessage: true,
+        message: null,
       ),
     );
   }
@@ -106,18 +117,33 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     ArSessionSceneAnchorUpdated event,
     Emitter<ArSessionState> emit,
   ) {
+    final current = state.rootAnchor;
+    final nextAnchorName = event.clearAnchorName
+        ? ''
+        : event.anchorName ?? current?.anchorName ?? '';
+    final nextCloudAnchorId = event.clearCloudAnchorId
+        ? ''
+        : event.cloudAnchorId ?? current?.cloudAnchorId ?? '';
+    final nextAnchorTransform = event.clearAnchorTransform
+        ? const <double>[]
+        : event.anchorTransform ?? current?.anchorTransform ?? const <double>[];
+    final nextTtl = event.clearTtl ? 1 : event.ttl ?? current?.ttl ?? 1;
+    final shouldClearRootAnchor =
+        nextAnchorName.isEmpty && nextAnchorTransform.isEmpty;
+
     emit(
       state.copyWith(
         status: ArSessionStatus.ready,
-        sceneAnchorName: event.anchorName,
-        sceneCloudAnchorId: event.cloudAnchorId,
-        sceneAnchorTransform: event.anchorTransform,
-        sceneAnchorTtl: event.ttl,
-        clearSceneAnchorName: event.clearAnchorName,
-        clearSceneCloudAnchorId: event.clearCloudAnchorId,
-        clearSceneAnchorTransform: event.clearAnchorTransform,
-        clearSceneAnchorTtl: event.clearTtl,
-        clearMessage: true,
+        rootAnchor: shouldClearRootAnchor
+            ? null
+            : ArSceneRootAnchorEntity(
+                anchorName: nextAnchorName,
+                cloudAnchorId: nextCloudAnchorId,
+                anchorTransform: nextAnchorTransform,
+                ttl: nextTtl,
+                platform: current?.platform,
+              ),
+        message: null,
       ),
     );
   }
@@ -126,26 +152,76 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     ArSessionSaveRequested event,
     Emitter<ArSessionState> emit,
   ) async {
-    emit(state.copyWith(status: ArSessionStatus.saving, clearMessage: true));
+    emit(state.copyWith(status: ArSessionStatus.saving, message: null));
 
     try {
-      await _saveArLayoutUseCase(
-        eventCode: state.eventCode,
-        sceneAnchorName: state.sceneAnchorName,
-        sceneCloudAnchorId: state.sceneCloudAnchorId,
-        sceneAnchorTransform: state.sceneAnchorTransform,
-        sceneAnchorTtl: state.sceneAnchorTtl,
-        placements: state.placements,
+      final savedScene = await _saveArLayoutUseCase(
+        questId: state.questId,
+        version: state.version,
+        rootAnchor: state.rootAnchor,
+        objects: state.placements,
       );
 
       emit(
         state.copyWith(
           status: ArSessionStatus.saved,
-          message:
-              'Сцена сохранена с persistent anchor. Заглушка вывела payload в консоль.',
+          sceneId: savedScene.sceneId,
+          questId: savedScene.questId,
+          eventId: savedScene.eventId,
+          eventTitle: savedScene.title,
+          placements: savedScene.objects,
+          assets: savedScene.assets,
+          version: savedScene.version,
+          updatedAt: savedScene.updatedAt,
+          createdBy: savedScene.createdBy,
+          isPublished: savedScene.isPublished,
+          rootAnchor: savedScene.rootAnchor,
+          arcoreToken: savedScene.arcoreToken,
+          message: 'Сцена квеста сохранена в backend.',
         ),
       );
-      emit(state.copyWith(status: ArSessionStatus.ready, clearMessage: true));
+      emit(state.copyWith(status: ArSessionStatus.ready, message: null));
+    } on ApiException catch (error) {
+      if (error.code == 'scene_version_conflict') {
+        try {
+          final latestScene = await _getArSceneUseCase(
+            questId: state.questId,
+            mode: state.mode,
+          );
+          emit(
+            state.copyWith(
+              status: ArSessionStatus.ready,
+              sceneId: latestScene.sceneId,
+              questId: latestScene.questId,
+              eventId: latestScene.eventId,
+              eventTitle: latestScene.title,
+              assets: latestScene.assets,
+              placements: latestScene.objects,
+              version: latestScene.version,
+              updatedAt: latestScene.updatedAt,
+              createdBy: latestScene.createdBy,
+              isPublished: latestScene.isPublished,
+              rootAnchor: latestScene.rootAnchor,
+              arcoreToken: latestScene.arcoreToken,
+              message:
+                  'Сцена была изменена на сервере. Загружена последняя версия, можно повторить сохранение.',
+            ),
+          );
+          return;
+        } catch (_) {
+          emit(
+            state.copyWith(
+              status: ArSessionStatus.failure,
+              message:
+                  'Конфликт версий сцены. Не удалось перезагрузить актуальную версию.',
+            ),
+          );
+          return;
+        }
+      }
+      emit(
+        state.copyWith(status: ArSessionStatus.failure, message: error.message),
+      );
     } catch (_) {
       emit(
         state.copyWith(
@@ -160,6 +236,6 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     ArSessionSnackbarConsumed event,
     Emitter<ArSessionState> emit,
   ) {
-    emit(state.copyWith(clearMessage: true));
+    emit(state.copyWith(message: null));
   }
 }

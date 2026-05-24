@@ -9,7 +9,9 @@ class ProfileActivityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardTheme = Theme.of(context).extension<DashboardMaterialTheme>()!;
+    final dashboardTheme = Theme.of(
+      context,
+    ).extension<DashboardMaterialTheme>()!;
 
     return SizedBox(
       width: double.infinity,
@@ -26,7 +28,10 @@ class ProfileActivityTile extends StatelessWidget {
             children: [
               Text(item.title, style: Theme.of(context).textTheme.bodyLarge),
               const SizedBox(height: 2),
-              Text(item.timeLabel, style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                item.timeLabel,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ],
           ),
         ),

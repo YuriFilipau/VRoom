@@ -1,54 +1,31 @@
 part of 'ar_session_bloc.dart';
 
-sealed class ArSessionEvent {
-  const ArSessionEvent();
-}
+@freezed
+class ArSessionEvent with _$ArSessionEvent {
+  const factory ArSessionEvent.loadRequested({
+    required int questId,
+    required ArSessionMode mode,
+  }) = ArSessionLoadRequested;
 
-final class ArSessionLoadRequested extends ArSessionEvent {
-  const ArSessionLoadRequested({required this.eventCode, required this.mode});
+  const factory ArSessionEvent.assetSelected(int assetId) =
+      ArSessionAssetSelected;
 
-  final String eventCode;
-  final ArSessionMode mode;
-}
+  const factory ArSessionEvent.placementUpserted(
+    ArAssetPlacementEntity placement,
+  ) = ArSessionPlacementUpserted;
 
-final class ArSessionAssetSelected extends ArSessionEvent {
-  const ArSessionAssetSelected(this.assetId);
+  const factory ArSessionEvent.sceneAnchorUpdated({
+    String? anchorName,
+    String? cloudAnchorId,
+    List<double>? anchorTransform,
+    int? ttl,
+    @Default(false) bool clearCloudAnchorId,
+    @Default(false) bool clearAnchorTransform,
+    @Default(false) bool clearAnchorName,
+    @Default(false) bool clearTtl,
+  }) = ArSessionSceneAnchorUpdated;
 
-  final String assetId;
-}
+  const factory ArSessionEvent.saveRequested() = ArSessionSaveRequested;
 
-final class ArSessionPlacementUpserted extends ArSessionEvent {
-  const ArSessionPlacementUpserted(this.placement);
-
-  final ArAssetPlacementEntity placement;
-}
-
-final class ArSessionSceneAnchorUpdated extends ArSessionEvent {
-  const ArSessionSceneAnchorUpdated({
-    this.anchorName,
-    this.cloudAnchorId,
-    this.anchorTransform,
-    this.ttl,
-    this.clearCloudAnchorId = false,
-    this.clearAnchorTransform = false,
-    this.clearAnchorName = false,
-    this.clearTtl = false,
-  });
-
-  final String? anchorName;
-  final String? cloudAnchorId;
-  final List<double>? anchorTransform;
-  final int? ttl;
-  final bool clearCloudAnchorId;
-  final bool clearAnchorTransform;
-  final bool clearAnchorName;
-  final bool clearTtl;
-}
-
-final class ArSessionSaveRequested extends ArSessionEvent {
-  const ArSessionSaveRequested();
-}
-
-final class ArSessionSnackbarConsumed extends ArSessionEvent {
-  const ArSessionSnackbarConsumed();
+  const factory ArSessionEvent.snackbarConsumed() = ArSessionSnackbarConsumed;
 }

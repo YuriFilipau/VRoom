@@ -35,7 +35,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Добро пожаловать, ${user.login}!')),
             );
-            context.go(AppRoutes.home.path);
+            context.go(
+              user.isStaff
+                  ? AppRoutes.organizerEvents.path
+                  : AppRoutes.home.path,
+            );
           },
           error: (message) {
             ScaffoldMessenger.of(context).showSnackBar(

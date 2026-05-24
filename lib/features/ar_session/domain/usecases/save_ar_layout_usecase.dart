@@ -1,4 +1,6 @@
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
+import 'package:vroom/features/ar_session/domain/entities/ar_quest_scene_entity.dart';
+import 'package:vroom/features/ar_session/domain/entities/ar_scene_root_anchor_entity.dart';
 import 'package:vroom/features/ar_session/domain/repository/ar_repository.dart';
 
 class SaveArLayoutUseCase {
@@ -7,21 +9,17 @@ class SaveArLayoutUseCase {
 
   final ArRepository _repository;
 
-  Future<void> call({
-    required String eventCode,
-    required String? sceneAnchorName,
-    required String? sceneCloudAnchorId,
-    required List<double>? sceneAnchorTransform,
-    required int? sceneAnchorTtl,
-    required List<ArAssetPlacementEntity> placements,
+  Future<ArQuestSceneEntity> call({
+    required int questId,
+    required int? version,
+    required ArSceneRootAnchorEntity? rootAnchor,
+    required List<ArAssetPlacementEntity> objects,
   }) {
-    return _repository.saveEventScene(
-      eventCode: eventCode,
-      sceneAnchorName: sceneAnchorName,
-      sceneCloudAnchorId: sceneCloudAnchorId,
-      sceneAnchorTransform: sceneAnchorTransform,
-      sceneAnchorTtl: sceneAnchorTtl,
-      placements: placements,
+    return _repository.saveScene(
+      questId: questId,
+      version: version,
+      rootAnchor: rootAnchor,
+      objects: objects,
     );
   }
 }

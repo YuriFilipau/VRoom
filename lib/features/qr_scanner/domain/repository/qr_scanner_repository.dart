@@ -1,3 +1,5 @@
+import 'package:vroom/features/qr_scanner/domain/entities/qr_scan_result_entity.dart';
+
 abstract interface class QrScannerRepository {
-  Future<String> resolveEventCode(String rawValue);
+  Future<QrScanResultEntity> processQr(String rawValue);
 }
