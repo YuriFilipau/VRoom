@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ParticipantScannedQuestEntity {
 
- int get id; String get title; int get progressPercent; String get statusLabel;
+ int get id; String get title; String get imageUrl; int get progressPercent; String get statusLabel; bool get hasTest; bool get testCompleted; bool get testPassed; int? get score; int? get passingScore;
 /// Create a copy of ParticipantScannedQuestEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ParticipantScannedQuestEntityCopyWith<ParticipantScannedQuestEntity> get copyWi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantScannedQuestEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantScannedQuestEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel)&&(identical(other.hasTest, hasTest) || other.hasTest == hasTest)&&(identical(other.testCompleted, testCompleted) || other.testCompleted == testCompleted)&&(identical(other.testPassed, testPassed) || other.testPassed == testPassed)&&(identical(other.score, score) || other.score == score)&&(identical(other.passingScore, passingScore) || other.passingScore == passingScore));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,progressPercent,statusLabel);
+int get hashCode => Object.hash(runtimeType,id,title,imageUrl,progressPercent,statusLabel,hasTest,testCompleted,testPassed,score,passingScore);
 
 @override
 String toString() {
-  return 'ParticipantScannedQuestEntity(id: $id, title: $title, progressPercent: $progressPercent, statusLabel: $statusLabel)';
+  return 'ParticipantScannedQuestEntity(id: $id, title: $title, imageUrl: $imageUrl, progressPercent: $progressPercent, statusLabel: $statusLabel, hasTest: $hasTest, testCompleted: $testCompleted, testPassed: $testPassed, score: $score, passingScore: $passingScore)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ParticipantScannedQuestEntityCopyWith<$Res>  {
   factory $ParticipantScannedQuestEntityCopyWith(ParticipantScannedQuestEntity value, $Res Function(ParticipantScannedQuestEntity) _then) = _$ParticipantScannedQuestEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, int progressPercent, String statusLabel
+ int id, String title, String imageUrl, int progressPercent, String statusLabel, bool hasTest, bool testCompleted, bool testPassed, int? score, int? passingScore
 });
 
 
@@ -62,13 +62,19 @@ class _$ParticipantScannedQuestEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantScannedQuestEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? progressPercent = null,Object? statusLabel = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? imageUrl = null,Object? progressPercent = null,Object? statusLabel = null,Object? hasTest = null,Object? testCompleted = null,Object? testPassed = null,Object? score = freezed,Object? passingScore = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,progressPercent: null == progressPercent ? _self.progressPercent : progressPercent // ignore: cast_nullable_to_non_nullable
 as int,statusLabel: null == statusLabel ? _self.statusLabel : statusLabel // ignore: cast_nullable_to_non_nullable
-as String,
+as String,hasTest: null == hasTest ? _self.hasTest : hasTest // ignore: cast_nullable_to_non_nullable
+as bool,testCompleted: null == testCompleted ? _self.testCompleted : testCompleted // ignore: cast_nullable_to_non_nullable
+as bool,testPassed: null == testPassed ? _self.testPassed : testPassed // ignore: cast_nullable_to_non_nullable
+as bool,score: freezed == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
+as int?,passingScore: freezed == passingScore ? _self.passingScore : passingScore // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -153,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  int progressPercent,  String statusLabel)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String imageUrl,  int progressPercent,  String statusLabel,  bool hasTest,  bool testCompleted,  bool testPassed,  int? score,  int? passingScore)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ParticipantScannedQuestEntity() when $default != null:
-return $default(_that.id,_that.title,_that.progressPercent,_that.statusLabel);case _:
+return $default(_that.id,_that.title,_that.imageUrl,_that.progressPercent,_that.statusLabel,_that.hasTest,_that.testCompleted,_that.testPassed,_that.score,_that.passingScore);case _:
   return orElse();
 
 }
@@ -174,10 +180,10 @@ return $default(_that.id,_that.title,_that.progressPercent,_that.statusLabel);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  int progressPercent,  String statusLabel)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String imageUrl,  int progressPercent,  String statusLabel,  bool hasTest,  bool testCompleted,  bool testPassed,  int? score,  int? passingScore)  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantScannedQuestEntity():
-return $default(_that.id,_that.title,_that.progressPercent,_that.statusLabel);case _:
+return $default(_that.id,_that.title,_that.imageUrl,_that.progressPercent,_that.statusLabel,_that.hasTest,_that.testCompleted,_that.testPassed,_that.score,_that.passingScore);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +200,10 @@ return $default(_that.id,_that.title,_that.progressPercent,_that.statusLabel);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  int progressPercent,  String statusLabel)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String imageUrl,  int progressPercent,  String statusLabel,  bool hasTest,  bool testCompleted,  bool testPassed,  int? score,  int? passingScore)?  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantScannedQuestEntity() when $default != null:
-return $default(_that.id,_that.title,_that.progressPercent,_that.statusLabel);case _:
+return $default(_that.id,_that.title,_that.imageUrl,_that.progressPercent,_that.statusLabel,_that.hasTest,_that.testCompleted,_that.testPassed,_that.score,_that.passingScore);case _:
   return null;
 
 }
@@ -209,13 +215,19 @@ return $default(_that.id,_that.title,_that.progressPercent,_that.statusLabel);ca
 
 
 class _ParticipantScannedQuestEntity implements ParticipantScannedQuestEntity {
-  const _ParticipantScannedQuestEntity({required this.id, required this.title, required this.progressPercent, required this.statusLabel});
+  const _ParticipantScannedQuestEntity({required this.id, required this.title, required this.imageUrl, required this.progressPercent, required this.statusLabel, required this.hasTest, required this.testCompleted, required this.testPassed, required this.score, required this.passingScore});
   
 
 @override final  int id;
 @override final  String title;
+@override final  String imageUrl;
 @override final  int progressPercent;
 @override final  String statusLabel;
+@override final  bool hasTest;
+@override final  bool testCompleted;
+@override final  bool testPassed;
+@override final  int? score;
+@override final  int? passingScore;
 
 /// Create a copy of ParticipantScannedQuestEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -227,16 +239,16 @@ _$ParticipantScannedQuestEntityCopyWith<_ParticipantScannedQuestEntity> get copy
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantScannedQuestEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantScannedQuestEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel)&&(identical(other.hasTest, hasTest) || other.hasTest == hasTest)&&(identical(other.testCompleted, testCompleted) || other.testCompleted == testCompleted)&&(identical(other.testPassed, testPassed) || other.testPassed == testPassed)&&(identical(other.score, score) || other.score == score)&&(identical(other.passingScore, passingScore) || other.passingScore == passingScore));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,progressPercent,statusLabel);
+int get hashCode => Object.hash(runtimeType,id,title,imageUrl,progressPercent,statusLabel,hasTest,testCompleted,testPassed,score,passingScore);
 
 @override
 String toString() {
-  return 'ParticipantScannedQuestEntity(id: $id, title: $title, progressPercent: $progressPercent, statusLabel: $statusLabel)';
+  return 'ParticipantScannedQuestEntity(id: $id, title: $title, imageUrl: $imageUrl, progressPercent: $progressPercent, statusLabel: $statusLabel, hasTest: $hasTest, testCompleted: $testCompleted, testPassed: $testPassed, score: $score, passingScore: $passingScore)';
 }
 
 
@@ -247,7 +259,7 @@ abstract mixin class _$ParticipantScannedQuestEntityCopyWith<$Res> implements $P
   factory _$ParticipantScannedQuestEntityCopyWith(_ParticipantScannedQuestEntity value, $Res Function(_ParticipantScannedQuestEntity) _then) = __$ParticipantScannedQuestEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, int progressPercent, String statusLabel
+ int id, String title, String imageUrl, int progressPercent, String statusLabel, bool hasTest, bool testCompleted, bool testPassed, int? score, int? passingScore
 });
 
 
@@ -264,13 +276,19 @@ class __$ParticipantScannedQuestEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantScannedQuestEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? progressPercent = null,Object? statusLabel = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? imageUrl = null,Object? progressPercent = null,Object? statusLabel = null,Object? hasTest = null,Object? testCompleted = null,Object? testPassed = null,Object? score = freezed,Object? passingScore = freezed,}) {
   return _then(_ParticipantScannedQuestEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,progressPercent: null == progressPercent ? _self.progressPercent : progressPercent // ignore: cast_nullable_to_non_nullable
 as int,statusLabel: null == statusLabel ? _self.statusLabel : statusLabel // ignore: cast_nullable_to_non_nullable
-as String,
+as String,hasTest: null == hasTest ? _self.hasTest : hasTest // ignore: cast_nullable_to_non_nullable
+as bool,testCompleted: null == testCompleted ? _self.testCompleted : testCompleted // ignore: cast_nullable_to_non_nullable
+as bool,testPassed: null == testPassed ? _self.testPassed : testPassed // ignore: cast_nullable_to_non_nullable
+as bool,score: freezed == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
+as int?,passingScore: freezed == passingScore ? _self.passingScore : passingScore // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

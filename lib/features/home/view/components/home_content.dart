@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/shared/widgets/staggered_appear.dart';
 import 'package:vroom/core/theme/dashboard_material_theme.dart';
 import 'package:vroom/features/auth/domain/entities/user_entity.dart';
@@ -23,6 +24,7 @@ class HomeContent extends StatelessWidget {
     final dashboardTheme = Theme.of(
       context,
     ).extension<DashboardMaterialTheme>()!;
+    final l10n = AppLocalizations.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -34,7 +36,7 @@ class HomeContent extends StatelessWidget {
           StaggeredAppear(
             index: 1,
             child: Text(
-              'МОИ МЕРОПРИЯТИЯ',
+              l10n.homeEventsTitle.toUpperCase(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: dashboardTheme.sectionTitle,
                 fontSize: 18,
@@ -49,7 +51,7 @@ class HomeContent extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  'Вы пока не присоединились ни к одному мероприятию.',
+                  l10n.homeEmptyEvents,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),

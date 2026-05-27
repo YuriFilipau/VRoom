@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const backendServerNotFoundMessage =
-    'Сервер не найден. Проверьте, что телефон подключён к корректной сети, и попробуйте снова.';
+    'Сервер не найден. Проверьте, что телефон подключён к корректной сети, и попробуйте ещё раз.';
 
 class BackendDiscoveryException implements Exception {
   const BackendDiscoveryException([

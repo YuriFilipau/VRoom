@@ -565,7 +565,7 @@ String toString() {
 /// @nodoc
 mixin _$ArSessionState {
 
- ArSessionStatus get status; ArSessionMode get mode; String get sceneId; int get questId; int get eventId; String get eventTitle; List<ArAssetEntity> get assets; List<ArAssetPlacementEntity> get placements; int? get version; String? get updatedAt; int? get createdBy; bool get isPublished; ArSceneRootAnchorEntity? get rootAnchor; String? get arcoreToken; int? get selectedAssetId; String? get message;
+ ArSessionStatus get status; ArSessionMode get mode; String get sceneId; int get questId; int get eventId; String get eventTitle; List<ArAssetEntity> get assets; List<ArAssetPlacementEntity> get placements; int? get version; String? get updatedAt; int? get createdBy; bool get isPublished; bool get hasTest; ArSceneRootAnchorEntity? get rootAnchor; String? get arcoreToken; int? get selectedAssetId; String? get message;
 /// Create a copy of ArSessionState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -576,16 +576,16 @@ $ArSessionStateCopyWith<ArSessionState> get copyWith => _$ArSessionStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArSessionState&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.eventTitle, eventTitle) || other.eventTitle == eventTitle)&&const DeepCollectionEquality().equals(other.assets, assets)&&const DeepCollectionEquality().equals(other.placements, placements)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken)&&(identical(other.selectedAssetId, selectedAssetId) || other.selectedAssetId == selectedAssetId)&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArSessionState&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.eventTitle, eventTitle) || other.eventTitle == eventTitle)&&const DeepCollectionEquality().equals(other.assets, assets)&&const DeepCollectionEquality().equals(other.placements, placements)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&(identical(other.hasTest, hasTest) || other.hasTest == hasTest)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken)&&(identical(other.selectedAssetId, selectedAssetId) || other.selectedAssetId == selectedAssetId)&&(identical(other.message, message) || other.message == message));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,mode,sceneId,questId,eventId,eventTitle,const DeepCollectionEquality().hash(assets),const DeepCollectionEquality().hash(placements),version,updatedAt,createdBy,isPublished,rootAnchor,arcoreToken,selectedAssetId,message);
+int get hashCode => Object.hash(runtimeType,status,mode,sceneId,questId,eventId,eventTitle,const DeepCollectionEquality().hash(assets),const DeepCollectionEquality().hash(placements),version,updatedAt,createdBy,isPublished,hasTest,rootAnchor,arcoreToken,selectedAssetId,message);
 
 @override
 String toString() {
-  return 'ArSessionState(status: $status, mode: $mode, sceneId: $sceneId, questId: $questId, eventId: $eventId, eventTitle: $eventTitle, assets: $assets, placements: $placements, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken, selectedAssetId: $selectedAssetId, message: $message)';
+  return 'ArSessionState(status: $status, mode: $mode, sceneId: $sceneId, questId: $questId, eventId: $eventId, eventTitle: $eventTitle, assets: $assets, placements: $placements, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, hasTest: $hasTest, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken, selectedAssetId: $selectedAssetId, message: $message)';
 }
 
 
@@ -596,7 +596,7 @@ abstract mixin class $ArSessionStateCopyWith<$Res>  {
   factory $ArSessionStateCopyWith(ArSessionState value, $Res Function(ArSessionState) _then) = _$ArSessionStateCopyWithImpl;
 @useResult
 $Res call({
- ArSessionStatus status, ArSessionMode mode, String sceneId, int questId, int eventId, String eventTitle, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> placements, int? version, String? updatedAt, int? createdBy, bool isPublished, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken, int? selectedAssetId, String? message
+ ArSessionStatus status, ArSessionMode mode, String sceneId, int questId, int eventId, String eventTitle, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> placements, int? version, String? updatedAt, int? createdBy, bool isPublished, bool hasTest, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken, int? selectedAssetId, String? message
 });
 
 
@@ -613,7 +613,7 @@ class _$ArSessionStateCopyWithImpl<$Res>
 
 /// Create a copy of ArSessionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? mode = null,Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? eventTitle = null,Object? assets = null,Object? placements = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,Object? selectedAssetId = freezed,Object? message = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? mode = null,Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? eventTitle = null,Object? assets = null,Object? placements = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? hasTest = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,Object? selectedAssetId = freezed,Object? message = freezed,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as ArSessionStatus,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
@@ -627,6 +627,7 @@ as List<ArAssetPlacementEntity>,version: freezed == version ? _self.version : ve
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as String?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as int?,isPublished: null == isPublished ? _self.isPublished : isPublished // ignore: cast_nullable_to_non_nullable
+as bool,hasTest: null == hasTest ? _self.hasTest : hasTest // ignore: cast_nullable_to_non_nullable
 as bool,rootAnchor: freezed == rootAnchor ? _self.rootAnchor : rootAnchor // ignore: cast_nullable_to_non_nullable
 as ArSceneRootAnchorEntity?,arcoreToken: freezed == arcoreToken ? _self.arcoreToken : arcoreToken // ignore: cast_nullable_to_non_nullable
 as String?,selectedAssetId: freezed == selectedAssetId ? _self.selectedAssetId : selectedAssetId // ignore: cast_nullable_to_non_nullable
@@ -728,10 +729,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ArSessionStatus status,  ArSessionMode mode,  String sceneId,  int questId,  int eventId,  String eventTitle,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> placements,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken,  int? selectedAssetId,  String? message)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ArSessionStatus status,  ArSessionMode mode,  String sceneId,  int questId,  int eventId,  String eventTitle,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> placements,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  bool hasTest,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken,  int? selectedAssetId,  String? message)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ArSessionState() when $default != null:
-return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventId,_that.eventTitle,_that.assets,_that.placements,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.rootAnchor,_that.arcoreToken,_that.selectedAssetId,_that.message);case _:
+return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventId,_that.eventTitle,_that.assets,_that.placements,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.hasTest,_that.rootAnchor,_that.arcoreToken,_that.selectedAssetId,_that.message);case _:
   return orElse();
 
 }
@@ -749,10 +750,10 @@ return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventI
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ArSessionStatus status,  ArSessionMode mode,  String sceneId,  int questId,  int eventId,  String eventTitle,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> placements,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken,  int? selectedAssetId,  String? message)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ArSessionStatus status,  ArSessionMode mode,  String sceneId,  int questId,  int eventId,  String eventTitle,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> placements,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  bool hasTest,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken,  int? selectedAssetId,  String? message)  $default,) {final _that = this;
 switch (_that) {
 case _ArSessionState():
-return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventId,_that.eventTitle,_that.assets,_that.placements,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.rootAnchor,_that.arcoreToken,_that.selectedAssetId,_that.message);case _:
+return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventId,_that.eventTitle,_that.assets,_that.placements,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.hasTest,_that.rootAnchor,_that.arcoreToken,_that.selectedAssetId,_that.message);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -769,10 +770,10 @@ return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventI
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ArSessionStatus status,  ArSessionMode mode,  String sceneId,  int questId,  int eventId,  String eventTitle,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> placements,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken,  int? selectedAssetId,  String? message)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ArSessionStatus status,  ArSessionMode mode,  String sceneId,  int questId,  int eventId,  String eventTitle,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> placements,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  bool hasTest,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken,  int? selectedAssetId,  String? message)?  $default,) {final _that = this;
 switch (_that) {
 case _ArSessionState() when $default != null:
-return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventId,_that.eventTitle,_that.assets,_that.placements,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.rootAnchor,_that.arcoreToken,_that.selectedAssetId,_that.message);case _:
+return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventId,_that.eventTitle,_that.assets,_that.placements,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.hasTest,_that.rootAnchor,_that.arcoreToken,_that.selectedAssetId,_that.message);case _:
   return null;
 
 }
@@ -784,7 +785,7 @@ return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventI
 
 
 class _ArSessionState extends ArSessionState {
-  const _ArSessionState({this.status = ArSessionStatus.initial, this.mode = ArSessionMode.user, this.sceneId = '', this.questId = 0, this.eventId = 0, this.eventTitle = '', final  List<ArAssetEntity> assets = const [], final  List<ArAssetPlacementEntity> placements = const [], this.version, this.updatedAt, this.createdBy, this.isPublished = false, this.rootAnchor, this.arcoreToken, this.selectedAssetId, this.message}): _assets = assets,_placements = placements,super._();
+  const _ArSessionState({this.status = ArSessionStatus.initial, this.mode = ArSessionMode.user, this.sceneId = '', this.questId = 0, this.eventId = 0, this.eventTitle = '', final  List<ArAssetEntity> assets = const [], final  List<ArAssetPlacementEntity> placements = const [], this.version, this.updatedAt, this.createdBy, this.isPublished = false, this.hasTest = false, this.rootAnchor, this.arcoreToken, this.selectedAssetId, this.message}): _assets = assets,_placements = placements,super._();
   
 
 @override@JsonKey() final  ArSessionStatus status;
@@ -811,6 +812,7 @@ class _ArSessionState extends ArSessionState {
 @override final  String? updatedAt;
 @override final  int? createdBy;
 @override@JsonKey() final  bool isPublished;
+@override@JsonKey() final  bool hasTest;
 @override final  ArSceneRootAnchorEntity? rootAnchor;
 @override final  String? arcoreToken;
 @override final  int? selectedAssetId;
@@ -826,16 +828,16 @@ _$ArSessionStateCopyWith<_ArSessionState> get copyWith => __$ArSessionStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArSessionState&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.eventTitle, eventTitle) || other.eventTitle == eventTitle)&&const DeepCollectionEquality().equals(other._assets, _assets)&&const DeepCollectionEquality().equals(other._placements, _placements)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken)&&(identical(other.selectedAssetId, selectedAssetId) || other.selectedAssetId == selectedAssetId)&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArSessionState&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.eventTitle, eventTitle) || other.eventTitle == eventTitle)&&const DeepCollectionEquality().equals(other._assets, _assets)&&const DeepCollectionEquality().equals(other._placements, _placements)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&(identical(other.hasTest, hasTest) || other.hasTest == hasTest)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken)&&(identical(other.selectedAssetId, selectedAssetId) || other.selectedAssetId == selectedAssetId)&&(identical(other.message, message) || other.message == message));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,mode,sceneId,questId,eventId,eventTitle,const DeepCollectionEquality().hash(_assets),const DeepCollectionEquality().hash(_placements),version,updatedAt,createdBy,isPublished,rootAnchor,arcoreToken,selectedAssetId,message);
+int get hashCode => Object.hash(runtimeType,status,mode,sceneId,questId,eventId,eventTitle,const DeepCollectionEquality().hash(_assets),const DeepCollectionEquality().hash(_placements),version,updatedAt,createdBy,isPublished,hasTest,rootAnchor,arcoreToken,selectedAssetId,message);
 
 @override
 String toString() {
-  return 'ArSessionState(status: $status, mode: $mode, sceneId: $sceneId, questId: $questId, eventId: $eventId, eventTitle: $eventTitle, assets: $assets, placements: $placements, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken, selectedAssetId: $selectedAssetId, message: $message)';
+  return 'ArSessionState(status: $status, mode: $mode, sceneId: $sceneId, questId: $questId, eventId: $eventId, eventTitle: $eventTitle, assets: $assets, placements: $placements, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, hasTest: $hasTest, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken, selectedAssetId: $selectedAssetId, message: $message)';
 }
 
 
@@ -846,7 +848,7 @@ abstract mixin class _$ArSessionStateCopyWith<$Res> implements $ArSessionStateCo
   factory _$ArSessionStateCopyWith(_ArSessionState value, $Res Function(_ArSessionState) _then) = __$ArSessionStateCopyWithImpl;
 @override @useResult
 $Res call({
- ArSessionStatus status, ArSessionMode mode, String sceneId, int questId, int eventId, String eventTitle, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> placements, int? version, String? updatedAt, int? createdBy, bool isPublished, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken, int? selectedAssetId, String? message
+ ArSessionStatus status, ArSessionMode mode, String sceneId, int questId, int eventId, String eventTitle, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> placements, int? version, String? updatedAt, int? createdBy, bool isPublished, bool hasTest, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken, int? selectedAssetId, String? message
 });
 
 
@@ -863,7 +865,7 @@ class __$ArSessionStateCopyWithImpl<$Res>
 
 /// Create a copy of ArSessionState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? mode = null,Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? eventTitle = null,Object? assets = null,Object? placements = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,Object? selectedAssetId = freezed,Object? message = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? mode = null,Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? eventTitle = null,Object? assets = null,Object? placements = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? hasTest = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,Object? selectedAssetId = freezed,Object? message = freezed,}) {
   return _then(_ArSessionState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as ArSessionStatus,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
@@ -877,6 +879,7 @@ as List<ArAssetPlacementEntity>,version: freezed == version ? _self.version : ve
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as String?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as int?,isPublished: null == isPublished ? _self.isPublished : isPublished // ignore: cast_nullable_to_non_nullable
+as bool,hasTest: null == hasTest ? _self.hasTest : hasTest // ignore: cast_nullable_to_non_nullable
 as bool,rootAnchor: freezed == rootAnchor ? _self.rootAnchor : rootAnchor // ignore: cast_nullable_to_non_nullable
 as ArSceneRootAnchorEntity?,arcoreToken: freezed == arcoreToken ? _self.arcoreToken : arcoreToken // ignore: cast_nullable_to_non_nullable
 as String?,selectedAssetId: freezed == selectedAssetId ? _self.selectedAssetId : selectedAssetId // ignore: cast_nullable_to_non_nullable

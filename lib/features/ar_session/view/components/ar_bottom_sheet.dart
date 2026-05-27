@@ -18,6 +18,7 @@ class ArBottomSheet extends StatelessWidget {
     required this.isUploadingSceneAnchor,
     required this.onSave,
     required this.onResetSceneAnchor,
+    required this.onOpenTest,
   });
 
   final ArSessionState state;
@@ -28,6 +29,7 @@ class ArBottomSheet extends StatelessWidget {
   final bool isUploadingSceneAnchor;
   final VoidCallback onSave;
   final VoidCallback onResetSceneAnchor;
+  final VoidCallback onOpenTest;
 
   @override
   Widget build(BuildContext context) {
@@ -74,11 +76,11 @@ class ArBottomSheet extends StatelessWidget {
                   Text(
                     hasSceneRootAnchor
                         ? state.isAdmin
-                              ? 'Persistent anchor сцены готов. Теперь можно расставлять ассеты'
-                              : 'Anchor сцены разрешен, можно показывать объекты'
+                              ? 'Точка сцены готова. Теперь можно расставлять объекты'
+                              : 'Сцена готова к просмотру'
                         : isResolvingSceneAnchor
-                        ? 'Идет relocalization сцены'
-                        : 'Сцена ждет корневой persistent anchor',
+                        ? 'Идёт поиск точки сцены'
+                        : 'Сцена ожидает начальную точку',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -88,15 +90,15 @@ class ArBottomSheet extends StatelessWidget {
                   Text(
                     hasSceneRootAnchor
                         ? state.isAdmin
-                              ? 'Все объекты сохраняются как local transform относительно корневого anchor сцены, а не в мировых координатах камеры.'
+                              ? 'Все объекты сохраняются относительно выбранной начальной точки сцены.'
                               : state.placements.isEmpty
                               ? 'Для этого события пока нет сохраненных объектов. Организатору нужно сначала расставить и сохранить сцену.'
-                              : 'Объекты появятся только после успешного resolve/relocalization корневого anchor сцены.'
+                              : 'Объекты появятся после успешного определения точки сцены.'
                         : isResolvingSceneAnchor
-                        ? 'Наведите камеру на QR-зону и окружение вокруг нее. Пока resolve не завершится, объекты намеренно не показываются.'
+                        ? 'Наведите камеру на QR-зону и окружение вокруг неё. Пока поиск не завершится, объекты не показываются.'
                         : state.isAdmin
-                        ? 'Сначала поставьте root anchor в точке QR-кода, затем сохраните сцену. После сохранения anchor получит persistent id.'
-                        : 'У этой сцены еще нет persistent anchor или он не был разрешен.',
+                        ? 'Сначала поставьте начальную точку в месте QR-кода, затем сохраните сцену.'
+                        : 'У этой сцены пока нет сохранённой начальной точки.',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.72),
                     ),
@@ -142,6 +144,16 @@ class ArBottomSheet extends StatelessWidget {
                       hasCloudAnchor:
                           state.rootAnchor?.cloudAnchorId.isNotEmpty ?? false,
                       onSave: onSave,
+                    ),
+                  ] else if (state.hasTest) ...[
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: onOpenTest,
+                        icon: const Icon(Icons.quiz_outlined),
+                        label: const Text('Пройти тест'),
+                      ),
                     ),
                   ],
                 ],
@@ -215,10 +227,10 @@ class _ResetAnchorButton extends StatelessWidget {
         ),
         child: Text(
           hasSceneRootAnchor
-              ? 'Повторно разрешить anchor'
+              ? 'Повторить поиск точки сцены'
               : isAdmin
-              ? 'Создать root anchor'
-              : 'Повторить поиск anchor',
+              ? 'Создать начальную точку'
+              : 'Повторить поиск точки',
         ),
       ),
     );
@@ -267,7 +279,7 @@ class _SaveSceneButton extends StatelessWidget {
             : Text(
                 hasCloudAnchor
                     ? 'Сохранить сцену'
-                    : 'Создать persistent anchor и сохранить',
+                    : 'Создать облачную точку и сохранить',
               ),
       ),
     );

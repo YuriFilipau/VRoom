@@ -36,10 +36,14 @@ class ArRepositoryImpl implements ArRepository {
         final arConfigResponse = await _dio.get<dynamic>(
           '/api/mobile/organizer/quests/$questId/ar-config',
         );
+        final arConfigJson = asMap(arConfigResponse.data);
         final sceneJson = await _fetchOrganizerSceneJson(questId);
+        final latestLayoutSceneJson = _sceneJsonFromLayout(
+          asMap(arConfigJson['latest_layout'] ?? arConfigJson['latestLayout']),
+          fallbackQuestId: questId,
+        );
         final arcoreToken = await _fetchArcoreToken();
 
-        final arConfigJson = asMap(arConfigResponse.data);
         final assets = await _prepareLocalAssets(
           _parseAssets(
             arConfigJson['assets'] ??
@@ -50,9 +54,11 @@ class ArRepositoryImpl implements ArRepository {
 
         final scene = _parseScene(
           questId: questId,
-          sceneJson: sceneJson.isEmpty
-              ? asMap(arConfigJson['scene'])
-              : sceneJson,
+          sceneJson: sceneJson.isNotEmpty
+              ? sceneJson
+              : latestLayoutSceneJson.isNotEmpty
+              ? latestLayoutSceneJson
+              : asMap(arConfigJson['scene']),
           assets: assets,
           fallbackJson: arConfigJson,
           arcoreToken: arcoreToken,
@@ -65,12 +71,15 @@ class ArRepositoryImpl implements ArRepository {
         '/api/quests/$questId/bundle',
       );
       final bundleJson = asMap(bundleResponse.data);
+      final layoutJson = await _fetchParticipantLayoutJson(questId);
       final assets = await _prepareLocalAssets(
         _parseAssets(bundleJson['assets']),
       );
       final scene = _parseScene(
         questId: questId,
-        sceneJson: asMap(bundleJson['scene']).isNotEmpty
+        sceneJson: layoutJson.isNotEmpty
+            ? _sceneJsonFromLayout(layoutJson, fallbackQuestId: questId)
+            : asMap(bundleJson['scene']).isNotEmpty
             ? asMap(bundleJson['scene'])
             : asMap(bundleJson['layout']),
         assets: assets,
@@ -100,10 +109,29 @@ class ArRepositoryImpl implements ArRepository {
     try {
       final latestSceneJson = await _fetchOrganizerSceneJson(questId);
       final latestVersion = readInt(latestSceneJson['version']) ?? version;
+      final arConfigResponse = await _dio.get<dynamic>(
+        '/api/mobile/organizer/quests/$questId/ar-config',
+      );
+      final arConfigJson = asMap(arConfigResponse.data);
+      final questJson = asMap(arConfigJson['quest']);
       final payload = {
         'sceneId': 'quest_$questId',
         'questId': questId,
+        'eventId':
+            readInt(latestSceneJson['eventId']) ??
+            readInt(latestSceneJson['event_id']) ??
+            readInt(questJson['event_id']) ??
+            readInt(arConfigJson['event_id']) ??
+            0,
+        'title':
+            readString(latestSceneJson['title']) ??
+            readString(questJson['title']) ??
+            'AR-сцена квеста',
         if (latestVersion != null) 'version': latestVersion,
+        'isPublished':
+            readBool(latestSceneJson['isPublished']) ??
+            readBool(latestSceneJson['is_published']) ??
+            (readString(questJson['status']) == 'published'),
         'rootAnchor': rootAnchor?.toJson(),
         'objects': objects
             .map(
@@ -122,11 +150,7 @@ class ArRepositoryImpl implements ArRepository {
         data: payload,
       );
       final responseJson = asMap(response.data);
-      final arConfigResponse = await _dio.get<dynamic>(
-        '/api/mobile/organizer/quests/$questId/ar-config',
-      );
       final persistedSceneJson = await _fetchOrganizerSceneJson(questId);
-      final arConfigJson = asMap(arConfigResponse.data);
       final assets = await _prepareLocalAssets(
         _parseAssets(
           arConfigJson['assets'] ?? asMap(arConfigJson['quest'])['assets'],
@@ -158,6 +182,80 @@ class ArRepositoryImpl implements ArRepository {
     return asMap(sceneResponse.data);
   }
 
+  Future<Map<String, dynamic>> _fetchParticipantLayoutJson(int questId) async {
+    try {
+      final layoutResponse = await _dio.get<dynamic>(
+        '/api/quests/$questId/layout/latest',
+      );
+      return asMap(layoutResponse.data);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 404) {
+        return const <String, dynamic>{};
+      }
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> _sceneJsonFromLayout(
+    Map<String, dynamic> layoutJson, {
+    required int fallbackQuestId,
+  }) {
+    if (layoutJson.isEmpty) {
+      return const <String, dynamic>{};
+    }
+
+    final anchorPayload = asMap(layoutJson['anchor_payload']);
+    final rootAnchor = <String, dynamic>{
+      'anchorName': readString(anchorPayload['anchorName']) ?? '',
+      'cloudAnchorId': readString(anchorPayload['cloudAnchorId']) ?? '',
+      'anchorTransform':
+          readDoubleList(anchorPayload['transformation']) ??
+          readDoubleList(anchorPayload['anchorTransform']) ??
+          const <double>[],
+      'ttl': readInt(anchorPayload['ttl']) ?? 1,
+      'platform': readString(anchorPayload['platform']),
+    };
+
+    final objects = asList(layoutJson['items'])
+        .map((item) {
+          final json = Map<String, dynamic>.from(item as Map);
+          final meta = asMap(json['meta']);
+          final transform = asMap(json['transform']);
+          return {
+            'id':
+                readString(meta['id']) ??
+                readString(json['id']) ??
+                'placement_${readInt(json['asset_id']) ?? 0}',
+            'assetId':
+                readInt(json['asset_id']) ??
+                readInt(json['assetId']) ??
+                readInt(asMap(json['asset'])['id']) ??
+                0,
+            'nodeName':
+                readString(meta['nodeName']) ??
+                readString(meta['node_name']) ??
+                readString(json['nodeName']) ??
+                '',
+            'localTransform':
+                readDoubleList(transform['transformation']) ??
+                readDoubleList(json['localTransform']) ??
+                const <double>[],
+          };
+        })
+        .toList(growable: false);
+
+    final resolvedQuestId = readInt(layoutJson['quest_id']) ?? fallbackQuestId;
+    return {
+      'sceneId': 'quest_$resolvedQuestId',
+      'questId': resolvedQuestId,
+      'version': readInt(layoutJson['version']),
+      'updatedAt': readString(layoutJson['created_at']),
+      'createdBy': readInt(layoutJson['created_by_id']),
+      'rootAnchor': rootAnchor,
+      'objects': objects,
+    };
+  }
+
   Future<String?> _fetchArcoreToken() async {
     if (kIsWeb || !Platform.isAndroid) {
       return null;
@@ -169,7 +267,14 @@ class ArRepositoryImpl implements ArRepository {
       return readString(json['token']) ??
           readString(json['access_token']) ??
           readString(json['arcore_token']);
-    } on DioException {
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 503) {
+        throw const ApiException(
+          message:
+              'Не удалось подключить облачную AR-сцену. Проверьте, что телефон находится в корректной сети, и попробуйте ещё раз.',
+          statusCode: 503,
+        );
+      }
       return null;
     }
   }
@@ -225,7 +330,13 @@ class ArRepositoryImpl implements ArRepository {
       isPublished:
           readBool(scene['isPublished']) ??
           readBool(scene['is_published']) ??
+          readBool(questJson['is_active']) ??
           false,
+      hasTest:
+          readBool(scene['hasTest']) ??
+          readBool(scene['has_test']) ??
+          (asMap(questJson['knowledge_test']).isNotEmpty ||
+              readBool(asMap(questJson['composition'])['test']) == true),
       assets: assets,
       objects: objects,
       rootAnchor: rootAnchor,
@@ -344,6 +455,7 @@ class ArRepositoryImpl implements ArRepository {
       'updatedAt': scene.updatedAt,
       'createdBy': scene.createdBy,
       'isPublished': scene.isPublished,
+      'hasTest': scene.hasTest,
       'arcoreToken': scene.arcoreToken,
       'rootAnchor': scene.rootAnchor?.toJson(),
       'assets': scene.assets

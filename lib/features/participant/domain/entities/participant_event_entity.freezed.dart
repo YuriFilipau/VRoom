@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ParticipantEventEntity {
 
- int get id; String get title; String get description; String get imageUrl; int get progressPercent; bool get certificateAvailable; String get statusLabel; int get scannedQuestsCount; int get totalQuestsCount;
+ int get id; String get title; String get description; String get imageUrl; int get progressPercent; bool get certificateAvailable; bool get certificateIssued; String get statusLabel; int get scannedQuestsCount; int get completedQuestsCount; int get totalQuestsCount;
 /// Create a copy of ParticipantEventEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ParticipantEventEntityCopyWith<ParticipantEventEntity> get copyWith => _$Partic
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantEventEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificateAvailable, certificateAvailable) || other.certificateAvailable == certificateAvailable)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel)&&(identical(other.scannedQuestsCount, scannedQuestsCount) || other.scannedQuestsCount == scannedQuestsCount)&&(identical(other.totalQuestsCount, totalQuestsCount) || other.totalQuestsCount == totalQuestsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantEventEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificateAvailable, certificateAvailable) || other.certificateAvailable == certificateAvailable)&&(identical(other.certificateIssued, certificateIssued) || other.certificateIssued == certificateIssued)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel)&&(identical(other.scannedQuestsCount, scannedQuestsCount) || other.scannedQuestsCount == scannedQuestsCount)&&(identical(other.completedQuestsCount, completedQuestsCount) || other.completedQuestsCount == completedQuestsCount)&&(identical(other.totalQuestsCount, totalQuestsCount) || other.totalQuestsCount == totalQuestsCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificateAvailable,statusLabel,scannedQuestsCount,totalQuestsCount);
+int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificateAvailable,certificateIssued,statusLabel,scannedQuestsCount,completedQuestsCount,totalQuestsCount);
 
 @override
 String toString() {
-  return 'ParticipantEventEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificateAvailable: $certificateAvailable, statusLabel: $statusLabel, scannedQuestsCount: $scannedQuestsCount, totalQuestsCount: $totalQuestsCount)';
+  return 'ParticipantEventEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificateAvailable: $certificateAvailable, certificateIssued: $certificateIssued, statusLabel: $statusLabel, scannedQuestsCount: $scannedQuestsCount, completedQuestsCount: $completedQuestsCount, totalQuestsCount: $totalQuestsCount)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ParticipantEventEntityCopyWith<$Res>  {
   factory $ParticipantEventEntityCopyWith(ParticipantEventEntity value, $Res Function(ParticipantEventEntity) _then) = _$ParticipantEventEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, String description, String imageUrl, int progressPercent, bool certificateAvailable, String statusLabel, int scannedQuestsCount, int totalQuestsCount
+ int id, String title, String description, String imageUrl, int progressPercent, bool certificateAvailable, bool certificateIssued, String statusLabel, int scannedQuestsCount, int completedQuestsCount, int totalQuestsCount
 });
 
 
@@ -62,7 +62,7 @@ class _$ParticipantEventEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantEventEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificateAvailable = null,Object? statusLabel = null,Object? scannedQuestsCount = null,Object? totalQuestsCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificateAvailable = null,Object? certificateIssued = null,Object? statusLabel = null,Object? scannedQuestsCount = null,Object? completedQuestsCount = null,Object? totalQuestsCount = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -70,8 +70,10 @@ as String,description: null == description ? _self.description : description // 
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,progressPercent: null == progressPercent ? _self.progressPercent : progressPercent // ignore: cast_nullable_to_non_nullable
 as int,certificateAvailable: null == certificateAvailable ? _self.certificateAvailable : certificateAvailable // ignore: cast_nullable_to_non_nullable
+as bool,certificateIssued: null == certificateIssued ? _self.certificateIssued : certificateIssued // ignore: cast_nullable_to_non_nullable
 as bool,statusLabel: null == statusLabel ? _self.statusLabel : statusLabel // ignore: cast_nullable_to_non_nullable
 as String,scannedQuestsCount: null == scannedQuestsCount ? _self.scannedQuestsCount : scannedQuestsCount // ignore: cast_nullable_to_non_nullable
+as int,completedQuestsCount: null == completedQuestsCount ? _self.completedQuestsCount : completedQuestsCount // ignore: cast_nullable_to_non_nullable
 as int,totalQuestsCount: null == totalQuestsCount ? _self.totalQuestsCount : totalQuestsCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -158,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  String statusLabel,  int scannedQuestsCount,  int totalQuestsCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  bool certificateIssued,  String statusLabel,  int scannedQuestsCount,  int completedQuestsCount,  int totalQuestsCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ParticipantEventEntity() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.statusLabel,_that.scannedQuestsCount,_that.totalQuestsCount);case _:
+return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.certificateIssued,_that.statusLabel,_that.scannedQuestsCount,_that.completedQuestsCount,_that.totalQuestsCount);case _:
   return orElse();
 
 }
@@ -179,10 +181,10 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  String statusLabel,  int scannedQuestsCount,  int totalQuestsCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  bool certificateIssued,  String statusLabel,  int scannedQuestsCount,  int completedQuestsCount,  int totalQuestsCount)  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantEventEntity():
-return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.statusLabel,_that.scannedQuestsCount,_that.totalQuestsCount);case _:
+return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.certificateIssued,_that.statusLabel,_that.scannedQuestsCount,_that.completedQuestsCount,_that.totalQuestsCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +201,10 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  String statusLabel,  int scannedQuestsCount,  int totalQuestsCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  bool certificateIssued,  String statusLabel,  int scannedQuestsCount,  int completedQuestsCount,  int totalQuestsCount)?  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantEventEntity() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.statusLabel,_that.scannedQuestsCount,_that.totalQuestsCount);case _:
+return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.certificateIssued,_that.statusLabel,_that.scannedQuestsCount,_that.completedQuestsCount,_that.totalQuestsCount);case _:
   return null;
 
 }
@@ -214,7 +216,7 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 
 
 class _ParticipantEventEntity implements ParticipantEventEntity {
-  const _ParticipantEventEntity({required this.id, required this.title, required this.description, required this.imageUrl, required this.progressPercent, required this.certificateAvailable, required this.statusLabel, required this.scannedQuestsCount, required this.totalQuestsCount});
+  const _ParticipantEventEntity({required this.id, required this.title, required this.description, required this.imageUrl, required this.progressPercent, required this.certificateAvailable, required this.certificateIssued, required this.statusLabel, required this.scannedQuestsCount, required this.completedQuestsCount, required this.totalQuestsCount});
   
 
 @override final  int id;
@@ -223,8 +225,10 @@ class _ParticipantEventEntity implements ParticipantEventEntity {
 @override final  String imageUrl;
 @override final  int progressPercent;
 @override final  bool certificateAvailable;
+@override final  bool certificateIssued;
 @override final  String statusLabel;
 @override final  int scannedQuestsCount;
+@override final  int completedQuestsCount;
 @override final  int totalQuestsCount;
 
 /// Create a copy of ParticipantEventEntity
@@ -237,16 +241,16 @@ _$ParticipantEventEntityCopyWith<_ParticipantEventEntity> get copyWith => __$Par
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantEventEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificateAvailable, certificateAvailable) || other.certificateAvailable == certificateAvailable)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel)&&(identical(other.scannedQuestsCount, scannedQuestsCount) || other.scannedQuestsCount == scannedQuestsCount)&&(identical(other.totalQuestsCount, totalQuestsCount) || other.totalQuestsCount == totalQuestsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantEventEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificateAvailable, certificateAvailable) || other.certificateAvailable == certificateAvailable)&&(identical(other.certificateIssued, certificateIssued) || other.certificateIssued == certificateIssued)&&(identical(other.statusLabel, statusLabel) || other.statusLabel == statusLabel)&&(identical(other.scannedQuestsCount, scannedQuestsCount) || other.scannedQuestsCount == scannedQuestsCount)&&(identical(other.completedQuestsCount, completedQuestsCount) || other.completedQuestsCount == completedQuestsCount)&&(identical(other.totalQuestsCount, totalQuestsCount) || other.totalQuestsCount == totalQuestsCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificateAvailable,statusLabel,scannedQuestsCount,totalQuestsCount);
+int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificateAvailable,certificateIssued,statusLabel,scannedQuestsCount,completedQuestsCount,totalQuestsCount);
 
 @override
 String toString() {
-  return 'ParticipantEventEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificateAvailable: $certificateAvailable, statusLabel: $statusLabel, scannedQuestsCount: $scannedQuestsCount, totalQuestsCount: $totalQuestsCount)';
+  return 'ParticipantEventEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificateAvailable: $certificateAvailable, certificateIssued: $certificateIssued, statusLabel: $statusLabel, scannedQuestsCount: $scannedQuestsCount, completedQuestsCount: $completedQuestsCount, totalQuestsCount: $totalQuestsCount)';
 }
 
 
@@ -257,7 +261,7 @@ abstract mixin class _$ParticipantEventEntityCopyWith<$Res> implements $Particip
   factory _$ParticipantEventEntityCopyWith(_ParticipantEventEntity value, $Res Function(_ParticipantEventEntity) _then) = __$ParticipantEventEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, String description, String imageUrl, int progressPercent, bool certificateAvailable, String statusLabel, int scannedQuestsCount, int totalQuestsCount
+ int id, String title, String description, String imageUrl, int progressPercent, bool certificateAvailable, bool certificateIssued, String statusLabel, int scannedQuestsCount, int completedQuestsCount, int totalQuestsCount
 });
 
 
@@ -274,7 +278,7 @@ class __$ParticipantEventEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantEventEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificateAvailable = null,Object? statusLabel = null,Object? scannedQuestsCount = null,Object? totalQuestsCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificateAvailable = null,Object? certificateIssued = null,Object? statusLabel = null,Object? scannedQuestsCount = null,Object? completedQuestsCount = null,Object? totalQuestsCount = null,}) {
   return _then(_ParticipantEventEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -282,8 +286,10 @@ as String,description: null == description ? _self.description : description // 
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,progressPercent: null == progressPercent ? _self.progressPercent : progressPercent // ignore: cast_nullable_to_non_nullable
 as int,certificateAvailable: null == certificateAvailable ? _self.certificateAvailable : certificateAvailable // ignore: cast_nullable_to_non_nullable
+as bool,certificateIssued: null == certificateIssued ? _self.certificateIssued : certificateIssued // ignore: cast_nullable_to_non_nullable
 as bool,statusLabel: null == statusLabel ? _self.statusLabel : statusLabel // ignore: cast_nullable_to_non_nullable
 as String,scannedQuestsCount: null == scannedQuestsCount ? _self.scannedQuestsCount : scannedQuestsCount // ignore: cast_nullable_to_non_nullable
+as int,completedQuestsCount: null == completedQuestsCount ? _self.completedQuestsCount : completedQuestsCount // ignore: cast_nullable_to_non_nullable
 as int,totalQuestsCount: null == totalQuestsCount ? _self.totalQuestsCount : totalQuestsCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));

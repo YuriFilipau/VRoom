@@ -14,9 +14,11 @@ import 'package:ar_flutter_plugin_2/models/ar_node.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:vroom/core/dependencies/get_it.dart' as di;
+import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_session_mode.dart';
@@ -217,6 +219,9 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     isUploadingSceneAnchor: _isUploadingSceneAnchor,
                     onSave: () => _onSavePressed(state),
                     onResetSceneAnchor: () => _resetSceneRootAnchor(state),
+                    onOpenTest: () => context.push(
+                      '${AppRoutes.questTest.path}/${state.questId}/test',
+                    ),
                   ),
                 ),
               ),

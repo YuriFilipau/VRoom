@@ -19,7 +19,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     if (widget.mode != ArSessionMode.admin) {
       if (!_hasSceneRootAnchor) {
         _showMessage(
-          'Сцена еще не разрешила persistent anchor. Наведите камеру на зону QR и дождитесь привязки.',
+          'Сцена ещё ищет начальную точку. Наведите камеру на зону QR и дождитесь привязки.',
         );
       }
       return;
@@ -49,7 +49,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     );
     if (localTransform == null || _sceneRootAnchor == null) {
       _isPlacingNode = false;
-      _showMessage('Сначала создайте и сохраните корневой anchor сцены');
+      _showMessage('Сначала создайте и сохраните начальную точку сцены');
       return;
     }
 

@@ -215,13 +215,13 @@ extension _ArSessionAnchorController on _ArSessionViewState {
     if (state.rootAnchor?.cloudAnchorId.isNotEmpty ?? false) {
       await _ensureSceneRootAnchor(state);
       _showMessage(
-        'Повторно пытаюсь разрешить persistent anchor сцены. Наведите камеру на зону QR и окружение вокруг нее.',
+        'Повторно ищу точку сцены. Наведите камеру на зону QR и окружение вокруг неё.',
       );
       return;
     }
 
     _showMessage(
-      'Наведите камеру на место, где расположен QR-код, и тапните по поверхности, чтобы создать корневой anchor сцены.',
+      'Наведите камеру на место, где расположен QR-код, и тапните по поверхности, чтобы создать начальную точку сцены.',
     );
   }
 }

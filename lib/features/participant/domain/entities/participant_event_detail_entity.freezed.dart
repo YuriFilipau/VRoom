@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ParticipantEventDetailEntity {
 
- int get id; String get title; String get description; String get imageUrl; int get progressPercent; bool get certificateAvailable; List<ParticipantScannedQuestEntity> get scannedQuests;
+ int get id; String get title; String get description; String get imageUrl; int get progressPercent; ParticipantCertificateEntity get certificate; List<ParticipantScannedQuestEntity> get scannedQuests;
 /// Create a copy of ParticipantEventDetailEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ParticipantEventDetailEntityCopyWith<ParticipantEventDetailEntity> get copyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantEventDetailEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificateAvailable, certificateAvailable) || other.certificateAvailable == certificateAvailable)&&const DeepCollectionEquality().equals(other.scannedQuests, scannedQuests));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantEventDetailEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificate, certificate) || other.certificate == certificate)&&const DeepCollectionEquality().equals(other.scannedQuests, scannedQuests));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificateAvailable,const DeepCollectionEquality().hash(scannedQuests));
+int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificate,const DeepCollectionEquality().hash(scannedQuests));
 
 @override
 String toString() {
-  return 'ParticipantEventDetailEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificateAvailable: $certificateAvailable, scannedQuests: $scannedQuests)';
+  return 'ParticipantEventDetailEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificate: $certificate, scannedQuests: $scannedQuests)';
 }
 
 
@@ -45,11 +45,11 @@ abstract mixin class $ParticipantEventDetailEntityCopyWith<$Res>  {
   factory $ParticipantEventDetailEntityCopyWith(ParticipantEventDetailEntity value, $Res Function(ParticipantEventDetailEntity) _then) = _$ParticipantEventDetailEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, String description, String imageUrl, int progressPercent, bool certificateAvailable, List<ParticipantScannedQuestEntity> scannedQuests
+ int id, String title, String description, String imageUrl, int progressPercent, ParticipantCertificateEntity certificate, List<ParticipantScannedQuestEntity> scannedQuests
 });
 
 
-
+$ParticipantCertificateEntityCopyWith<$Res> get certificate;
 
 }
 /// @nodoc
@@ -62,19 +62,28 @@ class _$ParticipantEventDetailEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantEventDetailEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificateAvailable = null,Object? scannedQuests = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificate = null,Object? scannedQuests = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,progressPercent: null == progressPercent ? _self.progressPercent : progressPercent // ignore: cast_nullable_to_non_nullable
-as int,certificateAvailable: null == certificateAvailable ? _self.certificateAvailable : certificateAvailable // ignore: cast_nullable_to_non_nullable
-as bool,scannedQuests: null == scannedQuests ? _self.scannedQuests : scannedQuests // ignore: cast_nullable_to_non_nullable
+as int,certificate: null == certificate ? _self.certificate : certificate // ignore: cast_nullable_to_non_nullable
+as ParticipantCertificateEntity,scannedQuests: null == scannedQuests ? _self.scannedQuests : scannedQuests // ignore: cast_nullable_to_non_nullable
 as List<ParticipantScannedQuestEntity>,
   ));
 }
+/// Create a copy of ParticipantEventDetailEntity
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ParticipantCertificateEntityCopyWith<$Res> get certificate {
 
+  return $ParticipantCertificateEntityCopyWith<$Res>(_self.certificate, (value) {
+    return _then(_self.copyWith(certificate: value));
+  });
+}
 }
 
 
@@ -156,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  List<ParticipantScannedQuestEntity> scannedQuests)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  ParticipantCertificateEntity certificate,  List<ParticipantScannedQuestEntity> scannedQuests)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ParticipantEventDetailEntity() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.scannedQuests);case _:
+return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificate,_that.scannedQuests);case _:
   return orElse();
 
 }
@@ -177,10 +186,10 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  List<ParticipantScannedQuestEntity> scannedQuests)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  ParticipantCertificateEntity certificate,  List<ParticipantScannedQuestEntity> scannedQuests)  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantEventDetailEntity():
-return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.scannedQuests);case _:
+return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificate,_that.scannedQuests);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +206,10 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  bool certificateAvailable,  List<ParticipantScannedQuestEntity> scannedQuests)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String description,  String imageUrl,  int progressPercent,  ParticipantCertificateEntity certificate,  List<ParticipantScannedQuestEntity> scannedQuests)?  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantEventDetailEntity() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificateAvailable,_that.scannedQuests);case _:
+return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.progressPercent,_that.certificate,_that.scannedQuests);case _:
   return null;
 
 }
@@ -212,7 +221,7 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 
 
 class _ParticipantEventDetailEntity implements ParticipantEventDetailEntity {
-  const _ParticipantEventDetailEntity({required this.id, required this.title, required this.description, required this.imageUrl, required this.progressPercent, required this.certificateAvailable, required final  List<ParticipantScannedQuestEntity> scannedQuests}): _scannedQuests = scannedQuests;
+  const _ParticipantEventDetailEntity({required this.id, required this.title, required this.description, required this.imageUrl, required this.progressPercent, required this.certificate, required final  List<ParticipantScannedQuestEntity> scannedQuests}): _scannedQuests = scannedQuests;
   
 
 @override final  int id;
@@ -220,7 +229,7 @@ class _ParticipantEventDetailEntity implements ParticipantEventDetailEntity {
 @override final  String description;
 @override final  String imageUrl;
 @override final  int progressPercent;
-@override final  bool certificateAvailable;
+@override final  ParticipantCertificateEntity certificate;
  final  List<ParticipantScannedQuestEntity> _scannedQuests;
 @override List<ParticipantScannedQuestEntity> get scannedQuests {
   if (_scannedQuests is EqualUnmodifiableListView) return _scannedQuests;
@@ -239,16 +248,16 @@ _$ParticipantEventDetailEntityCopyWith<_ParticipantEventDetailEntity> get copyWi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantEventDetailEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificateAvailable, certificateAvailable) || other.certificateAvailable == certificateAvailable)&&const DeepCollectionEquality().equals(other._scannedQuests, _scannedQuests));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantEventDetailEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.certificate, certificate) || other.certificate == certificate)&&const DeepCollectionEquality().equals(other._scannedQuests, _scannedQuests));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificateAvailable,const DeepCollectionEquality().hash(_scannedQuests));
+int get hashCode => Object.hash(runtimeType,id,title,description,imageUrl,progressPercent,certificate,const DeepCollectionEquality().hash(_scannedQuests));
 
 @override
 String toString() {
-  return 'ParticipantEventDetailEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificateAvailable: $certificateAvailable, scannedQuests: $scannedQuests)';
+  return 'ParticipantEventDetailEntity(id: $id, title: $title, description: $description, imageUrl: $imageUrl, progressPercent: $progressPercent, certificate: $certificate, scannedQuests: $scannedQuests)';
 }
 
 
@@ -259,11 +268,11 @@ abstract mixin class _$ParticipantEventDetailEntityCopyWith<$Res> implements $Pa
   factory _$ParticipantEventDetailEntityCopyWith(_ParticipantEventDetailEntity value, $Res Function(_ParticipantEventDetailEntity) _then) = __$ParticipantEventDetailEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, String description, String imageUrl, int progressPercent, bool certificateAvailable, List<ParticipantScannedQuestEntity> scannedQuests
+ int id, String title, String description, String imageUrl, int progressPercent, ParticipantCertificateEntity certificate, List<ParticipantScannedQuestEntity> scannedQuests
 });
 
 
-
+@override $ParticipantCertificateEntityCopyWith<$Res> get certificate;
 
 }
 /// @nodoc
@@ -276,20 +285,29 @@ class __$ParticipantEventDetailEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantEventDetailEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificateAvailable = null,Object? scannedQuests = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? progressPercent = null,Object? certificate = null,Object? scannedQuests = null,}) {
   return _then(_ParticipantEventDetailEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,progressPercent: null == progressPercent ? _self.progressPercent : progressPercent // ignore: cast_nullable_to_non_nullable
-as int,certificateAvailable: null == certificateAvailable ? _self.certificateAvailable : certificateAvailable // ignore: cast_nullable_to_non_nullable
-as bool,scannedQuests: null == scannedQuests ? _self._scannedQuests : scannedQuests // ignore: cast_nullable_to_non_nullable
+as int,certificate: null == certificate ? _self.certificate : certificate // ignore: cast_nullable_to_non_nullable
+as ParticipantCertificateEntity,scannedQuests: null == scannedQuests ? _self._scannedQuests : scannedQuests // ignore: cast_nullable_to_non_nullable
 as List<ParticipantScannedQuestEntity>,
   ));
 }
 
+/// Create a copy of ParticipantEventDetailEntity
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ParticipantCertificateEntityCopyWith<$Res> get certificate {
 
+  return $ParticipantCertificateEntityCopyWith<$Res>(_self.certificate, (value) {
+    return _then(_self.copyWith(certificate: value));
+  });
+}
 }
 
 // dart format on

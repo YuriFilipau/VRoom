@@ -4,9 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class PrettyDioLogger extends Interceptor {
-  PrettyDioLogger({this.enabled = kDebugMode});
+  PrettyDioLogger({this.enabled = kDebugMode, this.useAnsiColors = false});
 
   final bool enabled;
+  final bool useAnsiColors;
 
   static const _reset = '\x1B[0m';
   static const _cyan = '\x1B[36m';
@@ -23,7 +24,7 @@ class PrettyDioLogger extends Interceptor {
     if (enabled) {
       _printBox(
         title: 'DIO REQUEST',
-        color: _cyan,
+        tone: _LogTone.request,
         lines: [
           '${_label('METHOD', _blue)} ${_highlight(options.method, _bold)}',
           '${_label('URI', _blue)} ${_highlight(options.uri.toString(), _magenta)}',
@@ -39,14 +40,14 @@ class PrettyDioLogger extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (enabled) {
-      final statusColor = _statusColor(response.statusCode ?? 0);
+      final statusTone = _statusTone(response.statusCode ?? 0);
       _printBox(
         title: 'DIO RESPONSE',
-        color: statusColor,
+        tone: statusTone,
         lines: [
           '${_label('METHOD', _blue)} ${_highlight(response.requestOptions.method, _bold)}',
           '${_label('URI', _blue)} ${_highlight(response.requestOptions.uri.toString(), _magenta)}',
-          '${_label('STATUS', _blue)} ${_highlight('${response.statusCode} ${response.statusMessage ?? ''}'.trim(), statusColor + _bold)}',
+          '${_label('STATUS', _blue)} ${_highlight('${response.statusCode} ${response.statusMessage ?? ''}'.trim(), _ansiForTone(statusTone) + _bold)}',
           '${_label('DATA', _blue)} ${_pretty(response.data)}',
         ],
       );
@@ -61,7 +62,7 @@ class PrettyDioLogger extends Interceptor {
       final statusCode = response?.statusCode;
       _printBox(
         title: 'DIO ERROR',
-        color: _red,
+        tone: _LogTone.error,
         lines: [
           '${_label('TYPE', _blue)} ${_highlight(err.type.name, _red + _bold)}',
           '${_label('METHOD', _blue)} ${_highlight(err.requestOptions.method, _bold)}',
@@ -78,16 +79,17 @@ class PrettyDioLogger extends Interceptor {
 
   void _printBox({
     required String title,
-    required String color,
+    required _LogTone tone,
     required List<String> lines,
   }) {
-    final top = '$color+${'-' * 24} $title ${'-' * 24}+$_reset';
-    final bottom = '$color+${'-' * (50 + title.length)}+$_reset';
+    final color = _ansiForTone(tone);
+    final top = _paint('+${'-' * 24} $title ${'-' * 24}+', color);
+    final bottom = _paint('+${'-' * (50 + title.length)}+', color);
     debugPrint(top);
     for (final line in lines) {
       final sanitized = line.isEmpty ? '-' : line;
       for (final chunk in _chunk(sanitized, 140)) {
-        debugPrint('$color|$_reset $chunk');
+        debugPrint('${_paint('|', color)} $chunk');
       }
     }
     debugPrint(bottom);
@@ -130,23 +132,42 @@ class PrettyDioLogger extends Interceptor {
   }
 
   String _label(String label, String color) {
-    return '$color$label:$_reset';
+    return _paint('$label:', color);
   }
 
   String _highlight(String text, String color) {
+    return _paint(text, color);
+  }
+
+  String _paint(String text, String color) {
+    if (!useAnsiColors || color.isEmpty) {
+      return text;
+    }
+
     return '$color$text$_reset';
   }
 
-  String _statusColor(int statusCode) {
+  _LogTone _statusTone(int statusCode) {
     if (statusCode >= 200 && statusCode < 300) {
-      return _green;
+      return _LogTone.success;
     }
     if (statusCode >= 300 && statusCode < 400) {
-      return _cyan;
+      return _LogTone.request;
     }
     if (statusCode >= 400 && statusCode < 500) {
-      return _yellow;
+      return _LogTone.warning;
     }
-    return _red;
+    return _LogTone.error;
+  }
+
+  String _ansiForTone(_LogTone tone) {
+    return switch (tone) {
+      _LogTone.request => _cyan,
+      _LogTone.success => _green,
+      _LogTone.warning => _yellow,
+      _LogTone.error => _red,
+    };
   }
 }
+
+enum _LogTone { request, success, warning, error }

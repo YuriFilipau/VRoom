@@ -9,6 +9,7 @@ import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/network/backend_discovery_service.dart';
 import 'package:vroom/core/network/pretty_dio_logger.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
+import 'package:vroom/core/shared/widgets/app_splash_screen.dart';
 import 'package:vroom/core/theme/app_theme.dart';
 import 'package:vroom/features/auth/data/datasource/auth_local_datasource.dart';
 
@@ -108,7 +109,7 @@ class _StartupLoadingApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      home: const Scaffold(body: Center(child: CircularProgressIndicator())),
+      home: const AppSplashScreen(),
     );
   }
 }

@@ -11,8 +11,10 @@ abstract class ParticipantEventEntity with _$ParticipantEventEntity {
     required String imageUrl,
     required int progressPercent,
     required bool certificateAvailable,
+    required bool certificateIssued,
     required String statusLabel,
     required int scannedQuestsCount,
+    required int completedQuestsCount,
     required int totalQuestsCount,
   }) = _ParticipantEventEntity;
 }

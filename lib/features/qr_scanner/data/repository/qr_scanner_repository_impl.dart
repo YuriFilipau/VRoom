@@ -11,9 +11,12 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
 
   @override
   Future<QrScanResultEntity> processQr(String rawValue) async {
-    final token = rawValue.trim();
-    if (token.isEmpty) {
-      throw const ApiException(message: 'QR-код пустой', code: 'qr_empty');
+    final token = _extractQrToken(rawValue);
+    if (token == null) {
+      throw const ApiException(
+        message: 'QR-код не распознан. Попробуйте отсканировать его ещё раз.',
+        code: 'qr_invalid',
+      );
     }
 
     final resolveJson = await _resolveQr(token);
@@ -24,7 +27,7 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
           code: 'qr_not_found',
         ));
     final eventId = _extractEventId(resolveJson);
-    final sessionId = await _startAndPingScan(token: token, questId: questId);
+    final sessionId = await _startAndPingScan(token: token);
     await _dio.get<dynamic>('/api/quests/$questId/bundle');
 
     return QrScanResultEntity(
@@ -34,13 +37,29 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
     );
   }
 
+  String? _extractQrToken(String rawValue) {
+    final value = rawValue.trim();
+    if (value.isEmpty) {
+      return null;
+    }
+
+    final parts = value.split(':');
+    if (parts.length == 3 && parts.first == 'vr-quest-quest') {
+      final token = parts.last.trim();
+      return _isUuid(token) ? token : null;
+    }
+
+    return _isUuid(value) ? value : null;
+  }
+
+  bool _isUuid(String value) {
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(value.trim());
+  }
+
   Future<Map<String, dynamic>> _resolveQr(String token) async {
-    final payload = {
-      'token': token,
-      'qr': token,
-      'qr_token': token,
-      'raw': token,
-    };
+    final payload = {'qr_token': token};
 
     final endpoints = ['/api/qr/resolve', '/api/quests/qr/resolve'];
 
@@ -60,40 +79,26 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
 
     throw _mapQrException(
       lastError,
-      fallbackMessage: 'QR endpoint не найден на backend',
+      fallbackMessage: 'QR-код не найден или больше не активен',
       code: 'qr_not_found',
     );
   }
 
-  Future<String?> _startAndPingScan({
-    required String token,
-    required int questId,
-  }) async {
+  Future<String?> _startAndPingScan({required String token}) async {
     try {
       final startResponse = await _dio.post<dynamic>(
         '/api/scan/start',
-        data: {
-          'token': token,
-          'qr_token': token,
-          'quest_id': questId,
-          'questId': questId,
-        },
+        data: {'token': token},
       );
       final startJson = asMap(startResponse.data);
-      final sessionId =
-          readString(startJson['session_id']) ??
-          readString(startJson['sessionId']) ??
-          readString(startJson['id']);
+      final rawSessionId =
+          startJson['session_id'] ?? startJson['sessionId'] ?? startJson['id'];
+      final sessionId = readString(rawSessionId);
 
       if (sessionId != null) {
         await _dio.post<dynamic>(
           '/api/scan/ping',
-          data: {
-            'session_id': sessionId,
-            'sessionId': sessionId,
-            'quest_id': questId,
-            'questId': questId,
-          },
+          data: {'session_id': readInt(rawSessionId) ?? sessionId},
         );
       }
 

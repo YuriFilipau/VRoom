@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vroom/core/localization/bloc/language_bloc.dart';
 import 'package:vroom/core/network/auth_interceptor.dart';
 import 'package:vroom/core/network/backend_discovery_service.dart';
 import 'package:vroom/core/theme/bloc/theme_bloc.dart';
@@ -30,6 +31,12 @@ import 'package:vroom/features/organizer/data/repository/organizer_repository_im
 import 'package:vroom/features/organizer/domain/repository/organizer_repository.dart';
 import 'package:vroom/features/participant/data/repository/participant_repository_impl.dart';
 import 'package:vroom/features/participant/domain/repository/participant_repository.dart';
+import 'package:vroom/features/quest_test/data/repository/quest_test_repository_impl.dart';
+import 'package:vroom/features/quest_test/domain/repository/quest_test_repository.dart';
+import 'package:vroom/features/quest_test/domain/usecases/get_latest_quest_test_result_usecase.dart';
+import 'package:vroom/features/quest_test/domain/usecases/get_quest_test_usecase.dart';
+import 'package:vroom/features/quest_test/domain/usecases/submit_quest_test_usecase.dart';
+import 'package:vroom/features/quest_test/view/bloc/quest_test_bloc.dart';
 import 'package:vroom/features/qr_scanner/data/repository/qr_scanner_repository_impl.dart';
 import 'package:vroom/features/qr_scanner/domain/repository/qr_scanner_repository.dart';
 import 'package:vroom/features/qr_scanner/domain/usecases/process_qr_code_usecase.dart';
@@ -98,6 +105,9 @@ Future<void> init({
   locator.registerLazySingleton<QrScannerRepository>(
     () => QrScannerRepositoryImpl(dio: locator<Dio>()),
   );
+  locator.registerLazySingleton<QuestTestRepository>(
+    () => QuestTestRepositoryImpl(dio: locator<Dio>()),
+  );
   locator.registerLazySingleton<ArRepository>(
     () => ArRepositoryImpl(
       dio: locator<Dio>(),
@@ -119,6 +129,15 @@ Future<void> init({
   locator.registerLazySingleton(
     () => SaveArLayoutUseCase(repository: locator()),
   );
+  locator.registerLazySingleton(
+    () => GetQuestTestUseCase(repository: locator()),
+  );
+  locator.registerLazySingleton(
+    () => GetLatestQuestTestResultUseCase(repository: locator()),
+  );
+  locator.registerLazySingleton(
+    () => SubmitQuestTestUseCase(repository: locator()),
+  );
 
   locator.registerFactory(
     () => AuthBloc(
@@ -132,7 +151,17 @@ Future<void> init({
   locator.registerFactory(
     () => ThemeBloc(sharedPreferences: locator<SharedPreferences>()),
   );
+  locator.registerFactory(
+    () => LanguageBloc(sharedPreferences: locator<SharedPreferences>()),
+  );
   locator.registerFactory(() => QrScannerBloc(processQrCodeUseCase: locator()));
+  locator.registerFactory(
+    () => QuestTestBloc(
+      getQuestTestUseCase: locator(),
+      getLatestResultUseCase: locator(),
+      submitQuestTestUseCase: locator(),
+    ),
+  );
   locator.registerFactory(
     () => ArSessionBloc(
       getArSceneUseCase: locator(),

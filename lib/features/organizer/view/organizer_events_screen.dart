@@ -4,6 +4,7 @@ import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/features/organizer/domain/repository/organizer_repository.dart';
+import 'package:vroom/features/organizer/view/components/organizer_logout_button.dart';
 
 class OrganizerEventsScreen extends StatelessWidget {
   const OrganizerEventsScreen({super.key});
@@ -11,7 +12,10 @@ class OrganizerEventsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Мероприятия organizer')),
+      appBar: AppBar(
+        title: const Text('Мероприятия organizer'),
+        actions: const [OrganizerLogoutButton()],
+      ),
       body: FutureBuilder(
         future: di.locator<OrganizerRepository>().getEvents(),
         builder: (context, snapshot) {

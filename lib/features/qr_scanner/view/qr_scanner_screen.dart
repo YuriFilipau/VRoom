@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
+import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/features/qr_scanner/view/bloc/qr_scanner_bloc.dart';
 import 'package:vroom/features/qr_scanner/view/components/qr_scanner_controls.dart';
@@ -38,28 +39,27 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   Future<void> _openManualEntry(BuildContext context) async {
     final bloc = context.read<QrScannerBloc>();
+    final l10n = AppLocalizations.of(context);
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Введите QR-код'),
+          title: Text(l10n.qrManualTitle),
           content: TextField(
             controller: _manualCodeController,
             autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Токен или значение QR',
-            ),
+            decoration: InputDecoration(hintText: l10n.qrManualHint),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Отмена'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(
                 dialogContext,
               ).pop(_manualCodeController.text.trim()),
-              child: const Text('Открыть'),
+              child: Text(l10n.open),
             ),
           ],
         );
@@ -77,6 +77,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDarkAppTheme = theme.brightness == Brightness.dark;
     final backgroundColor = isDarkAppTheme
         ? const Color(0xFFE7EAF2)
@@ -116,24 +117,22 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
           return Scaffold(
             backgroundColor: backgroundColor,
-            body: SafeArea(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  MobileScanner(
-                    controller: _controller,
-                    onDetect: (capture) {
-                      final value = capture.barcodes.first.rawValue;
-                      if (value == null || value.isEmpty) {
-                        return;
-                      }
-                      context.read<QrScannerBloc>().add(
-                        QrScannerDetected(value),
-                      );
-                    },
-                  ),
-                  ColoredBox(color: backgroundColor.withValues(alpha: 0.88)),
-                  Padding(
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                MobileScanner(
+                  controller: _controller,
+                  onDetect: (capture) {
+                    final value = capture.barcodes.first.rawValue;
+                    if (value == null || value.isEmpty) {
+                      return;
+                    }
+                    context.read<QrScannerBloc>().add(QrScannerDetected(value));
+                  },
+                ),
+                ColoredBox(color: backgroundColor.withValues(alpha: 0.88)),
+                SafeArea(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 16,
@@ -151,7 +150,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             Expanded(
                               child: Center(
                                 child: Text(
-                                  'Сканер QR-кода',
+                                  l10n.qrScannerTitle,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: foregroundColor,
                                     fontSize: 22,
@@ -166,7 +165,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         const ScannerFocusFrame(),
                         const SizedBox(height: 28),
                         Text(
-                          'Наведите камеру на QR-код',
+                          l10n.qrScannerHint,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: secondaryTextColor,
                             fontWeight: FontWeight.w500,
@@ -212,7 +211,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                                     color: foregroundColor,
                                   ),
                             label: Text(
-                              isBusy ? 'Обработка...' : 'Ввести код вручную',
+                              isBusy ? l10n.qrProcessing : l10n.qrManualButton,
                             ),
                           ),
                         ),
@@ -220,8 +219,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },

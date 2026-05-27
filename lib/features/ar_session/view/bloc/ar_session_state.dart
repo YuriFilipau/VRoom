@@ -19,6 +19,7 @@ abstract class ArSessionState with _$ArSessionState {
     String? updatedAt,
     int? createdBy,
     @Default(false) bool isPublished,
+    @Default(false) bool hasTest,
     ArSceneRootAnchorEntity? rootAnchor,
     String? arcoreToken,
     int? selectedAssetId,

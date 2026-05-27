@@ -63,6 +63,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
           updatedAt: scene.updatedAt,
           createdBy: scene.createdBy,
           isPublished: scene.isPublished,
+          hasTest: scene.hasTest,
           rootAnchor: scene.rootAnchor,
           arcoreToken: scene.arcoreToken,
           selectedAssetId: scene.assets.isEmpty ? null : scene.assets.first.id,
@@ -175,9 +176,10 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
           updatedAt: savedScene.updatedAt,
           createdBy: savedScene.createdBy,
           isPublished: savedScene.isPublished,
+          hasTest: savedScene.hasTest,
           rootAnchor: savedScene.rootAnchor,
           arcoreToken: savedScene.arcoreToken,
-          message: 'Сцена квеста сохранена в backend.',
+          message: 'Сцена квеста сохранена.',
         ),
       );
       emit(state.copyWith(status: ArSessionStatus.ready, message: null));
@@ -201,6 +203,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
               updatedAt: latestScene.updatedAt,
               createdBy: latestScene.createdBy,
               isPublished: latestScene.isPublished,
+              hasTest: latestScene.hasTest,
               rootAnchor: latestScene.rootAnchor,
               arcoreToken: latestScene.arcoreToken,
               message:

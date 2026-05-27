@@ -6,6 +6,7 @@ enum AppRoutes {
   home('/home', 'Home'),
   scanner('/scanner', 'Scanner'),
   ar('/ar', 'Ar'),
+  questTest('/quests', 'QuestTest'),
   profile('/profile', 'Profile'),
   participantEvent('/events', 'ParticipantEvent'),
   organizerEvents('/organizer/events', 'OrganizerEvents'),

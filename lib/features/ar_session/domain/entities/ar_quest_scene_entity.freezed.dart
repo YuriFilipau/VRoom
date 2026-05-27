@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ArQuestSceneEntity {
 
- String get sceneId; int get questId; int get eventId; String get title; int? get version; String? get updatedAt; int? get createdBy; bool get isPublished; List<ArAssetEntity> get assets; List<ArAssetPlacementEntity> get objects; ArSceneRootAnchorEntity? get rootAnchor; String? get arcoreToken;
+ String get sceneId; int get questId; int get eventId; String get title; int? get version; String? get updatedAt; int? get createdBy; bool get isPublished; bool get hasTest; List<ArAssetEntity> get assets; List<ArAssetPlacementEntity> get objects; ArSceneRootAnchorEntity? get rootAnchor; String? get arcoreToken;
 /// Create a copy of ArQuestSceneEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ArQuestSceneEntityCopyWith<ArQuestSceneEntity> get copyWith => _$ArQuestSceneEn
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArQuestSceneEntity&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.title, title) || other.title == title)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&const DeepCollectionEquality().equals(other.assets, assets)&&const DeepCollectionEquality().equals(other.objects, objects)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArQuestSceneEntity&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.title, title) || other.title == title)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&(identical(other.hasTest, hasTest) || other.hasTest == hasTest)&&const DeepCollectionEquality().equals(other.assets, assets)&&const DeepCollectionEquality().equals(other.objects, objects)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sceneId,questId,eventId,title,version,updatedAt,createdBy,isPublished,const DeepCollectionEquality().hash(assets),const DeepCollectionEquality().hash(objects),rootAnchor,arcoreToken);
+int get hashCode => Object.hash(runtimeType,sceneId,questId,eventId,title,version,updatedAt,createdBy,isPublished,hasTest,const DeepCollectionEquality().hash(assets),const DeepCollectionEquality().hash(objects),rootAnchor,arcoreToken);
 
 @override
 String toString() {
-  return 'ArQuestSceneEntity(sceneId: $sceneId, questId: $questId, eventId: $eventId, title: $title, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, assets: $assets, objects: $objects, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken)';
+  return 'ArQuestSceneEntity(sceneId: $sceneId, questId: $questId, eventId: $eventId, title: $title, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, hasTest: $hasTest, assets: $assets, objects: $objects, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ArQuestSceneEntityCopyWith<$Res>  {
   factory $ArQuestSceneEntityCopyWith(ArQuestSceneEntity value, $Res Function(ArQuestSceneEntity) _then) = _$ArQuestSceneEntityCopyWithImpl;
 @useResult
 $Res call({
- String sceneId, int questId, int eventId, String title, int? version, String? updatedAt, int? createdBy, bool isPublished, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> objects, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken
+ String sceneId, int questId, int eventId, String title, int? version, String? updatedAt, int? createdBy, bool isPublished, bool hasTest, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> objects, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken
 });
 
 
@@ -62,7 +62,7 @@ class _$ArQuestSceneEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArQuestSceneEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? title = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? assets = null,Object? objects = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? title = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? hasTest = null,Object? assets = null,Object? objects = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,}) {
   return _then(_self.copyWith(
 sceneId: null == sceneId ? _self.sceneId : sceneId // ignore: cast_nullable_to_non_nullable
 as String,questId: null == questId ? _self.questId : questId // ignore: cast_nullable_to_non_nullable
@@ -72,6 +72,7 @@ as String,version: freezed == version ? _self.version : version // ignore: cast_
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as String?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as int?,isPublished: null == isPublished ? _self.isPublished : isPublished // ignore: cast_nullable_to_non_nullable
+as bool,hasTest: null == hasTest ? _self.hasTest : hasTest // ignore: cast_nullable_to_non_nullable
 as bool,assets: null == assets ? _self.assets : assets // ignore: cast_nullable_to_non_nullable
 as List<ArAssetEntity>,objects: null == objects ? _self.objects : objects // ignore: cast_nullable_to_non_nullable
 as List<ArAssetPlacementEntity>,rootAnchor: freezed == rootAnchor ? _self.rootAnchor : rootAnchor // ignore: cast_nullable_to_non_nullable
@@ -173,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sceneId,  int questId,  int eventId,  String title,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> objects,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sceneId,  int questId,  int eventId,  String title,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  bool hasTest,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> objects,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ArQuestSceneEntity() when $default != null:
-return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.assets,_that.objects,_that.rootAnchor,_that.arcoreToken);case _:
+return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.hasTest,_that.assets,_that.objects,_that.rootAnchor,_that.arcoreToken);case _:
   return orElse();
 
 }
@@ -194,10 +195,10 @@ return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.vers
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sceneId,  int questId,  int eventId,  String title,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> objects,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sceneId,  int questId,  int eventId,  String title,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  bool hasTest,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> objects,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken)  $default,) {final _that = this;
 switch (_that) {
 case _ArQuestSceneEntity():
-return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.assets,_that.objects,_that.rootAnchor,_that.arcoreToken);case _:
+return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.hasTest,_that.assets,_that.objects,_that.rootAnchor,_that.arcoreToken);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +215,10 @@ return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.vers
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sceneId,  int questId,  int eventId,  String title,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> objects,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sceneId,  int questId,  int eventId,  String title,  int? version,  String? updatedAt,  int? createdBy,  bool isPublished,  bool hasTest,  List<ArAssetEntity> assets,  List<ArAssetPlacementEntity> objects,  ArSceneRootAnchorEntity? rootAnchor,  String? arcoreToken)?  $default,) {final _that = this;
 switch (_that) {
 case _ArQuestSceneEntity() when $default != null:
-return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.assets,_that.objects,_that.rootAnchor,_that.arcoreToken);case _:
+return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.version,_that.updatedAt,_that.createdBy,_that.isPublished,_that.hasTest,_that.assets,_that.objects,_that.rootAnchor,_that.arcoreToken);case _:
   return null;
 
 }
@@ -229,7 +230,7 @@ return $default(_that.sceneId,_that.questId,_that.eventId,_that.title,_that.vers
 
 
 class _ArQuestSceneEntity implements ArQuestSceneEntity {
-  const _ArQuestSceneEntity({required this.sceneId, required this.questId, required this.eventId, required this.title, required this.version, required this.updatedAt, required this.createdBy, required this.isPublished, required final  List<ArAssetEntity> assets, required final  List<ArAssetPlacementEntity> objects, this.rootAnchor, this.arcoreToken}): _assets = assets,_objects = objects;
+  const _ArQuestSceneEntity({required this.sceneId, required this.questId, required this.eventId, required this.title, required this.version, required this.updatedAt, required this.createdBy, required this.isPublished, required this.hasTest, required final  List<ArAssetEntity> assets, required final  List<ArAssetPlacementEntity> objects, this.rootAnchor, this.arcoreToken}): _assets = assets,_objects = objects;
   
 
 @override final  String sceneId;
@@ -240,6 +241,7 @@ class _ArQuestSceneEntity implements ArQuestSceneEntity {
 @override final  String? updatedAt;
 @override final  int? createdBy;
 @override final  bool isPublished;
+@override final  bool hasTest;
  final  List<ArAssetEntity> _assets;
 @override List<ArAssetEntity> get assets {
   if (_assets is EqualUnmodifiableListView) return _assets;
@@ -267,16 +269,16 @@ _$ArQuestSceneEntityCopyWith<_ArQuestSceneEntity> get copyWith => __$ArQuestScen
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArQuestSceneEntity&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.title, title) || other.title == title)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&const DeepCollectionEquality().equals(other._assets, _assets)&&const DeepCollectionEquality().equals(other._objects, _objects)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArQuestSceneEntity&&(identical(other.sceneId, sceneId) || other.sceneId == sceneId)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.title, title) || other.title == title)&&(identical(other.version, version) || other.version == version)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.isPublished, isPublished) || other.isPublished == isPublished)&&(identical(other.hasTest, hasTest) || other.hasTest == hasTest)&&const DeepCollectionEquality().equals(other._assets, _assets)&&const DeepCollectionEquality().equals(other._objects, _objects)&&(identical(other.rootAnchor, rootAnchor) || other.rootAnchor == rootAnchor)&&(identical(other.arcoreToken, arcoreToken) || other.arcoreToken == arcoreToken));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sceneId,questId,eventId,title,version,updatedAt,createdBy,isPublished,const DeepCollectionEquality().hash(_assets),const DeepCollectionEquality().hash(_objects),rootAnchor,arcoreToken);
+int get hashCode => Object.hash(runtimeType,sceneId,questId,eventId,title,version,updatedAt,createdBy,isPublished,hasTest,const DeepCollectionEquality().hash(_assets),const DeepCollectionEquality().hash(_objects),rootAnchor,arcoreToken);
 
 @override
 String toString() {
-  return 'ArQuestSceneEntity(sceneId: $sceneId, questId: $questId, eventId: $eventId, title: $title, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, assets: $assets, objects: $objects, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken)';
+  return 'ArQuestSceneEntity(sceneId: $sceneId, questId: $questId, eventId: $eventId, title: $title, version: $version, updatedAt: $updatedAt, createdBy: $createdBy, isPublished: $isPublished, hasTest: $hasTest, assets: $assets, objects: $objects, rootAnchor: $rootAnchor, arcoreToken: $arcoreToken)';
 }
 
 
@@ -287,7 +289,7 @@ abstract mixin class _$ArQuestSceneEntityCopyWith<$Res> implements $ArQuestScene
   factory _$ArQuestSceneEntityCopyWith(_ArQuestSceneEntity value, $Res Function(_ArQuestSceneEntity) _then) = __$ArQuestSceneEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String sceneId, int questId, int eventId, String title, int? version, String? updatedAt, int? createdBy, bool isPublished, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> objects, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken
+ String sceneId, int questId, int eventId, String title, int? version, String? updatedAt, int? createdBy, bool isPublished, bool hasTest, List<ArAssetEntity> assets, List<ArAssetPlacementEntity> objects, ArSceneRootAnchorEntity? rootAnchor, String? arcoreToken
 });
 
 
@@ -304,7 +306,7 @@ class __$ArQuestSceneEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArQuestSceneEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? title = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? assets = null,Object? objects = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sceneId = null,Object? questId = null,Object? eventId = null,Object? title = null,Object? version = freezed,Object? updatedAt = freezed,Object? createdBy = freezed,Object? isPublished = null,Object? hasTest = null,Object? assets = null,Object? objects = null,Object? rootAnchor = freezed,Object? arcoreToken = freezed,}) {
   return _then(_ArQuestSceneEntity(
 sceneId: null == sceneId ? _self.sceneId : sceneId // ignore: cast_nullable_to_non_nullable
 as String,questId: null == questId ? _self.questId : questId // ignore: cast_nullable_to_non_nullable
@@ -314,6 +316,7 @@ as String,version: freezed == version ? _self.version : version // ignore: cast_
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as String?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as int?,isPublished: null == isPublished ? _self.isPublished : isPublished // ignore: cast_nullable_to_non_nullable
+as bool,hasTest: null == hasTest ? _self.hasTest : hasTest // ignore: cast_nullable_to_non_nullable
 as bool,assets: null == assets ? _self._assets : assets // ignore: cast_nullable_to_non_nullable
 as List<ArAssetEntity>,objects: null == objects ? _self._objects : objects // ignore: cast_nullable_to_non_nullable
 as List<ArAssetPlacementEntity>,rootAnchor: freezed == rootAnchor ? _self.rootAnchor : rootAnchor // ignore: cast_nullable_to_non_nullable

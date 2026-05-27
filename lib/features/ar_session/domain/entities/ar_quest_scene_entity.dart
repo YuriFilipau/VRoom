@@ -16,6 +16,7 @@ abstract class ArQuestSceneEntity with _$ArQuestSceneEntity {
     required String? updatedAt,
     required int? createdBy,
     required bool isPublished,
+    required bool hasTest,
     required List<ArAssetEntity> assets,
     required List<ArAssetPlacementEntity> objects,
     ArSceneRootAnchorEntity? rootAnchor,

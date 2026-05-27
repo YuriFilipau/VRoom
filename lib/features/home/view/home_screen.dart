@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
+import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
@@ -13,6 +14,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         state.maybeWhen(
@@ -36,7 +39,7 @@ class HomeScreen extends StatelessWidget {
                       final error = snapshot.error;
                       final message = error is ApiException
                           ? error.message
-                          : 'Не удалось загрузить мероприятия';
+                          : l10n.homeLoadFailed;
                       return Center(child: Text(message));
                     }
 
@@ -50,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 loading: () => const Center(child: CircularProgressIndicator()),
-                orElse: () => const Center(child: Text('Что-то пошло не так')),
+                orElse: () => Center(child: Text(l10n.genericError)),
               );
             },
           ),

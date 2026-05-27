@@ -65,7 +65,11 @@ class OrganizerRepositoryImpl implements OrganizerRepository {
           (json['assets'] as List<dynamic>?)?.length ??
           0,
       hasScene:
-          readBool(json['has_scene']) ?? readBool(json['hasScene']) ?? false,
+          readBool(json['has_layout']) ??
+          readBool(json['hasLayout']) ??
+          readBool(json['has_scene']) ??
+          readBool(json['hasScene']) ??
+          false,
     );
   }
 

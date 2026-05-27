@@ -3,6 +3,7 @@ import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/network/json_utils.dart';
 import 'package:vroom/features/auth/domain/entities/user_achievement_entity.dart';
 import 'package:vroom/features/auth/domain/entities/user_activity_entity.dart';
+import 'package:vroom/features/participant/domain/entities/participant_certificate_entity.dart';
 import 'package:vroom/features/participant/domain/entities/participant_event_detail_entity.dart';
 import 'package:vroom/features/participant/domain/entities/participant_event_entity.dart';
 import 'package:vroom/features/participant/domain/entities/participant_profile_entity.dart';
@@ -20,8 +21,10 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
       final profileResponse = await _dio.get<dynamic>('/api/mobile/profile');
       final profileJson = asMap(profileResponse.data);
 
-      final eventsResponse = await _dio.get<dynamic>('/api/mobile/events/my');
-      final events = asList(eventsResponse.data);
+      final profileEvents = asList(profileJson['events']);
+      final events = profileEvents.isNotEmpty
+          ? profileEvents
+          : asList((await _dio.get<dynamic>('/api/mobile/events/my')).data);
       final completedQuests =
           readInt(profileJson['completed_quests_count']) ??
           readInt(profileJson['completedQuestsCount']) ??
@@ -30,7 +33,7 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
                 (item) =>
                     _parseEventSummary(Map<String, dynamic>.from(item as Map)),
               )
-              .fold<int>(0, (sum, event) => sum + event.scannedQuestsCount);
+              .fold<int>(0, (sum, event) => sum + event.completedQuestsCount);
 
       return ParticipantProfileEntity(
         id: readInt(profileJson['id']) ?? 0,
@@ -101,10 +104,13 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
             readString(json['short_description']) ??
             'Описание мероприятия пока не заполнено.',
         imageUrl:
+            readString(json['cover_image_url']) ??
+            readString(json['cover_image']) ??
             readString(json['image_url']) ??
             readString(json['cover_url']) ??
             _fallbackImage(scannedQuests.length),
         progressPercent:
+            readInt(asMap(json['summary'])['progress_percent']) ??
             readInt(json['progress_percent']) ??
             readInt(json['progressPercent']) ??
             _progressFromCounts(
@@ -113,10 +119,15 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
                   readInt(json['quests_count']) ??
                   scannedQuests.length,
             ),
-        certificateAvailable:
-            readBool(json['certificate_available']) ??
-            readBool(json['has_certificate']) ??
-            false,
+        certificate: _parseCertificateStatus(
+          eventId,
+          json['certificate'] ??
+              {
+                'available': json['certificate_available'],
+                'issued': json['certificate_issued'],
+                'artifact_url': json['artifact_url'],
+              },
+        ),
         scannedQuests: scannedQuests,
       );
     } on DioException catch (error) {
@@ -127,11 +138,45 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     }
   }
 
+  @override
+  Future<ParticipantCertificateEntity> issueCertificate(int eventId) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/events/$eventId/certificate/issue',
+      );
+      return _parseIssuedCertificate(eventId, response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(
+        error,
+        fallbackMessage: 'Не удалось получить сертификат',
+      );
+    }
+  }
+
+  @override
+  Future<ParticipantCertificateEntity> getCertificate(int eventId) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/api/events/$eventId/certificate',
+      );
+      return _parseIssuedCertificate(eventId, response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(
+        error,
+        fallbackMessage: 'Не удалось открыть сертификат',
+      );
+    }
+  }
+
   ParticipantEventEntity _parseEventSummary(Map<String, dynamic> json) {
     final scannedQuests =
         readInt(json['scanned_quests_count']) ??
         readInt(json['scannedQuestsCount']) ??
         (json['scanned_quests'] as List<dynamic>?)?.length ??
+        0;
+    final completedQuests =
+        readInt(json['completed_quests_count']) ??
+        readInt(json['completedQuestsCount']) ??
         0;
     final totalQuests =
         readInt(json['total_quests']) ??
@@ -147,6 +192,8 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
           readString(json['status']) ??
           'Подробности появятся после загрузки.',
       imageUrl:
+          readString(json['cover_image_url']) ??
+          readString(json['cover_image']) ??
           readString(json['image_url']) ??
           readString(json['cover_url']) ??
           _fallbackImage(readInt(json['id']) ?? 0),
@@ -158,11 +205,16 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
           readBool(json['certificate_available']) ??
           readBool(json['has_certificate']) ??
           false,
+      certificateIssued:
+          readBool(json['certificate_issued']) ??
+          readBool(json['certificateIssued']) ??
+          false,
       statusLabel:
           readString(json['status_label']) ??
           readString(json['status']) ??
           'Активно',
       scannedQuestsCount: scannedQuests,
+      completedQuestsCount: completedQuests,
       totalQuestsCount: totalQuests,
     );
   }
@@ -171,6 +223,12 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     return ParticipantScannedQuestEntity(
       id: readInt(json['id']) ?? 0,
       title: readString(json['title']) ?? readString(json['name']) ?? 'Квест',
+      imageUrl:
+          readString(json['cover_image_url']) ??
+          readString(json['cover_image']) ??
+          readString(json['image_url']) ??
+          readString(json['cover_url']) ??
+          '',
       progressPercent:
           readInt(json['progress_percent']) ??
           readInt(json['progressPercent']) ??
@@ -179,6 +237,60 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
           readString(json['status_label']) ??
           readString(json['status']) ??
           'Сканирован',
+      hasTest: readBool(json['has_test']) ?? readBool(json['hasTest']) ?? false,
+      testCompleted:
+          readBool(json['test_completed']) ??
+          readBool(json['testCompleted']) ??
+          false,
+      testPassed:
+          readBool(json['test_passed']) ??
+          readBool(json['testPassed']) ??
+          false,
+      score: readInt(json['score']),
+      passingScore:
+          readInt(json['passing_score']) ?? readInt(json['passingScore']),
+    );
+  }
+
+  ParticipantCertificateEntity _parseCertificateStatus(
+    int eventId,
+    dynamic raw,
+  ) {
+    final json = asMap(raw);
+    return ParticipantCertificateEntity(
+      eventId: eventId,
+      available:
+          readBool(json['available']) ??
+          readBool(json['certificate_available']) ??
+          false,
+      issued:
+          readBool(json['issued']) ??
+          readBool(json['certificate_issued']) ??
+          false,
+      requirementMode: readString(json['requirement_mode']) ?? '',
+      scoreThreshold: readInt(json['score_threshold']),
+      certificateNumber: readString(json['certificate_number']),
+      issuedAt: readString(json['issued_at']),
+      artifactUrl: readString(json['artifact_url']),
+      renderedContent: readString(json['rendered_content']),
+    );
+  }
+
+  ParticipantCertificateEntity _parseIssuedCertificate(
+    int eventId,
+    dynamic raw,
+  ) {
+    final json = asMap(raw);
+    return ParticipantCertificateEntity(
+      eventId: readInt(json['event_id']) ?? eventId,
+      available: true,
+      issued: true,
+      requirementMode: '',
+      scoreThreshold: null,
+      certificateNumber: readString(json['certificate_number']),
+      issuedAt: readString(json['issued_at']),
+      artifactUrl: readString(json['artifact_url']),
+      renderedContent: readString(json['rendered_content']),
     );
   }
 

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vroom/core/constants/app_colors.dart';
+import 'package:vroom/core/localization/app_localizations.dart';
+import 'package:vroom/core/localization/bloc/language_bloc.dart';
 import 'package:vroom/core/shared/widgets/staggered_appear.dart';
 import 'package:vroom/core/theme/dashboard_material_theme.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/features/language/view/components/language_picker_sheet.dart';
 import 'package:vroom/features/participant/domain/entities/participant_profile_entity.dart';
 import 'package:vroom/features/profile/view/components/profile_achievement_tile.dart';
 import 'package:vroom/features/profile/view/components/profile_activity_tile.dart';
 import 'package:vroom/features/profile/view/components/profile_header.dart';
+import 'package:vroom/features/profile/view/components/profile_language_tile.dart';
 import 'package:vroom/features/profile/view/components/profile_stat_card.dart';
 
 class ProfileContent extends StatelessWidget {
@@ -20,6 +24,7 @@ class ProfileContent extends StatelessWidget {
     final dashboardTheme = Theme.of(
       context,
     ).extension<DashboardMaterialTheme>()!;
+    final l10n = AppLocalizations.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
@@ -38,14 +43,14 @@ class ProfileContent extends StatelessWidget {
                 Expanded(
                   child: ProfileStatCard(
                     title: '${user.joinedEventsCount}',
-                    subtitle: 'Мероприятий',
+                    subtitle: l10n.profileJoinedEvents,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: ProfileStatCard(
                     title: '${user.completedQuestsCount}',
-                    subtitle: 'Сканированных квестов',
+                    subtitle: l10n.profileScannedQuests,
                   ),
                 ),
               ],
@@ -55,7 +60,7 @@ class ProfileContent extends StatelessWidget {
           StaggeredAppear(
             index: 2,
             child: Text(
-              'ДОСТИЖЕНИЯ',
+              l10n.profileAchievements.toUpperCase(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: dashboardTheme.sectionTitle,
                 fontSize: 18,
@@ -83,7 +88,7 @@ class ProfileContent extends StatelessWidget {
           StaggeredAppear(
             index: user.achievements.length + 3,
             child: Text(
-              'ПОСЛЕДНИЕ АКТИВНОСТИ',
+              l10n.profileRecentActivities.toUpperCase(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: dashboardTheme.sectionTitle,
                 fontSize: 18,
@@ -104,6 +109,20 @@ class ProfileContent extends StatelessWidget {
           const SizedBox(height: 10),
           StaggeredAppear(
             index: user.achievements.length + user.recentActivities.length + 5,
+            child: BlocBuilder<LanguageBloc, LanguageState>(
+              builder: (context, state) {
+                return ProfileLanguageTile(
+                  title: l10n.profileLanguageTitle,
+                  subtitle: l10n.profileLanguageSubtitle,
+                  language: state.effectiveLanguage,
+                  onTap: () => showLanguagePickerSheet(context),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          StaggeredAppear(
+            index: user.achievements.length + user.recentActivities.length + 6,
             child: SizedBox(
               width: double.infinity,
               height: 54,
@@ -111,9 +130,9 @@ class ProfileContent extends StatelessWidget {
                 onPressed: () =>
                     context.read<AuthBloc>().add(const AuthEvent.logout()),
                 icon: const Icon(Icons.logout, color: AppColors.error),
-                label: const Text(
-                  'Выйти',
-                  style: TextStyle(
+                label: Text(
+                  l10n.profileLogout,
+                  style: const TextStyle(
                     color: AppColors.error,
                     fontWeight: FontWeight.w600,
                   ),
@@ -131,6 +150,7 @@ class ProfileContent extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 88),
         ],
       ),
     );

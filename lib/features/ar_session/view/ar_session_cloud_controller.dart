@@ -71,12 +71,14 @@ extension _ArSessionCloudController on _ArSessionViewState {
     return anchor;
   }
 
-  void _onSessionError(String error) {
+  void _onSessionError(String _) {
     if (!mounted) {
       return;
     }
 
-    if (_isResolvingSceneAnchor || _isUploadingSceneAnchor) {
+    final wasCloudAnchorFlow =
+        _isResolvingSceneAnchor || _isUploadingSceneAnchor;
+    if (wasCloudAnchorFlow) {
       _refresh(() {
         _isResolvingSceneAnchor = false;
         _isUploadingSceneAnchor = false;
@@ -84,7 +86,11 @@ extension _ArSessionCloudController on _ArSessionViewState {
       });
     }
 
-    _showMessage(error);
+    _showMessage(
+      wasCloudAnchorFlow
+          ? 'Не удалось подключить облачную AR-сцену. Проверьте, что телефон находится в корректной сети, и попробуйте ещё раз.'
+          : 'Не удалось продолжить AR-сессию. Попробуйте ещё раз.',
+    );
   }
 
   Future<void> _onSavePressed(ArSessionState state) async {
@@ -112,7 +118,9 @@ extension _ArSessionCloudController on _ArSessionViewState {
         if (mounted) {
           _refresh(() {});
         }
-        _showMessage('Не удалось запустить upload persistent anchor');
+        _showMessage(
+          'Не удалось подключить облачную AR-сцену. Проверьте, что телефон находится в корректной сети, и попробуйте ещё раз.',
+        );
       }
       return;
     }
