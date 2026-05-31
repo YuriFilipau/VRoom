@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ArAssetPlacementEntity {
 
- String get id; int get assetId; String get nodeName; List<double> get localTransform;
+ String get id; int get assetId; String get nodeName; List<double> get localTransform; Map<String, dynamic> get meta;
 /// Create a copy of ArAssetPlacementEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ArAssetPlacementEntityCopyWith<ArAssetPlacementEntity> get copyWith => _$ArAsse
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArAssetPlacementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.nodeName, nodeName) || other.nodeName == nodeName)&&const DeepCollectionEquality().equals(other.localTransform, localTransform));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArAssetPlacementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.nodeName, nodeName) || other.nodeName == nodeName)&&const DeepCollectionEquality().equals(other.localTransform, localTransform)&&const DeepCollectionEquality().equals(other.meta, meta));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,assetId,nodeName,const DeepCollectionEquality().hash(localTransform));
+int get hashCode => Object.hash(runtimeType,id,assetId,nodeName,const DeepCollectionEquality().hash(localTransform),const DeepCollectionEquality().hash(meta));
 
 @override
 String toString() {
-  return 'ArAssetPlacementEntity(id: $id, assetId: $assetId, nodeName: $nodeName, localTransform: $localTransform)';
+  return 'ArAssetPlacementEntity(id: $id, assetId: $assetId, nodeName: $nodeName, localTransform: $localTransform, meta: $meta)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ArAssetPlacementEntityCopyWith<$Res>  {
   factory $ArAssetPlacementEntityCopyWith(ArAssetPlacementEntity value, $Res Function(ArAssetPlacementEntity) _then) = _$ArAssetPlacementEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, int assetId, String nodeName, List<double> localTransform
+ String id, int assetId, String nodeName, List<double> localTransform, Map<String, dynamic> meta
 });
 
 
@@ -65,13 +65,14 @@ class _$ArAssetPlacementEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArAssetPlacementEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? assetId = null,Object? nodeName = null,Object? localTransform = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? assetId = null,Object? nodeName = null,Object? localTransform = null,Object? meta = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,assetId: null == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
 as int,nodeName: null == nodeName ? _self.nodeName : nodeName // ignore: cast_nullable_to_non_nullable
 as String,localTransform: null == localTransform ? _self.localTransform : localTransform // ignore: cast_nullable_to_non_nullable
-as List<double>,
+as List<double>,meta: null == meta ? _self.meta : meta // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>,
   ));
 }
 
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int assetId,  String nodeName,  List<double> localTransform)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int assetId,  String nodeName,  List<double> localTransform,  Map<String, dynamic> meta)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ArAssetPlacementEntity() when $default != null:
-return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform);case _:
+return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform,_that.meta);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int assetId,  String nodeName,  List<double> localTransform)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int assetId,  String nodeName,  List<double> localTransform,  Map<String, dynamic> meta)  $default,) {final _that = this;
 switch (_that) {
 case _ArAssetPlacementEntity():
-return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform);case _:
+return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform,_that.meta);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int assetId,  String nodeName,  List<double> localTransform)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int assetId,  String nodeName,  List<double> localTransform,  Map<String, dynamic> meta)?  $default,) {final _that = this;
 switch (_that) {
 case _ArAssetPlacementEntity() when $default != null:
-return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform);case _:
+return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform,_that.meta);case _:
   return null;
 
 }
@@ -211,8 +212,8 @@ return $default(_that.id,_that.assetId,_that.nodeName,_that.localTransform);case
 /// @nodoc
 @JsonSerializable()
 
-class _ArAssetPlacementEntity implements ArAssetPlacementEntity {
-  const _ArAssetPlacementEntity({required this.id, required this.assetId, required this.nodeName, required final  List<double> localTransform}): _localTransform = localTransform;
+class _ArAssetPlacementEntity extends ArAssetPlacementEntity {
+  const _ArAssetPlacementEntity({required this.id, required this.assetId, required this.nodeName, required final  List<double> localTransform, final  Map<String, dynamic> meta = const {}}): _localTransform = localTransform,_meta = meta,super._();
   factory _ArAssetPlacementEntity.fromJson(Map<String, dynamic> json) => _$ArAssetPlacementEntityFromJson(json);
 
 @override final  String id;
@@ -223,6 +224,13 @@ class _ArAssetPlacementEntity implements ArAssetPlacementEntity {
   if (_localTransform is EqualUnmodifiableListView) return _localTransform;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_localTransform);
+}
+
+ final  Map<String, dynamic> _meta;
+@override@JsonKey() Map<String, dynamic> get meta {
+  if (_meta is EqualUnmodifiableMapView) return _meta;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_meta);
 }
 
 
@@ -239,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArAssetPlacementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.nodeName, nodeName) || other.nodeName == nodeName)&&const DeepCollectionEquality().equals(other._localTransform, _localTransform));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArAssetPlacementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.nodeName, nodeName) || other.nodeName == nodeName)&&const DeepCollectionEquality().equals(other._localTransform, _localTransform)&&const DeepCollectionEquality().equals(other._meta, _meta));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,assetId,nodeName,const DeepCollectionEquality().hash(_localTransform));
+int get hashCode => Object.hash(runtimeType,id,assetId,nodeName,const DeepCollectionEquality().hash(_localTransform),const DeepCollectionEquality().hash(_meta));
 
 @override
 String toString() {
-  return 'ArAssetPlacementEntity(id: $id, assetId: $assetId, nodeName: $nodeName, localTransform: $localTransform)';
+  return 'ArAssetPlacementEntity(id: $id, assetId: $assetId, nodeName: $nodeName, localTransform: $localTransform, meta: $meta)';
 }
 
 
@@ -259,7 +267,7 @@ abstract mixin class _$ArAssetPlacementEntityCopyWith<$Res> implements $ArAssetP
   factory _$ArAssetPlacementEntityCopyWith(_ArAssetPlacementEntity value, $Res Function(_ArAssetPlacementEntity) _then) = __$ArAssetPlacementEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int assetId, String nodeName, List<double> localTransform
+ String id, int assetId, String nodeName, List<double> localTransform, Map<String, dynamic> meta
 });
 
 
@@ -276,13 +284,14 @@ class __$ArAssetPlacementEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArAssetPlacementEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? assetId = null,Object? nodeName = null,Object? localTransform = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? assetId = null,Object? nodeName = null,Object? localTransform = null,Object? meta = null,}) {
   return _then(_ArAssetPlacementEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,assetId: null == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
 as int,nodeName: null == nodeName ? _self.nodeName : nodeName // ignore: cast_nullable_to_non_nullable
 as String,localTransform: null == localTransform ? _self._localTransform : localTransform // ignore: cast_nullable_to_non_nullable
-as List<double>,
+as List<double>,meta: null == meta ? _self._meta : meta // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>,
   ));
 }
 

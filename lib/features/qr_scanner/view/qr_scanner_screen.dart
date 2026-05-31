@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -37,6 +39,26 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     super.dispose();
   }
 
+  Future<void> _stopScanner() async {
+    try {
+      await _controller.stop();
+    } catch (_) {
+      // The native camera can already be stopping during navigation/dispose.
+    }
+  }
+
+  Future<void> _resumeScanning(BuildContext context) async {
+    if (!mounted) {
+      return;
+    }
+    context.read<QrScannerBloc>().add(const QrScannerReset());
+    try {
+      await _controller.start();
+    } catch (_) {
+      // If the controller is not attached yet, MobileScanner will start itself.
+    }
+  }
+
   Future<void> _openManualEntry(BuildContext context) async {
     final bloc = context.read<QrScannerBloc>();
     final l10n = AppLocalizations.of(context);
@@ -44,11 +66,20 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           title: Text(l10n.qrManualTitle),
-          content: TextField(
-            controller: _manualCodeController,
-            autofocus: true,
-            decoration: InputDecoration(hintText: l10n.qrManualHint),
+          content: SizedBox(
+            width: 420,
+            child: TextField(
+              controller: _manualCodeController,
+              autofocus: true,
+              minLines: 1,
+              maxLines: 3,
+              decoration: InputDecoration(hintText: l10n.qrManualHint),
+            ),
           ),
           actions: [
             TextButton(
@@ -71,6 +102,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       return;
     }
 
+    bloc.add(const QrScannerReset());
     bloc.add(QrScannerDetected(value));
   }
 
@@ -78,51 +110,63 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final isDarkAppTheme = theme.brightness == Brightness.dark;
-    final backgroundColor = isDarkAppTheme
-        ? const Color(0xFFE7EAF2)
-        : const Color(0xFF2A303B);
-    final foregroundColor = isDarkAppTheme
-        ? const Color(0xFF20242B)
-        : Colors.white;
-    final secondaryTextColor = isDarkAppTheme
-        ? const Color(0xFF4A515F)
-        : const Color(0xFFD4D8E0);
-    final buttonColor = isDarkAppTheme
-        ? const Color(0xFFD8DCE4)
-        : const Color(0xFF3A414E);
-    final iconButtonColor = isDarkAppTheme
-        ? const Color(0xFFD3D7E0)
-        : const Color(0xFF444B57);
+    final foregroundColor = Colors.white;
+    final secondaryTextColor = Colors.white.withValues(alpha: 0.82);
+    final buttonColor = Colors.black.withValues(alpha: 0.46);
+    final iconButtonColor = Colors.black.withValues(alpha: 0.42);
 
     return BlocProvider(
       create: (_) => di.locator<QrScannerBloc>(),
       child: BlocConsumer<QrScannerBloc, QrScannerState>(
+        listenWhen: (previous, current) {
+          return previous.status != current.status ||
+              previous.errorMessage != current.errorMessage ||
+              previous.questId != current.questId ||
+              previous.scanSessionId != current.scanSessionId;
+        },
         listener: (context, state) {
           if (state.status == QrScannerStatus.success &&
               state.questId != null) {
-            context.push('${AppRoutes.ar.path}/${state.questId}');
+            unawaited(_stopScanner());
+            final sessionId = state.scanSessionId;
+            final sessionQuery = sessionId == null
+                ? ''
+                : '?sessionId=${Uri.encodeComponent(sessionId)}';
+            context.push('${AppRoutes.ar.path}/${state.questId}$sessionQuery');
           }
 
           if (state.status == QrScannerStatus.failure &&
               state.errorMessage != null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-            context.read<QrScannerBloc>().add(const QrScannerReset());
+            unawaited(_stopScanner());
+            final messenger = ScaffoldMessenger.of(context);
+            messenger.hideCurrentSnackBar();
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                action: SnackBarAction(
+                  label: l10n.qrScanAgain,
+                  onPressed: () => unawaited(_resumeScanning(context)),
+                ),
+              ),
+            );
           }
         },
         builder: (context, state) {
           final isBusy = state.status == QrScannerStatus.resolving;
+          final hasScanError = state.status == QrScannerStatus.failure;
 
           return Scaffold(
-            backgroundColor: backgroundColor,
+            backgroundColor: Colors.black,
             body: Stack(
               fit: StackFit.expand,
               children: [
                 MobileScanner(
                   controller: _controller,
                   onDetect: (capture) {
+                    if (context.read<QrScannerBloc>().state.status !=
+                        QrScannerStatus.idle) {
+                      return;
+                    }
                     final value = capture.barcodes.first.rawValue;
                     if (value == null || value.isEmpty) {
                       return;
@@ -130,7 +174,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     context.read<QrScannerBloc>().add(QrScannerDetected(value));
                   },
                 ),
-                ColoredBox(color: backgroundColor.withValues(alpha: 0.88)),
                 SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -171,47 +214,75 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const Spacer(),
-                        SizedBox(
-                          width: 228,
-                          height: 58,
-                          child: FilledButton.icon(
-                            onPressed: isBusy
-                                ? null
-                                : () => _openManualEntry(context),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: buttonColor,
+                        if (hasScanError) ...[
+                          const SizedBox(height: 14),
+                          TextButton.icon(
+                            onPressed: () =>
+                                unawaited(_resumeScanning(context)),
+                            style: TextButton.styleFrom(
                               foregroundColor: foregroundColor,
-                              disabledBackgroundColor: buttonColor,
+                              backgroundColor: buttonColor,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
-                                  AppRadii.lg,
+                                  AppRadii.md,
                                 ),
-                                side: BorderSide(
-                                  color: foregroundColor.withValues(
-                                    alpha: 0.14,
-                                  ),
-                                ),
-                              ),
-                              textStyle: theme.textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            icon: isBusy
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Icon(
-                                    Icons.keyboard_alt_outlined,
-                                    color: foregroundColor,
+                            icon: const Icon(Icons.qr_code_scanner_rounded),
+                            label: Text(l10n.qrScanAgain),
+                          ),
+                        ],
+                        const Spacer(),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 276,
+                            maxWidth: 320,
+                          ),
+                          child: SizedBox(
+                            height: 58,
+                            child: FilledButton.icon(
+                              onPressed: isBusy
+                                  ? null
+                                  : () => _openManualEntry(context),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: buttonColor,
+                                foregroundColor: foregroundColor,
+                                disabledBackgroundColor: buttonColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.lg,
                                   ),
-                            label: Text(
-                              isBusy ? l10n.qrProcessing : l10n.qrManualButton,
+                                  side: BorderSide(
+                                    color: foregroundColor.withValues(
+                                      alpha: 0.14,
+                                    ),
+                                  ),
+                                ),
+                                textStyle: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              icon: isBusy
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.keyboard_alt_outlined,
+                                      color: foregroundColor,
+                                    ),
+                              label: Text(
+                                isBusy
+                                    ? l10n.qrProcessing
+                                    : l10n.qrManualButton,
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.fade,
+                              ),
                             ),
                           ),
                         ),

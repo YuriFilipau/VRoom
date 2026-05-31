@@ -11,20 +11,18 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: 86,
-          height: 86,
-          decoration: const BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            _initials(user),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontSize: 26,
-            ),
+        ClipOval(
+          child: SizedBox(
+            width: 86,
+            height: 86,
+            child: user.avatarUrl == null
+                ? _InitialsAvatar(initials: _initials(user))
+                : Image.network(
+                    user.avatarUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) =>
+                        _InitialsAvatar(initials: _initials(user)),
+                  ),
           ),
         ),
         const SizedBox(height: 12),
@@ -44,5 +42,27 @@ class ProfileHeader extends StatelessWidget {
     final first = user.firstName.isEmpty ? '' : user.firstName[0];
     final last = user.lastName.isEmpty ? '' : user.lastName[0];
     return (first + last).toUpperCase();
+  }
+}
+
+class _InitialsAvatar extends StatelessWidget {
+  const _InitialsAvatar({required this.initials});
+
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      child: Center(
+        child: Text(
+          initials,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.white,
+            fontSize: 26,
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -20,43 +20,68 @@ class OnboardingLanguagePage extends StatelessWidget {
     final copy = AppLocalizations.forLanguage(selectedLanguage);
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: AppSizes.spacing4),
-          child: Column(
-            children: [
-              Text(
-                copy.chooseLanguageTitle,
-                textAlign: TextAlign.center,
-                style: textTheme.headlineSmall?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxHeight < 620;
+        final headerTopPadding = isCompact
+            ? AppSizes.spacing12
+            : AppSizes.spacing24;
+        final headerBottomPadding = isCompact
+            ? AppSizes.spacing16
+            : AppSizes.spacing20;
+        final gridBottomPadding = isCompact
+            ? AppSizes.spacing32
+            : AppSizes.spacing40;
+
+        return Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: headerTopPadding),
+              child: Column(
+                children: [
+                  Text(
+                    copy.chooseLanguageTitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.spacing8),
+                  Text(
+                    copy.chooseLanguageSubtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSizes.spacing8),
-              Text(
-                copy.chooseLanguageSubtitle,
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
+            ),
+            SizedBox(height: headerBottomPadding),
+            Expanded(
+              child: LanguageOptionGrid(
+                selectedLanguage: selectedLanguage,
+                padding: EdgeInsets.fromLTRB(
+                  2,
+                  AppSizes.spacing12,
+                  2,
+                  gridBottomPadding,
                 ),
+                physics: const BouncingScrollPhysics(),
+                clipBehavior: Clip.hardEdge,
+                onLanguageSelected: onLanguageSelected,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSizes.spacing24),
-        Expanded(
-          child: LanguageOptionGrid(
-            selectedLanguage: selectedLanguage,
-            padding: const EdgeInsets.fromLTRB(2, 4, 2, 28),
-            physics: const BouncingScrollPhysics(),
-            onLanguageSelected: onLanguageSelected,
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }

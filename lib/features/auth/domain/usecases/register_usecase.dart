@@ -16,6 +16,8 @@ class RegisterUseCase implements UseCase<UserEntity, RegisterParams> {
       password: params.password,
       firstName: params.firstName,
       lastName: params.lastName,
+      school: params.school,
+      schoolClass: params.schoolClass,
     );
   }
 }
@@ -25,11 +27,15 @@ class RegisterParams {
   final String password;
   final String firstName;
   final String lastName;
+  final String? school;
+  final String? schoolClass;
 
   const RegisterParams({
     required this.login,
     required this.password,
     required this.firstName,
     required this.lastName,
+    this.school,
+    this.schoolClass,
   });
 }

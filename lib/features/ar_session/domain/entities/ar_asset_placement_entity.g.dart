@@ -15,6 +15,7 @@ _ArAssetPlacementEntity _$ArAssetPlacementEntityFromJson(
   localTransform: (json['localTransform'] as List<dynamic>)
       .map((e) => (e as num).toDouble())
       .toList(),
+  meta: json['meta'] as Map<String, dynamic>? ?? const {},
 );
 
 Map<String, dynamic> _$ArAssetPlacementEntityToJson(
@@ -24,4 +25,5 @@ Map<String, dynamic> _$ArAssetPlacementEntityToJson(
   'assetId': instance.assetId,
   'nodeName': instance.nodeName,
   'localTransform': instance.localTransform,
+  'meta': instance.meta,
 };

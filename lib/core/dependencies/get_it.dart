@@ -9,6 +9,7 @@ import 'package:vroom/core/theme/bloc/theme_bloc.dart';
 import 'package:vroom/features/ar_session/data/repository/ar_repository_impl.dart';
 import 'package:vroom/features/ar_session/domain/repository/ar_repository.dart';
 import 'package:vroom/features/ar_session/domain/usecases/get_ar_scene_usecase.dart';
+import 'package:vroom/features/ar_session/domain/usecases/mark_ar_anchor_reached_usecase.dart';
 import 'package:vroom/features/ar_session/domain/usecases/save_ar_layout_usecase.dart';
 import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
 import 'package:vroom/features/auth/data/datasource/auth_local_datasource.dart';
@@ -130,6 +131,9 @@ Future<void> init({
     () => SaveArLayoutUseCase(repository: locator()),
   );
   locator.registerLazySingleton(
+    () => MarkArAnchorReachedUseCase(repository: locator()),
+  );
+  locator.registerLazySingleton(
     () => GetQuestTestUseCase(repository: locator()),
   );
   locator.registerLazySingleton(
@@ -166,6 +170,7 @@ Future<void> init({
     () => ArSessionBloc(
       getArSceneUseCase: locator(),
       saveArLayoutUseCase: locator(),
+      markAnchorReachedUseCase: locator(),
     ),
   );
 }

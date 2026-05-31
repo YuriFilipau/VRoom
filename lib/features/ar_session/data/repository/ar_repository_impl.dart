@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/network/json_utils.dart';
+import 'package:vroom/features/ar_session/domain/entities/ar_anchor_reach_result_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_quest_scene_entity.dart';
@@ -25,6 +27,7 @@ class ArRepositoryImpl implements ArRepository {
   final SharedPreferences _sharedPreferences;
 
   static const _sceneCachePrefix = 'ar_scene_cache_v4_';
+  static const _iosGlbCacheVersion = 'ios_v2';
 
   @override
   Future<ArQuestSceneEntity> loadScene({
@@ -88,7 +91,7 @@ class ArRepositoryImpl implements ArRepository {
       await _cacheScene(scene);
       return scene;
     } on DioException catch (error) {
-      final cached = _readCachedScene(questId);
+      final cached = await _readCachedScene(questId);
       if (cached != null) {
         return cached;
       }
@@ -140,6 +143,7 @@ class ArRepositoryImpl implements ArRepository {
                 'assetId': object.assetId,
                 'nodeName': object.nodeName,
                 'localTransform': object.localTransform,
+                if (object.meta.isNotEmpty) 'meta': object.meta,
               },
             )
             .toList(growable: false),
@@ -173,6 +177,70 @@ class ArRepositoryImpl implements ArRepository {
         fallbackMessage: 'Не удалось сохранить AR-сцену',
       );
     }
+  }
+
+  @override
+  Future<ArAnchorReachResultEntity> markAnchorReached({
+    required int questId,
+    required String anchorId,
+    String? sessionId,
+  }) async {
+    try {
+      final rawSessionId = sessionId == null
+          ? null
+          : readInt(sessionId) ?? sessionId;
+      final response = await _dio.post<dynamic>(
+        '/api/quests/$questId/anchor/reached',
+        data: {
+          'anchor_id': anchorId,
+          if (rawSessionId != null) 'session_id': rawSessionId,
+        },
+      );
+      return _parseAnchorReachResult(questId, anchorId, response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(
+        error,
+        fallbackMessage: 'Не удалось зафиксировать контрольную точку',
+      );
+    }
+  }
+
+  ArAnchorReachResultEntity _parseAnchorReachResult(
+    int fallbackQuestId,
+    String fallbackAnchorId,
+    dynamic raw,
+  ) {
+    final json = asMap(raw);
+    return ArAnchorReachResultEntity(
+      questId:
+          readInt(json['quest_id']) ??
+          readInt(json['questId']) ??
+          fallbackQuestId,
+      anchorId:
+          readString(json['anchor_id']) ??
+          readString(json['anchorId']) ??
+          fallbackAnchorId,
+      anchorRole:
+          readString(json['anchor_role']) ??
+          readString(json['anchorRole']) ??
+          fallbackAnchorId,
+      testUnlocked:
+          readBool(json['test_unlocked']) ??
+          readBool(json['testUnlocked']) ??
+          false,
+      questCompleted:
+          readBool(json['quest_completed']) ??
+          readBool(json['questCompleted']) ??
+          false,
+      created: readBool(json['created']) ?? false,
+      requiredTestAnchorId:
+          readString(json['required_test_anchor_id']) ??
+          readString(json['requiredTestAnchorId']),
+      finishAnchorId:
+          readString(json['finish_anchor_id']) ??
+          readString(json['finishAnchorId']),
+      nextAction: asMap(json['next_action'] ?? json['nextAction']),
+    );
   }
 
   Future<Map<String, dynamic>> _fetchOrganizerSceneJson(int questId) async {
@@ -240,6 +308,7 @@ class ArRepositoryImpl implements ArRepository {
                 readDoubleList(transform['transformation']) ??
                 readDoubleList(json['localTransform']) ??
                 const <double>[],
+            'meta': meta,
           };
         })
         .toList(growable: false);
@@ -307,6 +376,7 @@ class ArRepositoryImpl implements ArRepository {
             assetId: readInt(json['assetId']) ?? 0,
             nodeName: readString(json['nodeName']) ?? '',
             localTransform: readDoubleList(json['localTransform']) ?? const [],
+            meta: asMap(json['meta']),
           );
         })
         .toList(growable: false);
@@ -349,9 +419,24 @@ class ArRepositoryImpl implements ArRepository {
     return assets
         .asMap()
         .entries
-        .map((entry) {
+        .map<ArAssetEntity?>((entry) {
           final index = entry.key;
           final json = Map<String, dynamic>.from(entry.value as Map);
+          final meta = asMap(json['meta']);
+          final rawModelUri =
+              readString(json['model_url']) ??
+              readString(json['modelUri']) ??
+              readString(json['glb_url']) ??
+              readString(json['file_url']) ??
+              readString(json['storage_url']) ??
+              readString(json['storageUrl']) ??
+              readString(json['url']) ??
+              '';
+          final modelUri = rawModelUri.trim();
+          if (!_isModelAsset(json, modelUri)) {
+            return null;
+          }
+
           final previewIcon = switch (index % 3) {
             0 => ArAssetPreviewIcon.cube,
             1 => ArAssetPreviewIcon.globe,
@@ -364,24 +449,39 @@ class ArRepositoryImpl implements ArRepository {
                 readString(json['title']) ??
                 readString(json['name']) ??
                 'Asset #${index + 1}',
-            modelUri:
-                readString(json['model_url']) ??
-                readString(json['modelUri']) ??
-                readString(json['glb_url']) ??
-                readString(json['file_url']) ??
-                readString(json['storage_url']) ??
-                readString(json['storageUrl']) ??
-                readString(json['url']) ??
-                '',
+            modelUri: modelUri,
             scale:
                 readDouble(json['scale']) ??
                 readDouble(json['default_scale']) ??
                 1,
             previewIcon: previewIcon,
+            previewUrl:
+                readString(json['preview_url']) ??
+                readString(json['thumbnail_url']) ??
+                readString(json['image_url']) ??
+                readString(json['cover_url']) ??
+                readString(meta['preview_url']) ??
+                readString(meta['thumbnail_url']),
           );
         })
+        .whereType<ArAssetEntity>()
         .where((asset) => asset.modelUri.isNotEmpty)
         .toList(growable: false);
+  }
+
+  bool _isModelAsset(Map<String, dynamic> json, String modelUri) {
+    final type =
+        (readString(json['type']) ?? readString(json['asset_type']) ?? '')
+            .toLowerCase();
+    if (type.isNotEmpty) {
+      return type == 'model';
+    }
+
+    final normalized = modelUri.trim().toLowerCase();
+    return normalized.endsWith('.glb') ||
+        normalized.endsWith('.gltf') ||
+        normalized.contains('.glb?') ||
+        normalized.contains('.gltf?');
   }
 
   Future<List<ArAssetEntity>> _prepareLocalAssets(
@@ -401,39 +501,306 @@ class ArRepositoryImpl implements ArRepository {
 
   Future<String> _ensureLocalGlb(ArAssetEntity asset) async {
     if (_isLocalModelUri(asset.modelUri)) {
-      return asset.modelUri;
+      final file = await _localModelFile(asset.modelUri);
+      if (await _isValidGlbFile(file)) {
+        final wasSanitized = await _makeGlbSceneKitCompatible(file);
+        if (!await _isValidGlbFile(file)) {
+          await _deleteIfExists(file);
+          throw ApiException(
+            message:
+                'Локальная AR-модель "${asset.name}" повреждена. Откройте сцену при доступном интернете, чтобы скачать её заново.',
+            code: 'ar_invalid_cached_model',
+          );
+        }
+        await _debugLogLocalGlb(
+          asset,
+          file,
+          source: 'local',
+          wasSanitized: wasSanitized,
+        );
+        return _localModelUriForPlatform(file);
+      }
+      await _deleteIfExists(file);
+      throw ApiException(
+        message:
+            'Локальная AR-модель "${asset.name}" повреждена. Откройте сцену при доступном интернете, чтобы скачать её заново.',
+        code: 'ar_invalid_cached_model',
+      );
+    }
+
+    final filename = _localAssetFilename(asset);
+    final file = await _localModelFile(filename);
+    if (await file.exists()) {
+      if (await _isValidGlbFile(file)) {
+        final wasSanitized = await _makeGlbSceneKitCompatible(file);
+        if (!await _isValidGlbFile(file)) {
+          await _deleteIfExists(file);
+          throw ApiException(
+            message:
+                'Локальная AR-модель "${asset.name}" повреждена. Откройте сцену при доступном интернете, чтобы скачать её заново.',
+            code: 'ar_invalid_cached_model',
+          );
+        }
+        await _debugLogLocalGlb(
+          asset,
+          file,
+          source: 'cache',
+          wasSanitized: wasSanitized,
+        );
+        return _localModelUriForPlatform(file);
+      }
+      await _deleteIfExists(file);
+    }
+
+    final tempFile = File('${file.path}.download');
+    await _deleteIfExists(tempFile);
+
+    try {
+      await _dio.download(
+        asset.modelUri,
+        tempFile.path,
+        options: Options(
+          responseType: ResponseType.bytes,
+          extra: const {'arAssetDownload': true},
+        ),
+      );
+    } on DioException catch (error) {
+      await _deleteIfExists(tempFile);
+      throw ApiException(
+        message: 'Не удалось скачать AR-модель "${asset.name}"',
+        code: 'ar_asset_download_failed',
+        statusCode: error.response?.statusCode,
+      );
+    }
+
+    if (!await _isValidGlbFile(tempFile)) {
+      await _deleteIfExists(tempFile);
+      throw ApiException(
+        message:
+            'AR-модель "${asset.name}" не является корректным GLB-файлом. Проверьте ассет в админке и загрузите файл формата .glb.',
+        code: 'ar_invalid_glb',
+      );
+    }
+    final wasSanitized = await _makeGlbSceneKitCompatible(tempFile);
+    if (!await _isValidGlbFile(tempFile)) {
+      await _deleteIfExists(tempFile);
+      throw ApiException(
+        message:
+            'AR-модель "${asset.name}" была повреждена при подготовке для iOS. Проверьте GLB-файл в админке.',
+        code: 'ar_invalid_prepared_glb',
+      );
+    }
+
+    await tempFile.rename(file.path);
+    await _debugLogLocalGlb(
+      asset,
+      file,
+      source: 'download',
+      wasSanitized: wasSanitized,
+    );
+    return _localModelUriForPlatform(file);
+  }
+
+  Future<File> _localModelFile(String filenameOrPath) async {
+    if (filenameOrPath.startsWith('/')) {
+      return File(filenameOrPath);
     }
 
     final documentsDirectory = await getApplicationDocumentsDirectory();
-    final filename = _localAssetFilename(asset);
-    final file = File('${documentsDirectory.path}/$filename');
-    final existingLength = await file.exists() ? await file.length() : 0;
-    if (existingLength > 0) {
-      return filename;
+    return File('${documentsDirectory.path}/$filenameOrPath');
+  }
+
+  String _localModelUriForPlatform(File file) {
+    if (Platform.isAndroid) {
+      return file.path;
+    }
+    return file.uri.pathSegments.last;
+  }
+
+  Future<bool> _isValidGlbFile(File file) async {
+    if (!await file.exists()) {
+      return false;
     }
 
-    await _dio.download(
-      asset.modelUri,
-      file.path,
-      options: Options(
-        responseType: ResponseType.bytes,
-        extra: const {'arAssetDownload': true},
-      ),
-    );
+    final length = await file.length();
+    if (length < 12) {
+      return false;
+    }
 
-    return filename;
+    final randomAccessFile = await file.open();
+    try {
+      final header = await randomAccessFile.read(12);
+      if (header.length < 12) {
+        return false;
+      }
+
+      final hasMagic =
+          header[0] == 0x67 &&
+          header[1] == 0x6C &&
+          header[2] == 0x54 &&
+          header[3] == 0x46;
+      final version = _readUint32LittleEndian(header, 4);
+      final declaredLength = _readUint32LittleEndian(header, 8);
+
+      return hasMagic && version == 2 && declaredLength == length;
+    } finally {
+      await randomAccessFile.close();
+    }
+  }
+
+  Future<bool> _makeGlbSceneKitCompatible(File file) async {
+    if (!Platform.isIOS) {
+      return false;
+    }
+
+    final sanitized = _sanitizeGlbForSceneKit(await file.readAsBytes());
+    if (sanitized == null) {
+      return false;
+    }
+
+    await file.writeAsBytes(sanitized, flush: true);
+    return true;
+  }
+
+  Future<void> _debugLogLocalGlb(
+    ArAssetEntity asset,
+    File file, {
+    required String source,
+    required bool wasSanitized,
+  }) async {
+    if (!kDebugMode) {
+      return;
+    }
+
+    final fileName = file.uri.pathSegments.last;
+    final length = await file.length();
+    debugPrint(
+      'AR GLB ready [$source]: '
+      '${asset.name} (#${asset.id}) -> $fileName, '
+      'path=${file.path}, bytes=$length, iOSSanitized=$wasSanitized',
+    );
+  }
+
+  Uint8List? _sanitizeGlbForSceneKit(Uint8List bytes) {
+    const jsonChunkType = 0x4E4F534A;
+    if (bytes.length < 20) {
+      return null;
+    }
+
+    final magic = String.fromCharCodes(bytes.sublist(0, 4));
+    final version = _readUint32LittleEndian(bytes, 4);
+    if (magic != 'glTF' || version != 2) {
+      return null;
+    }
+
+    final jsonLength = _readUint32LittleEndian(bytes, 12);
+    final chunkType = _readUint32LittleEndian(bytes, 16);
+    final jsonStart = 20;
+    final jsonEnd = jsonStart + jsonLength;
+    if (chunkType != jsonChunkType || jsonEnd > bytes.length) {
+      return null;
+    }
+
+    final gltf = Map<String, dynamic>.from(
+      jsonDecode(utf8.decode(bytes.sublist(jsonStart, jsonEnd)).trimRight())
+          as Map,
+    );
+    var changed = false;
+    for (final mesh in asList(gltf['meshes'])) {
+      final meshJson = asMap(mesh);
+      for (final primitive in asList(meshJson['primitives'])) {
+        final primitiveJson = asMap(primitive);
+        final attributes = primitiveJson['attributes'];
+        if (attributes is! Map) {
+          continue;
+        }
+
+        final colorAttributeKeys = attributes.keys
+            .where((key) => key.toString().startsWith('COLOR_'))
+            .toList(growable: false);
+        if (colorAttributeKeys.isEmpty) {
+          continue;
+        }
+
+        for (final key in colorAttributeKeys) {
+          attributes.remove(key);
+        }
+        changed = true;
+      }
+    }
+
+    if (!changed) {
+      return null;
+    }
+
+    final jsonBytes = Uint8List.fromList(utf8.encode(jsonEncode(gltf)));
+    final paddedJsonLength = _paddedLength(jsonBytes.length);
+    final paddedJson = Uint8List(paddedJsonLength)..setAll(0, jsonBytes);
+    for (var index = jsonBytes.length; index < paddedJson.length; index++) {
+      paddedJson[index] = 0x20;
+    }
+
+    final remainingChunks = bytes.sublist(jsonEnd);
+    final totalLength = 12 + 8 + paddedJson.length + remainingChunks.length;
+    final output = BytesBuilder(copy: false)
+      ..add(_glbHeader(totalLength))
+      ..add(_uint32LittleEndian(paddedJson.length))
+      ..add(_uint32LittleEndian(jsonChunkType))
+      ..add(paddedJson)
+      ..add(remainingChunks);
+
+    return output.toBytes();
+  }
+
+  int _paddedLength(int length) {
+    return (length + 3) & ~3;
+  }
+
+  Uint8List _glbHeader(int length) {
+    final header = Uint8List(12);
+    header.setAll(0, utf8.encode('glTF'));
+    header.setAll(4, _uint32LittleEndian(2));
+    header.setAll(8, _uint32LittleEndian(length));
+    return header;
+  }
+
+  Uint8List _uint32LittleEndian(int value) {
+    return Uint8List(4)
+      ..[0] = value & 0xff
+      ..[1] = (value >> 8) & 0xff
+      ..[2] = (value >> 16) & 0xff
+      ..[3] = (value >> 24) & 0xff;
+  }
+
+  int _readUint32LittleEndian(List<int> bytes, int offset) {
+    return bytes[offset] |
+        (bytes[offset + 1] << 8) |
+        (bytes[offset + 2] << 16) |
+        (bytes[offset + 3] << 24);
+  }
+
+  Future<void> _deleteIfExists(File file) async {
+    if (await file.exists()) {
+      await file.delete();
+    }
   }
 
   bool _isLocalModelUri(String uri) {
     final normalized = uri.trim().toLowerCase();
-    return normalized.startsWith('ar_asset_') &&
+    final isAppFolderFilename =
+        normalized.startsWith('ar_asset_') &&
         normalized.endsWith('.glb') &&
         !normalized.contains('/');
+    final isAbsoluteFilePath =
+        normalized.startsWith('/') && normalized.endsWith('.glb');
+
+    return isAppFolderFilename || isAbsoluteFilePath;
   }
 
   String _localAssetFilename(ArAssetEntity asset) {
     final hash = _stableHash(asset.modelUri);
-    return 'ar_asset_${asset.id}_$hash.glb';
+    final platformSuffix = Platform.isIOS ? '_$_iosGlbCacheVersion' : '';
+    return 'ar_asset_${asset.id}_$hash$platformSuffix.glb';
   }
 
   String _stableHash(String value) {
@@ -466,6 +833,7 @@ class ArRepositoryImpl implements ArRepository {
               'modelUri': asset.modelUri,
               'scale': asset.scale,
               'previewIcon': asset.previewIcon.name,
+              'previewUrl': asset.previewUrl,
             },
           )
           .toList(growable: false),
@@ -479,7 +847,7 @@ class ArRepositoryImpl implements ArRepository {
     );
   }
 
-  ArQuestSceneEntity? _readCachedScene(int questId) {
+  Future<ArQuestSceneEntity?> _readCachedScene(int questId) async {
     final raw = _sharedPreferences.getString('$_sceneCachePrefix$questId');
     if (raw == null || raw.isEmpty) {
       return null;
@@ -499,9 +867,23 @@ class ArRepositoryImpl implements ArRepository {
               modelUri: readString(map['modelUri']) ?? '',
               scale: readDouble(map['scale']) ?? 1,
               previewIcon: previewIcon,
+              previewUrl: readString(map['previewUrl']),
             );
           })
           .toList(growable: false);
+      for (final asset in assets) {
+        if (!_isLocalModelUri(asset.modelUri)) {
+          continue;
+        }
+
+        final file = await _localModelFile(asset.modelUri);
+        if (!await _isValidGlbFile(file)) {
+          await _deleteIfExists(file);
+          return null;
+        }
+        await _makeGlbSceneKitCompatible(file);
+      }
+
       return _parseScene(
         questId: questId,
         sceneJson: json,
@@ -531,6 +913,35 @@ class ArRepositoryImpl implements ArRepository {
       return ApiException(
         message:
             'Сцена содержит ассеты, которые не принадлежат выбранному квесту.',
+        code: code,
+        statusCode: error.response?.statusCode,
+      );
+    }
+    if (code == 'anchor_not_found') {
+      return ApiException(
+        message: 'Контрольная точка не найдена в актуальной AR-сцене.',
+        code: code,
+        statusCode: error.response?.statusCode,
+      );
+    }
+    if (code == 'anchor_session_invalid') {
+      return ApiException(
+        message: 'Сессия квеста истекла. Откройте квест по QR-коду ещё раз.',
+        code: code,
+        statusCode: error.response?.statusCode,
+      );
+    }
+    if (code == 'test_locked_by_anchor') {
+      return ApiException(
+        message:
+            'Тест станет доступен после прохождения контрольной точки в AR-сцене.',
+        code: code,
+        statusCode: error.response?.statusCode,
+      );
+    }
+    if (code == 'test_anchor_not_configured') {
+      return ApiException(
+        message: 'Квест настроен некорректно. Обратитесь к организатору.',
         code: code,
         statusCode: error.response?.statusCode,
       );

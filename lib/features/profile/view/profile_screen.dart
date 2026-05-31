@@ -5,11 +5,35 @@ import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
+import 'package:vroom/features/participant/domain/entities/participant_profile_entity.dart';
 import 'package:vroom/features/participant/domain/repository/participant_repository.dart';
 import 'package:vroom/features/profile/view/components/profile_content.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late Future<ParticipantProfileEntity> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = _loadProfile();
+  }
+
+  Future<ParticipantProfileEntity> _loadProfile() {
+    return di.locator<ParticipantRepository>().getProfile();
+  }
+
+  void _setProfile(ParticipantProfileEntity profile) {
+    setState(() {
+      _profileFuture = Future.value(profile);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
             builder: (context, state) {
               return state.maybeWhen(
                 authenticated: (_) => FutureBuilder(
-                  future: di.locator<ParticipantRepository>().getProfile(),
+                  future: _profileFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
                       return const Center(child: CircularProgressIndicator());
@@ -47,10 +71,14 @@ class ProfileScreen extends StatelessWidget {
                       return Center(child: Text(l10n.profileUnavailable));
                     }
 
-                    return ProfileContent(user: profile);
+                    return ProfileContent(
+                      user: profile,
+                      onProfileChanged: _setProfile,
+                    );
                   },
                 ),
                 loading: () => const Center(child: CircularProgressIndicator()),
+                unauthenticated: () => const SizedBox.shrink(),
                 orElse: () => Center(child: Text(l10n.genericError)),
               );
             },

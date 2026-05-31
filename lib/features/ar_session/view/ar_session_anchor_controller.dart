@@ -22,8 +22,9 @@ extension _ArSessionAnchorController on _ArSessionViewState {
     sessionManager.onError = _onSessionError;
 
     await sessionManager.onInitialize(
+      showAnimatedGuide: false,
       showFeaturePoints: false,
-      showPlanes: true,
+      showPlanes: false,
       showWorldOrigin: false,
       handleTaps: true,
       handlePans: widget.mode == ArSessionMode.admin,

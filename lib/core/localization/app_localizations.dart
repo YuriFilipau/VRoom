@@ -60,6 +60,8 @@ class AppLocalizations {
   String get registerSubtitle => _t('registerSubtitle');
   String get firstName => _t('firstName');
   String get lastName => _t('lastName');
+  String get school => _t('school');
+  String get schoolClass => _t('schoolClass');
   String get registerButton => _t('registerButton');
   String get alreadyHaveAccount => _t('alreadyHaveAccount');
   String get qrManualTitle => _t('qrManualTitle');
@@ -70,6 +72,23 @@ class AppLocalizations {
   String get qrScannerHint => _t('qrScannerHint');
   String get qrProcessing => _t('qrProcessing');
   String get qrManualButton => _t('qrManualButton');
+  String get qrScanAgain => _t('qrScanAgain');
+  String get profileEdit => _t('profileEdit');
+  String get profileEditAction => _t('profileEditAction');
+  String get profileChangePassword => _t('profileChangePassword');
+  String get profileChangePasswordAction => _t('profileChangePasswordAction');
+  String get profileLogin => _t('profileLogin');
+  String get profileSchool => _t('profileSchool');
+  String get profileClass => _t('profileClass');
+  String get profileAvatarPhoto => _t('profileAvatarPhoto');
+  String get profileChooseAvatar => _t('profileChooseAvatar');
+  String get profileSave => _t('profileSave');
+  String get profileUpdated => _t('profileUpdated');
+  String get profileCurrentPassword => _t('profileCurrentPassword');
+  String get profileNewPassword => _t('profileNewPassword');
+  String get profileConfirmPassword => _t('profileConfirmPassword');
+  String get profilePasswordMismatch => _t('profilePasswordMismatch');
+  String get profilePasswordChanged => _t('profilePasswordChanged');
 
   String welcomeUser(String login) {
     return _t('welcomeUser').replaceAll('{login}', login);
@@ -147,6 +166,8 @@ const _localizedValues = <AppLanguage, Map<String, String>>{
     'registerSubtitle': 'Создай аккаунт и начни путешествие',
     'firstName': 'Имя',
     'lastName': 'Фамилия',
+    'school': 'Школа',
+    'schoolClass': 'Класс',
     'registerButton': 'Зарегистрироваться',
     'alreadyHaveAccount': 'Уже есть аккаунт?',
     'welcomeUser': 'Добро пожаловать, {login}!',
@@ -158,6 +179,23 @@ const _localizedValues = <AppLanguage, Map<String, String>>{
     'qrScannerHint': 'Наведите камеру на QR-код',
     'qrProcessing': 'Обработка...',
     'qrManualButton': 'Ввести код вручную',
+    'qrScanAgain': 'Сканировать снова',
+    'profileEdit': 'Редактировать профиль',
+    'profileEditAction': 'Редактировать',
+    'profileChangePassword': 'Изменить пароль',
+    'profileChangePasswordAction': 'Изменить',
+    'profileLogin': 'Логин',
+    'profileSchool': 'Школа',
+    'profileClass': 'Класс',
+    'profileAvatarPhoto': 'Аватар',
+    'profileChooseAvatar': 'Выбрать фото',
+    'profileSave': 'Сохранить',
+    'profileUpdated': 'Профиль обновлён',
+    'profileCurrentPassword': 'Текущий пароль',
+    'profileNewPassword': 'Новый пароль',
+    'profileConfirmPassword': 'Повторите пароль',
+    'profilePasswordMismatch': 'Пароли не совпадают',
+    'profilePasswordChanged': 'Пароль изменён',
   },
   AppLanguage.english: {
     'chooseLanguageTitle': 'Choose Your Language',
@@ -203,6 +241,8 @@ const _localizedValues = <AppLanguage, Map<String, String>>{
     'registerSubtitle': 'Create an account and start the journey',
     'firstName': 'First name',
     'lastName': 'Last name',
+    'school': 'School',
+    'schoolClass': 'Class',
     'registerButton': 'Create account',
     'alreadyHaveAccount': 'Already have an account?',
     'welcomeUser': 'Welcome, {login}!',
@@ -214,6 +254,23 @@ const _localizedValues = <AppLanguage, Map<String, String>>{
     'qrScannerHint': 'Point the camera at the QR code',
     'qrProcessing': 'Processing...',
     'qrManualButton': 'Enter code manually',
+    'qrScanAgain': 'Scan again',
+    'profileEdit': 'Edit profile',
+    'profileEditAction': 'Edit',
+    'profileChangePassword': 'Change password',
+    'profileChangePasswordAction': 'Change',
+    'profileLogin': 'Login',
+    'profileSchool': 'School',
+    'profileClass': 'Class',
+    'profileAvatarPhoto': 'Avatar',
+    'profileChooseAvatar': 'Choose photo',
+    'profileSave': 'Save',
+    'profileUpdated': 'Profile updated',
+    'profileCurrentPassword': 'Current password',
+    'profileNewPassword': 'New password',
+    'profileConfirmPassword': 'Confirm password',
+    'profilePasswordMismatch': 'Passwords do not match',
+    'profilePasswordChanged': 'Password changed',
   },
   AppLanguage.turkish: {
     'chooseLanguageTitle': 'Dilinizi Seçin',

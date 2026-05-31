@@ -128,25 +128,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           child: Column(
             children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: Visibility(
-                  visible: !_isLastPage && !_isLanguagePage,
-                  maintainState: true,
-                  maintainAnimation: true,
-                  maintainSize: true,
-                  child: TextButton(
-                    onPressed: _isSubmitting || _isLanguagePage
-                        ? null
-                        : _finishOnboarding,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      disabledForegroundColor: AppColors.textSecondary,
+              if (!_isLanguagePage)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Visibility(
+                    visible: !_isLastPage,
+                    maintainState: true,
+                    maintainAnimation: true,
+                    maintainSize: true,
+                    child: TextButton(
+                      onPressed: _isSubmitting ? null : _finishOnboarding,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        disabledForegroundColor: AppColors.textSecondary,
+                      ),
+                      child: Text(l10n.onboardingSkip),
                     ),
-                    child: Text(l10n.onboardingSkip),
                   ),
                 ),
-              ),
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,

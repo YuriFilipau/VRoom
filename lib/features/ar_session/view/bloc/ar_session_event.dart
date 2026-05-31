@@ -10,9 +10,25 @@ class ArSessionEvent with _$ArSessionEvent {
   const factory ArSessionEvent.assetSelected(int assetId) =
       ArSessionAssetSelected;
 
+  const factory ArSessionEvent.placementSelected(String? placementId) =
+      ArSessionPlacementSelected;
+
   const factory ArSessionEvent.placementUpserted(
     ArAssetPlacementEntity placement,
   ) = ArSessionPlacementUpserted;
+
+  const factory ArSessionEvent.placementScaleChanged({
+    required String placementId,
+    required double scale,
+  }) = ArSessionPlacementScaleChanged;
+
+  const factory ArSessionEvent.placementRemoved(String placementId) =
+      ArSessionPlacementRemoved;
+
+  const factory ArSessionEvent.finishAnchorAdded() = ArSessionFinishAnchorAdded;
+
+  const factory ArSessionEvent.finishAnchorRemoved() =
+      ArSessionFinishAnchorRemoved;
 
   const factory ArSessionEvent.sceneAnchorUpdated({
     String? anchorName,
@@ -26,6 +42,14 @@ class ArSessionEvent with _$ArSessionEvent {
   }) = ArSessionSceneAnchorUpdated;
 
   const factory ArSessionEvent.saveRequested() = ArSessionSaveRequested;
+
+  const factory ArSessionEvent.anchorReached({
+    required String anchorId,
+    String? sessionId,
+  }) = ArSessionAnchorReached;
+
+  const factory ArSessionEvent.anchorReachResultConsumed() =
+      ArSessionAnchorReachResultConsumed;
 
   const factory ArSessionEvent.snackbarConsumed() = ArSessionSnackbarConsumed;
 }

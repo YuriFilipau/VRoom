@@ -90,6 +90,8 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String firstName,
     required String lastName,
+    String? school,
+    String? schoolClass,
   }) async {
     try {
       final user = await remoteDatasource.register(
@@ -97,6 +99,8 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         firstName: firstName,
         lastName: lastName,
+        school: school,
+        schoolClass: schoolClass,
       );
       await localDatasource.cacheTokens(
         accessToken: user.accessToken,

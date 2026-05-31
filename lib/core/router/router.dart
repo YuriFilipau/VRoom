@@ -140,8 +140,13 @@ class AppRouter {
             'admin' => ArSessionMode.admin,
             _ => ArSessionMode.user,
           };
+          final scanSessionId = state.uri.queryParameters['sessionId'];
 
-          return ArSessionScreen(questId: questId, mode: mode);
+          return ArSessionScreen(
+            questId: questId,
+            mode: mode,
+            scanSessionId: scanSessionId,
+          );
         },
       ),
       GoRoute(

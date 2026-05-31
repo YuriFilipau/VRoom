@@ -9,6 +9,7 @@ class LanguageOptionGrid extends StatelessWidget {
     this.padding = EdgeInsets.zero,
     this.physics,
     this.shrinkWrap = false,
+    this.clipBehavior = Clip.none,
     super.key,
   });
 
@@ -17,6 +18,7 @@ class LanguageOptionGrid extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final ScrollPhysics? physics;
   final bool shrinkWrap;
+  final Clip clipBehavior;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,7 @@ class LanguageOptionGrid extends StatelessWidget {
           padding: padding,
           physics: physics,
           shrinkWrap: shrinkWrap,
-          clipBehavior: Clip.none,
+          clipBehavior: clipBehavior,
           itemCount: AppLanguage.values.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,

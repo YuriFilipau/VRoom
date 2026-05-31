@@ -18,51 +18,170 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
   @override
   Future<ParticipantProfileEntity> getProfile() async {
     try {
-      final profileResponse = await _dio.get<dynamic>('/api/mobile/profile');
-      final profileJson = asMap(profileResponse.data);
-
-      final profileEvents = asList(profileJson['events']);
-      final events = profileEvents.isNotEmpty
-          ? profileEvents
-          : asList((await _dio.get<dynamic>('/api/mobile/events/my')).data);
-      final completedQuests =
-          readInt(profileJson['completed_quests_count']) ??
-          readInt(profileJson['completedQuestsCount']) ??
-          events
-              .map(
-                (item) =>
-                    _parseEventSummary(Map<String, dynamic>.from(item as Map)),
-              )
-              .fold<int>(0, (sum, event) => sum + event.completedQuestsCount);
-
-      return ParticipantProfileEntity(
-        id: readInt(profileJson['id']) ?? 0,
-        login: readString(profileJson['login']) ?? '',
-        firstName:
-            readString(profileJson['first_name']) ??
-            readString(profileJson['firstName']) ??
-            '',
-        lastName:
-            readString(profileJson['last_name']) ??
-            readString(profileJson['lastName']) ??
-            '',
-        isStaff:
-            readBool(profileJson['is_staff']) ??
-            readBool(profileJson['isStaff']) ??
-            false,
-        achievements: _parseAchievements(profileJson['achievements']),
-        recentActivities: _parseActivities(
-          profileJson['recent_activities'] ?? profileJson['recentActivities'],
-        ),
-        joinedEventsCount: events.length,
-        completedQuestsCount: completedQuests,
-      );
+      return await _loadProfile();
     } on DioException catch (error) {
       throw _mapDioException(
         error,
         fallbackMessage: 'Не удалось загрузить профиль',
       );
     }
+  }
+
+  @override
+  Future<ParticipantProfileEntity> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? school,
+    String? schoolClass,
+    int? schoolClassNumber,
+    String? schoolClassLetter,
+    MultipartFile? avatar,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        if (firstName != null) 'first_name': firstName.trim(),
+        if (lastName != null) 'last_name': lastName.trim(),
+        if (school != null) 'school': school.trim(),
+        if (schoolClass != null) 'school_class': schoolClass.trim(),
+        if (schoolClassNumber != null) 'school_class_number': schoolClassNumber,
+        if (schoolClassLetter != null)
+          'school_class_letter': schoolClassLetter.trim().toUpperCase(),
+      };
+
+      final requestData = avatar == null
+          ? data
+          : FormData.fromMap({...data, 'avatar': avatar});
+      final response = await _sendProfileUpdate(requestData);
+      final json = asMap(response.data);
+      return _looksLikeProfile(json)
+          ? await _parseProfileResponse(json)
+          : await _loadProfile();
+    } on DioException catch (error) {
+      throw _mapDioException(
+        error,
+        fallbackMessage: 'Не удалось обновить профиль',
+      );
+    }
+  }
+
+  @override
+  Future<ParticipantProfileEntity> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/mobile/profile/password',
+        data: {
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        },
+      );
+      final json = asMap(response.data);
+      return _looksLikeProfile(json)
+          ? await _parseProfileResponse(json)
+          : await _loadProfile();
+    } on DioException catch (error) {
+      throw _mapDioException(
+        error,
+        fallbackMessage: 'Не удалось изменить пароль',
+      );
+    }
+  }
+
+  Future<Response<dynamic>> _sendProfileUpdate(dynamic requestData) async {
+    try {
+      return await _dio.patch<dynamic>(
+        '/api/mobile/profile',
+        data: requestData,
+      );
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 405) {
+        return await _dio.put<dynamic>(
+          '/api/mobile/profile',
+          data: requestData,
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<ParticipantProfileEntity> _loadProfile() async {
+    final profileResponse = await _dio.get<dynamic>('/api/mobile/profile');
+    return _parseProfileResponse(asMap(profileResponse.data));
+  }
+
+  Future<ParticipantProfileEntity> _parseProfileResponse(
+    Map<String, dynamic> profileJson,
+  ) async {
+    final events = await _profileEvents(profileJson);
+    return _parseProfile(profileJson, events: events);
+  }
+
+  Future<List<dynamic>> _profileEvents(Map<String, dynamic> profileJson) async {
+    final profileEvents = asList(profileJson['events']);
+    if (profileEvents.isNotEmpty) {
+      return profileEvents;
+    }
+    return asList((await _dio.get<dynamic>('/api/mobile/events/my')).data);
+  }
+
+  ParticipantProfileEntity _parseProfile(
+    Map<String, dynamic> profileJson, {
+    required List<dynamic> events,
+  }) {
+    final completedQuests =
+        readInt(profileJson['completed_quests_count']) ??
+        readInt(profileJson['completedQuestsCount']) ??
+        events
+            .map(
+              (item) =>
+                  _parseEventSummary(Map<String, dynamic>.from(item as Map)),
+            )
+            .fold<int>(0, (sum, event) => sum + event.completedQuestsCount);
+
+    return ParticipantProfileEntity(
+      id: readInt(profileJson['id']) ?? 0,
+      login: readString(profileJson['login']) ?? '',
+      firstName:
+          readString(profileJson['first_name']) ??
+          readString(profileJson['firstName']) ??
+          '',
+      lastName:
+          readString(profileJson['last_name']) ??
+          readString(profileJson['lastName']) ??
+          '',
+      isStaff:
+          readBool(profileJson['is_staff']) ??
+          readBool(profileJson['isStaff']) ??
+          false,
+      school: readString(profileJson['school']),
+      schoolClass:
+          readString(profileJson['school_class']) ??
+          readString(profileJson['schoolClass']),
+      schoolClassNumber:
+          readInt(profileJson['school_class_number']) ??
+          readInt(profileJson['schoolClassNumber']),
+      schoolClassLetter:
+          readString(profileJson['school_class_letter']) ??
+          readString(profileJson['schoolClassLetter']),
+      avatarUrl:
+          readString(profileJson['avatar_url']) ??
+          readString(profileJson['avatarUrl']),
+      achievements: _parseAchievements(profileJson['achievements']),
+      recentActivities: _parseActivities(
+        profileJson['recent_activities'] ?? profileJson['recentActivities'],
+      ),
+      joinedEventsCount: events.length,
+      completedQuestsCount: completedQuests,
+    );
+  }
+
+  bool _looksLikeProfile(Map<String, dynamic> json) {
+    return json.containsKey('id') ||
+        json.containsKey('login') ||
+        json.containsKey('first_name') ||
+        json.containsKey('firstName');
   }
 
   @override

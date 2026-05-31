@@ -128,12 +128,12 @@ return logout(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  checkAuthStatus,TResult Function( String login,  String password)?  login,TResult Function( String login,  String password,  String firstName,  String lastName)?  register,TResult Function()?  logout,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  checkAuthStatus,TResult Function( String login,  String password)?  login,TResult Function( String login,  String password,  String firstName,  String lastName,  String? school,  String? schoolClass)?  register,TResult Function()?  logout,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CheckAuthStatus() when checkAuthStatus != null:
 return checkAuthStatus();case Login() when login != null:
 return login(_that.login,_that.password);case Register() when register != null:
-return register(_that.login,_that.password,_that.firstName,_that.lastName);case Logout() when logout != null:
+return register(_that.login,_that.password,_that.firstName,_that.lastName,_that.school,_that.schoolClass);case Logout() when logout != null:
 return logout();case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return logout();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  checkAuthStatus,required TResult Function( String login,  String password)  login,required TResult Function( String login,  String password,  String firstName,  String lastName)  register,required TResult Function()  logout,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  checkAuthStatus,required TResult Function( String login,  String password)  login,required TResult Function( String login,  String password,  String firstName,  String lastName,  String? school,  String? schoolClass)  register,required TResult Function()  logout,}) {final _that = this;
 switch (_that) {
 case CheckAuthStatus():
 return checkAuthStatus();case Login():
 return login(_that.login,_that.password);case Register():
-return register(_that.login,_that.password,_that.firstName,_that.lastName);case Logout():
+return register(_that.login,_that.password,_that.firstName,_that.lastName,_that.school,_that.schoolClass);case Logout():
 return logout();case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return logout();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  checkAuthStatus,TResult? Function( String login,  String password)?  login,TResult? Function( String login,  String password,  String firstName,  String lastName)?  register,TResult? Function()?  logout,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  checkAuthStatus,TResult? Function( String login,  String password)?  login,TResult? Function( String login,  String password,  String firstName,  String lastName,  String? school,  String? schoolClass)?  register,TResult? Function()?  logout,}) {final _that = this;
 switch (_that) {
 case CheckAuthStatus() when checkAuthStatus != null:
 return checkAuthStatus();case Login() when login != null:
 return login(_that.login,_that.password);case Register() when register != null:
-return register(_that.login,_that.password,_that.firstName,_that.lastName);case Logout() when logout != null:
+return register(_that.login,_that.password,_that.firstName,_that.lastName,_that.school,_that.schoolClass);case Logout() when logout != null:
 return logout();case _:
   return null;
 
@@ -293,13 +293,15 @@ as String,
 
 
 class Register implements AuthEvent {
-  const Register({required this.login, required this.password, required this.firstName, required this.lastName});
+  const Register({required this.login, required this.password, required this.firstName, required this.lastName, this.school, this.schoolClass});
   
 
  final  String login;
  final  String password;
  final  String firstName;
  final  String lastName;
+ final  String? school;
+ final  String? schoolClass;
 
 /// Create a copy of AuthEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -311,16 +313,16 @@ $RegisterCopyWith<Register> get copyWith => _$RegisterCopyWithImpl<Register>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Register&&(identical(other.login, login) || other.login == login)&&(identical(other.password, password) || other.password == password)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Register&&(identical(other.login, login) || other.login == login)&&(identical(other.password, password) || other.password == password)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolClass, schoolClass) || other.schoolClass == schoolClass));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,login,password,firstName,lastName);
+int get hashCode => Object.hash(runtimeType,login,password,firstName,lastName,school,schoolClass);
 
 @override
 String toString() {
-  return 'AuthEvent.register(login: $login, password: $password, firstName: $firstName, lastName: $lastName)';
+  return 'AuthEvent.register(login: $login, password: $password, firstName: $firstName, lastName: $lastName, school: $school, schoolClass: $schoolClass)';
 }
 
 
@@ -331,7 +333,7 @@ abstract mixin class $RegisterCopyWith<$Res> implements $AuthEventCopyWith<$Res>
   factory $RegisterCopyWith(Register value, $Res Function(Register) _then) = _$RegisterCopyWithImpl;
 @useResult
 $Res call({
- String login, String password, String firstName, String lastName
+ String login, String password, String firstName, String lastName, String? school, String? schoolClass
 });
 
 
@@ -348,13 +350,15 @@ class _$RegisterCopyWithImpl<$Res>
 
 /// Create a copy of AuthEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? login = null,Object? password = null,Object? firstName = null,Object? lastName = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? login = null,Object? password = null,Object? firstName = null,Object? lastName = null,Object? school = freezed,Object? schoolClass = freezed,}) {
   return _then(Register(
 login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
 as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
-as String,
+as String,school: freezed == school ? _self.school : school // ignore: cast_nullable_to_non_nullable
+as String?,schoolClass: freezed == schoolClass ? _self.schoolClass : schoolClass // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

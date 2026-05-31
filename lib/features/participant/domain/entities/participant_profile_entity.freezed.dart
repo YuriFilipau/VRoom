@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ParticipantProfileEntity {
 
- int get id; String get login; String get firstName; String get lastName; bool get isStaff; List<UserAchievementEntity> get achievements; List<UserActivityEntity> get recentActivities; int get joinedEventsCount; int get completedQuestsCount;
+ int get id; String get login; String get firstName; String get lastName; bool get isStaff; String? get school; String? get schoolClass; int? get schoolClassNumber; String? get schoolClassLetter; String? get avatarUrl; List<UserAchievementEntity> get achievements; List<UserActivityEntity> get recentActivities; int get joinedEventsCount; int get completedQuestsCount;
 /// Create a copy of ParticipantProfileEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ParticipantProfileEntityCopyWith<ParticipantProfileEntity> get copyWith => _$Pa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantProfileEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.login, login) || other.login == login)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&const DeepCollectionEquality().equals(other.achievements, achievements)&&const DeepCollectionEquality().equals(other.recentActivities, recentActivities)&&(identical(other.joinedEventsCount, joinedEventsCount) || other.joinedEventsCount == joinedEventsCount)&&(identical(other.completedQuestsCount, completedQuestsCount) || other.completedQuestsCount == completedQuestsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantProfileEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.login, login) || other.login == login)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolClass, schoolClass) || other.schoolClass == schoolClass)&&(identical(other.schoolClassNumber, schoolClassNumber) || other.schoolClassNumber == schoolClassNumber)&&(identical(other.schoolClassLetter, schoolClassLetter) || other.schoolClassLetter == schoolClassLetter)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&const DeepCollectionEquality().equals(other.achievements, achievements)&&const DeepCollectionEquality().equals(other.recentActivities, recentActivities)&&(identical(other.joinedEventsCount, joinedEventsCount) || other.joinedEventsCount == joinedEventsCount)&&(identical(other.completedQuestsCount, completedQuestsCount) || other.completedQuestsCount == completedQuestsCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,login,firstName,lastName,isStaff,const DeepCollectionEquality().hash(achievements),const DeepCollectionEquality().hash(recentActivities),joinedEventsCount,completedQuestsCount);
+int get hashCode => Object.hash(runtimeType,id,login,firstName,lastName,isStaff,school,schoolClass,schoolClassNumber,schoolClassLetter,avatarUrl,const DeepCollectionEquality().hash(achievements),const DeepCollectionEquality().hash(recentActivities),joinedEventsCount,completedQuestsCount);
 
 @override
 String toString() {
-  return 'ParticipantProfileEntity(id: $id, login: $login, firstName: $firstName, lastName: $lastName, isStaff: $isStaff, achievements: $achievements, recentActivities: $recentActivities, joinedEventsCount: $joinedEventsCount, completedQuestsCount: $completedQuestsCount)';
+  return 'ParticipantProfileEntity(id: $id, login: $login, firstName: $firstName, lastName: $lastName, isStaff: $isStaff, school: $school, schoolClass: $schoolClass, schoolClassNumber: $schoolClassNumber, schoolClassLetter: $schoolClassLetter, avatarUrl: $avatarUrl, achievements: $achievements, recentActivities: $recentActivities, joinedEventsCount: $joinedEventsCount, completedQuestsCount: $completedQuestsCount)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ParticipantProfileEntityCopyWith<$Res>  {
   factory $ParticipantProfileEntityCopyWith(ParticipantProfileEntity value, $Res Function(ParticipantProfileEntity) _then) = _$ParticipantProfileEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String login, String firstName, String lastName, bool isStaff, List<UserAchievementEntity> achievements, List<UserActivityEntity> recentActivities, int joinedEventsCount, int completedQuestsCount
+ int id, String login, String firstName, String lastName, bool isStaff, String? school, String? schoolClass, int? schoolClassNumber, String? schoolClassLetter, String? avatarUrl, List<UserAchievementEntity> achievements, List<UserActivityEntity> recentActivities, int joinedEventsCount, int completedQuestsCount
 });
 
 
@@ -62,14 +62,19 @@ class _$ParticipantProfileEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantProfileEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? login = null,Object? firstName = null,Object? lastName = null,Object? isStaff = null,Object? achievements = null,Object? recentActivities = null,Object? joinedEventsCount = null,Object? completedQuestsCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? login = null,Object? firstName = null,Object? lastName = null,Object? isStaff = null,Object? school = freezed,Object? schoolClass = freezed,Object? schoolClassNumber = freezed,Object? schoolClassLetter = freezed,Object? avatarUrl = freezed,Object? achievements = null,Object? recentActivities = null,Object? joinedEventsCount = null,Object? completedQuestsCount = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,isStaff: null == isStaff ? _self.isStaff : isStaff // ignore: cast_nullable_to_non_nullable
-as bool,achievements: null == achievements ? _self.achievements : achievements // ignore: cast_nullable_to_non_nullable
+as bool,school: freezed == school ? _self.school : school // ignore: cast_nullable_to_non_nullable
+as String?,schoolClass: freezed == schoolClass ? _self.schoolClass : schoolClass // ignore: cast_nullable_to_non_nullable
+as String?,schoolClassNumber: freezed == schoolClassNumber ? _self.schoolClassNumber : schoolClassNumber // ignore: cast_nullable_to_non_nullable
+as int?,schoolClassLetter: freezed == schoolClassLetter ? _self.schoolClassLetter : schoolClassLetter // ignore: cast_nullable_to_non_nullable
+as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,achievements: null == achievements ? _self.achievements : achievements // ignore: cast_nullable_to_non_nullable
 as List<UserAchievementEntity>,recentActivities: null == recentActivities ? _self.recentActivities : recentActivities // ignore: cast_nullable_to_non_nullable
 as List<UserActivityEntity>,joinedEventsCount: null == joinedEventsCount ? _self.joinedEventsCount : joinedEventsCount // ignore: cast_nullable_to_non_nullable
 as int,completedQuestsCount: null == completedQuestsCount ? _self.completedQuestsCount : completedQuestsCount // ignore: cast_nullable_to_non_nullable
@@ -158,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String login,  String firstName,  String lastName,  bool isStaff,  List<UserAchievementEntity> achievements,  List<UserActivityEntity> recentActivities,  int joinedEventsCount,  int completedQuestsCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String login,  String firstName,  String lastName,  bool isStaff,  String? school,  String? schoolClass,  int? schoolClassNumber,  String? schoolClassLetter,  String? avatarUrl,  List<UserAchievementEntity> achievements,  List<UserActivityEntity> recentActivities,  int joinedEventsCount,  int completedQuestsCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ParticipantProfileEntity() when $default != null:
-return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaff,_that.achievements,_that.recentActivities,_that.joinedEventsCount,_that.completedQuestsCount);case _:
+return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaff,_that.school,_that.schoolClass,_that.schoolClassNumber,_that.schoolClassLetter,_that.avatarUrl,_that.achievements,_that.recentActivities,_that.joinedEventsCount,_that.completedQuestsCount);case _:
   return orElse();
 
 }
@@ -179,10 +184,10 @@ return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaf
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String login,  String firstName,  String lastName,  bool isStaff,  List<UserAchievementEntity> achievements,  List<UserActivityEntity> recentActivities,  int joinedEventsCount,  int completedQuestsCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String login,  String firstName,  String lastName,  bool isStaff,  String? school,  String? schoolClass,  int? schoolClassNumber,  String? schoolClassLetter,  String? avatarUrl,  List<UserAchievementEntity> achievements,  List<UserActivityEntity> recentActivities,  int joinedEventsCount,  int completedQuestsCount)  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantProfileEntity():
-return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaff,_that.achievements,_that.recentActivities,_that.joinedEventsCount,_that.completedQuestsCount);case _:
+return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaff,_that.school,_that.schoolClass,_that.schoolClassNumber,_that.schoolClassLetter,_that.avatarUrl,_that.achievements,_that.recentActivities,_that.joinedEventsCount,_that.completedQuestsCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +204,10 @@ return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaf
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String login,  String firstName,  String lastName,  bool isStaff,  List<UserAchievementEntity> achievements,  List<UserActivityEntity> recentActivities,  int joinedEventsCount,  int completedQuestsCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String login,  String firstName,  String lastName,  bool isStaff,  String? school,  String? schoolClass,  int? schoolClassNumber,  String? schoolClassLetter,  String? avatarUrl,  List<UserAchievementEntity> achievements,  List<UserActivityEntity> recentActivities,  int joinedEventsCount,  int completedQuestsCount)?  $default,) {final _that = this;
 switch (_that) {
 case _ParticipantProfileEntity() when $default != null:
-return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaff,_that.achievements,_that.recentActivities,_that.joinedEventsCount,_that.completedQuestsCount);case _:
+return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaff,_that.school,_that.schoolClass,_that.schoolClassNumber,_that.schoolClassLetter,_that.avatarUrl,_that.achievements,_that.recentActivities,_that.joinedEventsCount,_that.completedQuestsCount);case _:
   return null;
 
 }
@@ -214,7 +219,7 @@ return $default(_that.id,_that.login,_that.firstName,_that.lastName,_that.isStaf
 
 
 class _ParticipantProfileEntity implements ParticipantProfileEntity {
-  const _ParticipantProfileEntity({required this.id, required this.login, required this.firstName, required this.lastName, required this.isStaff, required final  List<UserAchievementEntity> achievements, required final  List<UserActivityEntity> recentActivities, required this.joinedEventsCount, required this.completedQuestsCount}): _achievements = achievements,_recentActivities = recentActivities;
+  const _ParticipantProfileEntity({required this.id, required this.login, required this.firstName, required this.lastName, required this.isStaff, this.school, this.schoolClass, this.schoolClassNumber, this.schoolClassLetter, this.avatarUrl, required final  List<UserAchievementEntity> achievements, required final  List<UserActivityEntity> recentActivities, required this.joinedEventsCount, required this.completedQuestsCount}): _achievements = achievements,_recentActivities = recentActivities;
   
 
 @override final  int id;
@@ -222,6 +227,11 @@ class _ParticipantProfileEntity implements ParticipantProfileEntity {
 @override final  String firstName;
 @override final  String lastName;
 @override final  bool isStaff;
+@override final  String? school;
+@override final  String? schoolClass;
+@override final  int? schoolClassNumber;
+@override final  String? schoolClassLetter;
+@override final  String? avatarUrl;
  final  List<UserAchievementEntity> _achievements;
 @override List<UserAchievementEntity> get achievements {
   if (_achievements is EqualUnmodifiableListView) return _achievements;
@@ -249,16 +259,16 @@ _$ParticipantProfileEntityCopyWith<_ParticipantProfileEntity> get copyWith => __
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantProfileEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.login, login) || other.login == login)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&const DeepCollectionEquality().equals(other._achievements, _achievements)&&const DeepCollectionEquality().equals(other._recentActivities, _recentActivities)&&(identical(other.joinedEventsCount, joinedEventsCount) || other.joinedEventsCount == joinedEventsCount)&&(identical(other.completedQuestsCount, completedQuestsCount) || other.completedQuestsCount == completedQuestsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantProfileEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.login, login) || other.login == login)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolClass, schoolClass) || other.schoolClass == schoolClass)&&(identical(other.schoolClassNumber, schoolClassNumber) || other.schoolClassNumber == schoolClassNumber)&&(identical(other.schoolClassLetter, schoolClassLetter) || other.schoolClassLetter == schoolClassLetter)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&const DeepCollectionEquality().equals(other._achievements, _achievements)&&const DeepCollectionEquality().equals(other._recentActivities, _recentActivities)&&(identical(other.joinedEventsCount, joinedEventsCount) || other.joinedEventsCount == joinedEventsCount)&&(identical(other.completedQuestsCount, completedQuestsCount) || other.completedQuestsCount == completedQuestsCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,login,firstName,lastName,isStaff,const DeepCollectionEquality().hash(_achievements),const DeepCollectionEquality().hash(_recentActivities),joinedEventsCount,completedQuestsCount);
+int get hashCode => Object.hash(runtimeType,id,login,firstName,lastName,isStaff,school,schoolClass,schoolClassNumber,schoolClassLetter,avatarUrl,const DeepCollectionEquality().hash(_achievements),const DeepCollectionEquality().hash(_recentActivities),joinedEventsCount,completedQuestsCount);
 
 @override
 String toString() {
-  return 'ParticipantProfileEntity(id: $id, login: $login, firstName: $firstName, lastName: $lastName, isStaff: $isStaff, achievements: $achievements, recentActivities: $recentActivities, joinedEventsCount: $joinedEventsCount, completedQuestsCount: $completedQuestsCount)';
+  return 'ParticipantProfileEntity(id: $id, login: $login, firstName: $firstName, lastName: $lastName, isStaff: $isStaff, school: $school, schoolClass: $schoolClass, schoolClassNumber: $schoolClassNumber, schoolClassLetter: $schoolClassLetter, avatarUrl: $avatarUrl, achievements: $achievements, recentActivities: $recentActivities, joinedEventsCount: $joinedEventsCount, completedQuestsCount: $completedQuestsCount)';
 }
 
 
@@ -269,7 +279,7 @@ abstract mixin class _$ParticipantProfileEntityCopyWith<$Res> implements $Partic
   factory _$ParticipantProfileEntityCopyWith(_ParticipantProfileEntity value, $Res Function(_ParticipantProfileEntity) _then) = __$ParticipantProfileEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String login, String firstName, String lastName, bool isStaff, List<UserAchievementEntity> achievements, List<UserActivityEntity> recentActivities, int joinedEventsCount, int completedQuestsCount
+ int id, String login, String firstName, String lastName, bool isStaff, String? school, String? schoolClass, int? schoolClassNumber, String? schoolClassLetter, String? avatarUrl, List<UserAchievementEntity> achievements, List<UserActivityEntity> recentActivities, int joinedEventsCount, int completedQuestsCount
 });
 
 
@@ -286,14 +296,19 @@ class __$ParticipantProfileEntityCopyWithImpl<$Res>
 
 /// Create a copy of ParticipantProfileEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? login = null,Object? firstName = null,Object? lastName = null,Object? isStaff = null,Object? achievements = null,Object? recentActivities = null,Object? joinedEventsCount = null,Object? completedQuestsCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? login = null,Object? firstName = null,Object? lastName = null,Object? isStaff = null,Object? school = freezed,Object? schoolClass = freezed,Object? schoolClassNumber = freezed,Object? schoolClassLetter = freezed,Object? avatarUrl = freezed,Object? achievements = null,Object? recentActivities = null,Object? joinedEventsCount = null,Object? completedQuestsCount = null,}) {
   return _then(_ParticipantProfileEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,login: null == login ? _self.login : login // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,isStaff: null == isStaff ? _self.isStaff : isStaff // ignore: cast_nullable_to_non_nullable
-as bool,achievements: null == achievements ? _self._achievements : achievements // ignore: cast_nullable_to_non_nullable
+as bool,school: freezed == school ? _self.school : school // ignore: cast_nullable_to_non_nullable
+as String?,schoolClass: freezed == schoolClass ? _self.schoolClass : schoolClass // ignore: cast_nullable_to_non_nullable
+as String?,schoolClassNumber: freezed == schoolClassNumber ? _self.schoolClassNumber : schoolClassNumber // ignore: cast_nullable_to_non_nullable
+as int?,schoolClassLetter: freezed == schoolClassLetter ? _self.schoolClassLetter : schoolClassLetter // ignore: cast_nullable_to_non_nullable
+as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,achievements: null == achievements ? _self._achievements : achievements // ignore: cast_nullable_to_non_nullable
 as List<UserAchievementEntity>,recentActivities: null == recentActivities ? _self._recentActivities : recentActivities // ignore: cast_nullable_to_non_nullable
 as List<UserActivityEntity>,joinedEventsCount: null == joinedEventsCount ? _self.joinedEventsCount : joinedEventsCount // ignore: cast_nullable_to_non_nullable
 as int,completedQuestsCount: null == completedQuestsCount ? _self.completedQuestsCount : completedQuestsCount // ignore: cast_nullable_to_non_nullable

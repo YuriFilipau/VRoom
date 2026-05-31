@@ -21,8 +21,7 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
     QrScannerDetected event,
     Emitter<QrScannerState> emit,
   ) async {
-    if (state.status == QrScannerStatus.resolving ||
-        state.status == QrScannerStatus.success) {
+    if (state.status != QrScannerStatus.idle) {
       return;
     }
 

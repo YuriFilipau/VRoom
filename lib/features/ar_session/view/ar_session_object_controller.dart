@@ -1,5 +1,7 @@
 part of 'ar_session_screen.dart';
 
+const _actionAnchorMarkerAssetPath = 'assets/models/ar_test_anchor_marker.gltf';
+
 extension _ArSessionObjectController on _ArSessionViewState {
   Future<void> _onPlaneOrPointTapped(List<ARHitTestResult> results) async {
     if (_isPlacingNode ||
@@ -35,6 +37,16 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
     final bloc = context.read<ArSessionBloc>();
     final state = bloc.state;
+    final pendingActionAnchorRole = _pendingActionAnchorRole;
+    if (pendingActionAnchorRole != null) {
+      await _placeActionAnchorAtHit(
+        role: pendingActionAnchorRole,
+        state: state,
+        hit: planeHit,
+      );
+      return;
+    }
+
     final selectedAsset = state.selectedAsset;
     if (selectedAsset == null) {
       _showMessage('Сначала выберите ассет');
@@ -79,11 +91,92 @@ extension _ArSessionObjectController on _ArSessionViewState {
           assetId: selectedAsset.id,
           nodeName: placementId,
           localTransform: node.transform.storage.toList(),
+          meta: {'scale': selectedAsset.scale},
         ),
       ),
     );
 
     _isPlacingNode = false;
+  }
+
+  void _beginActionAnchorPlacement(String role) {
+    if (widget.mode != ArSessionMode.admin) {
+      return;
+    }
+
+    if (!_hasSceneRootAnchor) {
+      _showMessage('Сначала создайте начальную точку сцены');
+      return;
+    }
+
+    final hasAnchor = context.read<ArSessionBloc>().state.placements.any(
+      (placement) => placement.role == role || placement.id == role,
+    );
+    if (!hasAnchor) {
+      _showMessage('Эта контрольная точка ещё не создана в сцене');
+      return;
+    }
+
+    _refresh(() {
+      _pendingActionAnchorRole = role;
+    });
+    _showMessage('Тапните по поверхности, чтобы поставить контрольную точку');
+  }
+
+  void _cancelActionAnchorPlacement() {
+    if (_pendingActionAnchorRole == null) {
+      return;
+    }
+
+    _refresh(() {
+      _pendingActionAnchorRole = null;
+    });
+  }
+
+  Future<void> _placeActionAnchorAtHit({
+    required String role,
+    required ArSessionState state,
+    required ARHitTestResult hit,
+  }) async {
+    final bloc = context.read<ArSessionBloc>();
+    final placement = state.placements
+        .where((item) => item.role == role || item.id == role)
+        .firstOrNull;
+    if (placement == null) {
+      _cancelActionAnchorPlacement();
+      _showMessage('Контрольная точка не найдена в сцене');
+      return;
+    }
+
+    final localTransform = await _buildLocalTransform(
+      Matrix4.fromList(hit.worldTransform.storage),
+    );
+    if (localTransform == null) {
+      _showMessage('Не удалось определить позицию контрольной точки');
+      return;
+    }
+
+    final scale = arPlacementScale(placement);
+    bloc.add(
+      ArSessionPlacementUpserted(
+        placement.copyWith(
+          localTransform: _transformWithScale(
+            localTransform,
+            scale,
+          ).storage.toList(),
+          meta: {...placement.meta, 'scale': scale},
+        ),
+      ),
+    );
+
+    _refresh(() {
+      _pendingActionAnchorRole = null;
+    });
+    _showMessage(
+      role == 'test_anchor'
+          ? 'Точка начала теста поставлена'
+          : 'Контрольная точка поставлена',
+    );
   }
 
   Future<void> _onPanEnded(String nodeName, Matrix4 transform) async {
@@ -98,7 +191,35 @@ extension _ArSessionObjectController on _ArSessionViewState {
     if (!mounted || nodeNames.isEmpty) {
       return;
     }
-    _showMessage('Выбран объект: ${nodeNames.first}');
+
+    final nodeName = nodeNames.first;
+    final state = context.read<ArSessionBloc>().state;
+    final placement = state.placements
+        .where((item) => item.nodeName == nodeName || item.id == nodeName)
+        .firstOrNull;
+    if (placement == null) {
+      _showMessage('Выбран объект: $nodeName');
+      return;
+    }
+
+    if (widget.mode == ArSessionMode.user && placement.isActionAnchor) {
+      context.read<ArSessionBloc>().add(
+        ArSessionAnchorReached(
+          anchorId: placement.role ?? placement.id,
+          sessionId: widget.scanSessionId,
+        ),
+      );
+      return;
+    }
+
+    if (widget.mode == ArSessionMode.admin) {
+      context.read<ArSessionBloc>().add(
+        ArSessionPlacementSelected(placement.id),
+      );
+    }
+
+    final title = placement.meta['title']?.toString();
+    _showMessage('Выбран объект: ${title ?? nodeName}');
   }
 
   Future<void> _updatePlacementTransform(
@@ -133,24 +254,43 @@ extension _ArSessionObjectController on _ArSessionViewState {
       return;
     }
 
+    final activePlacementIds = state.placements.map((item) => item.id).toSet();
+    for (final entry in _renderedNodes.entries.toList()) {
+      if (!activePlacementIds.contains(entry.key)) {
+        _arObjectManager!.removeNode(entry.value);
+        _renderedNodes.remove(entry.key);
+      }
+    }
+
     final assetById = {for (final asset in state.assets) asset.id: asset};
     for (final placement in state.placements) {
-      if (_renderedNodes.containsKey(placement.id)) {
+      final transform = _matrixFromPlacement(placement);
+      final renderedNode = _renderedNodes[placement.id];
+      if (renderedNode != null) {
+        renderedNode.transform = transform;
         continue;
       }
 
       final asset = assetById[placement.assetId];
-      if (asset == null) {
+      if (!placement.isActionAnchor && asset == null) {
         continue;
       }
 
-      final node = ARNode(
-        name: placement.nodeName,
-        type: _nodeTypeForModelUri(asset.modelUri),
-        uri: asset.modelUri,
-        transformation: Matrix4.fromList(placement.localTransform),
-        data: {'assetId': placement.assetId},
-      );
+      final node = placement.isActionAnchor
+          ? ARNode(
+              name: placement.nodeName,
+              type: NodeType.localGLTF2,
+              uri: _actionAnchorMarkerAssetPath,
+              transformation: transform,
+              data: {'anchorRole': placement.role ?? placement.id},
+            )
+          : ARNode(
+              name: placement.nodeName,
+              type: _nodeTypeForModelUri(asset!.modelUri),
+              uri: asset.modelUri,
+              transformation: transform,
+              data: {'assetId': placement.assetId},
+            );
 
       final didAddNode =
           await _arObjectManager!.addNode(
@@ -162,5 +302,18 @@ extension _ArSessionObjectController on _ArSessionViewState {
         _renderedNodes[placement.id] = node;
       }
     }
+  }
+
+  Matrix4 _matrixFromPlacement(ArAssetPlacementEntity placement) {
+    return placement.localTransform.length == 16
+        ? Matrix4.fromList(placement.localTransform)
+        : Matrix4.identity();
+  }
+
+  Matrix4 _transformWithScale(Matrix4 transform, double scale) {
+    final translation = Vector3.zero();
+    final rotation = Quaternion.identity();
+    transform.decompose(translation, rotation, Vector3.zero());
+    return Matrix4.compose(translation, rotation, Vector3.all(scale));
   }
 }

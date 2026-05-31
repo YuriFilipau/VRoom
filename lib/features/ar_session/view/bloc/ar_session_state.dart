@@ -23,6 +23,8 @@ abstract class ArSessionState with _$ArSessionState {
     ArSceneRootAnchorEntity? rootAnchor,
     String? arcoreToken,
     int? selectedAssetId,
+    String? selectedPlacementId,
+    ArAnchorReachResultEntity? anchorReachResult,
     String? message,
   }) = _ArSessionState;
 
@@ -37,5 +39,17 @@ abstract class ArSessionState with _$ArSessionState {
     }
     return assets.where((asset) => asset.id == selectedAssetId).firstOrNull ??
         assets.first;
+  }
+
+  ArAssetPlacementEntity? get selectedPlacement {
+    final id = selectedPlacementId;
+    if (id == null) {
+      return null;
+    }
+    return placements.where((placement) => placement.id == id).firstOrNull;
+  }
+
+  ArAssetEntity? assetForPlacement(ArAssetPlacementEntity placement) {
+    return assets.where((asset) => asset.id == placement.assetId).firstOrNull;
   }
 }

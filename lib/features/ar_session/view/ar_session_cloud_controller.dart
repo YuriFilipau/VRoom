@@ -71,9 +71,13 @@ extension _ArSessionCloudController on _ArSessionViewState {
     return anchor;
   }
 
-  void _onSessionError(String _) {
+  void _onSessionError(String message) {
     if (!mounted) {
       return;
+    }
+
+    if (kDebugMode) {
+      debugPrint('AR session error: $message');
     }
 
     final wasCloudAnchorFlow =
@@ -86,10 +90,14 @@ extension _ArSessionCloudController on _ArSessionViewState {
       });
     }
 
+    final renderableDetails =
+        kDebugMode && message.trim().startsWith('Unable to load renderable')
+        ? '\n${message.trim()}'
+        : '';
     _showMessage(
       wasCloudAnchorFlow
           ? 'Не удалось подключить облачную AR-сцену. Проверьте, что телефон находится в корректной сети, и попробуйте ещё раз.'
-          : 'Не удалось продолжить AR-сессию. Попробуйте ещё раз.',
+          : 'Не удалось продолжить AR-сессию. Попробуйте ещё раз.$renderableDetails',
     );
   }
 
@@ -129,9 +137,37 @@ extension _ArSessionCloudController on _ArSessionViewState {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    final normalizedMessage = message.trim();
+    if (!mounted || normalizedMessage.isEmpty) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final wasRecentlyShown =
+        _lastSnackBarMessage == normalizedMessage &&
+        _lastSnackBarShownAt != null &&
+        now.difference(_lastSnackBarShownAt!) < const Duration(seconds: 4);
+    if (_activeSnackBarMessage == normalizedMessage || wasRecentlyShown) {
+      return;
+    }
+
+    _activeSnackBarMessage = normalizedMessage;
+    _lastSnackBarMessage = normalizedMessage;
+    _lastSnackBarShownAt = now;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    unawaited(
+      messenger
+          .showSnackBar(SnackBar(content: Text(normalizedMessage)))
+          .closed
+          .then((_) {
+            if (!mounted || _activeSnackBarMessage != normalizedMessage) {
+              return;
+            }
+            _activeSnackBarMessage = null;
+          }),
+    );
   }
 
   IconData _assetIcon(ArAssetPreviewIcon placeholder) {

@@ -121,11 +121,21 @@ class QuestTestRepositoryImpl implements QuestTestRepository {
     final json = asMap(error.response?.data);
     final code = readString(json['code']);
     final message = switch (code) {
+      'test_locked_by_anchor' =>
+        'Тест станет доступен после прохождения контрольной точки в AR-сцене.',
+      'test_anchor_not_configured' =>
+        'Квест настроен некорректно. Обратитесь к организатору.',
       'test_not_found' => 'Тест для этого квеста недоступен.',
       'test_attempts_exceeded' => 'Лимит попыток исчерпан.',
       'test_cooldown_active' =>
         'Перед следующей попыткой нужно немного подождать.',
       'test_result_not_found' => 'Результат теста пока отсутствует.',
+      _ when error.response?.statusCode == 403 =>
+        'Тест станет доступен после прохождения контрольной точки в AR-сцене.',
+      _ when error.response?.statusCode == 409 =>
+        'Квест настроен некорректно. Обратитесь к организатору.',
+      _ when error.response?.statusCode == 404 =>
+        'Тест для этого квеста недоступен.',
       _ => 'Не удалось загрузить тест. Попробуйте ещё раз.',
     };
     return ApiException(

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,7 +10,6 @@ import 'package:vroom/core/network/pretty_dio_logger.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
 import 'package:vroom/core/shared/widgets/app_splash_screen.dart';
 import 'package:vroom/core/theme/app_theme.dart';
-import 'package:vroom/features/auth/data/datasource/auth_local_datasource.dart';
 
 class AppBootstrap extends StatefulWidget {
   const AppBootstrap({
@@ -58,10 +56,6 @@ class _AppBootstrapState extends State<AppBootstrap> {
       secureStorage: widget.secureStorage,
       sharedPreferences: widget.sharedPreferences,
     );
-
-    if (kDebugMode) {
-      await di.locator<AuthLocalDatasource>().clearToken();
-    }
   }
 
   void _retryStartup() {

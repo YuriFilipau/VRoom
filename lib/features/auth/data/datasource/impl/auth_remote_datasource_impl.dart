@@ -46,6 +46,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String password,
     required String firstName,
     required String lastName,
+    String? school,
+    String? schoolClass,
   }) async {
     if (useMockData) {
       return _mockAuthResponse(
@@ -63,6 +65,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           'last_name': lastName,
           'login': login,
           'password': password,
+          if (school != null && school.trim().isNotEmpty)
+            'school': school.trim(),
+          if (schoolClass != null && schoolClass.trim().isNotEmpty)
+            'school_class': schoolClass.trim().toUpperCase(),
         },
       );
 

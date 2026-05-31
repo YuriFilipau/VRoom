@@ -11,23 +11,23 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
 
   @override
   Future<QrScanResultEntity> processQr(String rawValue) async {
-    final token = _extractQrToken(rawValue);
-    if (token == null) {
+    final access = _parseQuestAccess(rawValue);
+    if (access == null) {
       throw const ApiException(
-        message: 'QR-код не распознан. Попробуйте отсканировать его ещё раз.',
+        message: 'Код доступа не распознан. Проверьте QR-код или код квеста.',
         code: 'qr_invalid',
       );
     }
 
-    final resolveJson = await _resolveQr(token);
+    final resolveJson = await _resolveQuestAccess(access);
     final questId =
         _extractQuestId(resolveJson) ??
         (throw const ApiException(
-          message: 'QR не привязан к квесту',
+          message: 'Код доступа не привязан к квесту',
           code: 'qr_not_found',
         ));
     final eventId = _extractEventId(resolveJson);
-    final sessionId = await _startAndPingScan(token: token);
+    final sessionId = await _startAndPingScan(access: access);
     await _dio.get<dynamic>('/api/quests/$questId/bundle');
 
     return QrScanResultEntity(
@@ -37,7 +37,7 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
     );
   }
 
-  String? _extractQrToken(String rawValue) {
+  QuestAccessPayload? _parseQuestAccess(String rawValue) {
     final value = rawValue.trim();
     if (value.isEmpty) {
       return null;
@@ -46,10 +46,19 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
     final parts = value.split(':');
     if (parts.length == 3 && parts.first == 'vr-quest-quest') {
       final token = parts.last.trim();
-      return _isUuid(token) ? token : null;
+      return _isUuid(token) ? QuestAccessPayload.token(token) : null;
     }
 
-    return _isUuid(value) ? value : null;
+    if (_isUuid(value)) {
+      return QuestAccessPayload.token(value);
+    }
+
+    final code = value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    if (RegExp(r'^[A-Z0-9]{4,12}$').hasMatch(code)) {
+      return QuestAccessPayload.code(code);
+    }
+
+    return null;
   }
 
   bool _isUuid(String value) {
@@ -58,15 +67,20 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
     ).hasMatch(value.trim());
   }
 
-  Future<Map<String, dynamic>> _resolveQr(String token) async {
-    final payload = {'qr_token': token};
-
-    final endpoints = ['/api/qr/resolve', '/api/quests/qr/resolve'];
+  Future<Map<String, dynamic>> _resolveQuestAccess(
+    QuestAccessPayload access,
+  ) async {
+    final endpoints = access.isToken
+        ? ['/api/qr/resolve', '/api/quests/qr/resolve']
+        : ['/api/code/resolve', '/api/quests/code/resolve'];
 
     DioException? lastError;
     for (final endpoint in endpoints) {
       try {
-        final response = await _dio.post<dynamic>(endpoint, data: payload);
+        final response = await _dio.post<dynamic>(
+          endpoint,
+          data: access.resolveJson(),
+        );
         return asMap(response.data);
       } on DioException catch (error) {
         lastError = error;
@@ -79,16 +93,18 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
 
     throw _mapQrException(
       lastError,
-      fallbackMessage: 'QR-код не найден или больше не активен',
+      fallbackMessage: 'Код доступа не найден или больше не активен',
       code: 'qr_not_found',
     );
   }
 
-  Future<String?> _startAndPingScan({required String token}) async {
+  Future<String?> _startAndPingScan({
+    required QuestAccessPayload access,
+  }) async {
     try {
       final startResponse = await _dio.post<dynamic>(
         '/api/scan/start',
-        data: {'token': token},
+        data: access.scanStartJson(),
       );
       final startJson = asMap(startResponse.data);
       final rawSessionId =
@@ -115,7 +131,7 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
       }
       throw _mapQrException(
         error,
-        fallbackMessage: 'Не удалось запустить сканирование квеста',
+        fallbackMessage: 'Не удалось запустить доступ к квесту',
       );
     }
   }
@@ -143,7 +159,7 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
     final resolvedCode = readString(json['code']) ?? code;
     if (resolvedCode == 'qr_not_found') {
       return const ApiException(
-        message: 'QR-код не найден или больше не активен',
+        message: 'Код доступа не найден или больше не активен',
         code: 'qr_not_found',
       );
     }
@@ -158,4 +174,19 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
       statusCode: error?.response?.statusCode,
     );
   }
+}
+
+class QuestAccessPayload {
+  const QuestAccessPayload.token(this.value) : isToken = true;
+
+  const QuestAccessPayload.code(this.value) : isToken = false;
+
+  final String value;
+  final bool isToken;
+
+  Map<String, dynamic> resolveJson() =>
+      isToken ? {'qr_token': value} : {'access_code': value};
+
+  Map<String, dynamic> scanStartJson() =>
+      isToken ? {'token': value} : {'access_code': value};
 }

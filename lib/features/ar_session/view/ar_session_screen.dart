@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:ar_flutter_plugin_2/ar_flutter_plugin.dart';
@@ -19,21 +20,30 @@ import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/router/app_routes.dart';
+import 'package:vroom/features/ar_session/domain/entities/ar_anchor_reach_result_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_session_mode.dart';
 import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
+import 'package:vroom/features/ar_session/view/components/ar_placement_helpers.dart';
 import 'package:vroom/features/ar_session/view/components/ar_session_overlays.dart';
 
 part 'ar_session_anchor_controller.dart';
+part 'ar_session_anchor_action_dialogs.dart';
 part 'ar_session_cloud_controller.dart';
 part 'ar_session_object_controller.dart';
 
 class ArSessionScreen extends StatelessWidget {
-  const ArSessionScreen({super.key, required this.questId, required this.mode});
+  const ArSessionScreen({
+    super.key,
+    required this.questId,
+    required this.mode,
+    this.scanSessionId,
+  });
 
   final int questId;
   final ArSessionMode mode;
+  final String? scanSessionId;
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +51,16 @@ class ArSessionScreen extends StatelessWidget {
       create: (_) =>
           di.locator<ArSessionBloc>()
             ..add(ArSessionLoadRequested(questId: questId, mode: mode)),
-      child: _ArSessionView(mode: mode),
+      child: _ArSessionView(mode: mode, scanSessionId: scanSessionId),
     );
   }
 }
 
 class _ArSessionView extends StatefulWidget {
-  const _ArSessionView({required this.mode});
+  const _ArSessionView({required this.mode, this.scanSessionId});
 
   final ArSessionMode mode;
+  final String? scanSessionId;
 
   @override
   State<_ArSessionView> createState() => _ArSessionViewState();
@@ -68,6 +79,10 @@ class _ArSessionViewState extends State<_ArSessionView> {
   bool _isUploadingSceneAnchor = false;
   bool _saveAfterSceneAnchorUpload = false;
   bool _hasRequestedSceneAnchorDownload = false;
+  String? _pendingActionAnchorRole;
+  String? _activeSnackBarMessage;
+  String? _lastSnackBarMessage;
+  DateTime? _lastSnackBarShownAt;
   int _detectedPlaneCount = 0;
 
   bool get _supportsAr => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
@@ -98,6 +113,14 @@ class _ArSessionViewState extends State<_ArSessionView> {
             context,
           ).showSnackBar(SnackBar(content: Text(state.message!)));
           context.read<ArSessionBloc>().add(const ArSessionSnackbarConsumed());
+        }
+
+        final anchorReachResult = state.anchorReachResult;
+        if (anchorReachResult != null) {
+          context.read<ArSessionBloc>().add(
+            const ArSessionAnchorReachResultConsumed(),
+          );
+          await _handleAnchorReachResult(anchorReachResult);
         }
 
         if (_supportsAr) {
@@ -201,17 +224,46 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     ),
                   ),
                 ),
+              if (_supportsAr &&
+                  state.isAdmin &&
+                  _pendingActionAnchorRole != null)
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  top: 132,
+                  child: SafeArea(
+                    bottom: false,
+                    child: ActionAnchorPlacementHintCard(
+                      role: _pendingActionAnchorRole!,
+                      onCancel: _cancelActionAnchorPlacement,
+                    ),
+                  ),
+                ),
               if (state.status == ArSessionStatus.loading)
                 const Positioned.fill(
                   child: Center(
                     child: CircularProgressIndicator(color: Colors.white),
                   ),
                 ),
-              Positioned.fill(
-                child: PointerInterceptor(
-                  intercepting: false,
-                  child: ArBottomSheet(
-                    state: state,
+              if (state.selectedPlacement != null && state.isAdmin)
+                Positioned(
+                  left: 16,
+                  right: 88,
+                  bottom: 18,
+                  child: SafeArea(
+                    top: false,
+                    child: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: ArSelectedObjectControls(state: state),
+                    ),
+                  ),
+                ),
+              Positioned(
+                right: 18,
+                bottom: 18,
+                child: SafeArea(
+                  top: false,
+                  child: ArSettingsButton(
                     supportsAr: _supportsAr,
                     iconBuilder: _assetIcon,
                     hasSceneRootAnchor: _hasSceneRootAnchor,
@@ -219,6 +271,8 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     isUploadingSceneAnchor: _isUploadingSceneAnchor,
                     onSave: () => _onSavePressed(state),
                     onResetSceneAnchor: () => _resetSceneRootAnchor(state),
+                    onPlaceTestAnchor: () =>
+                        _beginActionAnchorPlacement('test_anchor'),
                     onOpenTest: () => context.push(
                       '${AppRoutes.questTest.path}/${state.questId}/test',
                     ),

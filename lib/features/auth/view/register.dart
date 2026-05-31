@@ -22,6 +22,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _schoolController = TextEditingController();
+  final _schoolClassController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
@@ -120,6 +122,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: AppSizes.spacing16),
                         TextField(
+                          controller: _schoolController,
+                          enabled: !isLoading,
+                          decoration: _inputDecoration(
+                            hint: l10n.school,
+                            authTheme: authTheme,
+                          ),
+                        ),
+                        const SizedBox(height: AppSizes.spacing16),
+                        TextField(
+                          controller: _schoolClassController,
+                          enabled: !isLoading,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: _inputDecoration(
+                            hint: l10n.schoolClass,
+                            authTheme: authTheme,
+                          ),
+                        ),
+                        const SizedBox(height: AppSizes.spacing16),
+                        TextField(
                           controller: _loginController,
                           enabled: !isLoading,
                           decoration: _inputDecoration(
@@ -164,6 +185,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       firstName: _firstNameController.text
                                           .trim(),
                                       lastName: _lastNameController.text.trim(),
+                                      school: _schoolController.text.trim(),
+                                      schoolClass: _schoolClassController.text
+                                          .trim()
+                                          .toUpperCase(),
                                     ),
                                   );
                                 },
@@ -232,6 +257,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _schoolController.dispose();
+    _schoolClassController.dispose();
     super.dispose();
   }
 }

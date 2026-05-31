@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ArAssetEntity {
 
- int get id; String get name; String get modelUri; double get scale; ArAssetPreviewIcon get previewIcon;
+ int get id; String get name; String get modelUri; double get scale; ArAssetPreviewIcon get previewIcon; String? get previewUrl;
 /// Create a copy of ArAssetEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ArAssetEntityCopyWith<ArAssetEntity> get copyWith => _$ArAssetEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArAssetEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.modelUri, modelUri) || other.modelUri == modelUri)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.previewIcon, previewIcon) || other.previewIcon == previewIcon));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArAssetEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.modelUri, modelUri) || other.modelUri == modelUri)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.previewIcon, previewIcon) || other.previewIcon == previewIcon)&&(identical(other.previewUrl, previewUrl) || other.previewUrl == previewUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,modelUri,scale,previewIcon);
+int get hashCode => Object.hash(runtimeType,id,name,modelUri,scale,previewIcon,previewUrl);
 
 @override
 String toString() {
-  return 'ArAssetEntity(id: $id, name: $name, modelUri: $modelUri, scale: $scale, previewIcon: $previewIcon)';
+  return 'ArAssetEntity(id: $id, name: $name, modelUri: $modelUri, scale: $scale, previewIcon: $previewIcon, previewUrl: $previewUrl)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ArAssetEntityCopyWith<$Res>  {
   factory $ArAssetEntityCopyWith(ArAssetEntity value, $Res Function(ArAssetEntity) _then) = _$ArAssetEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String modelUri, double scale, ArAssetPreviewIcon previewIcon
+ int id, String name, String modelUri, double scale, ArAssetPreviewIcon previewIcon, String? previewUrl
 });
 
 
@@ -62,14 +62,15 @@ class _$ArAssetEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArAssetEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? modelUri = null,Object? scale = null,Object? previewIcon = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? modelUri = null,Object? scale = null,Object? previewIcon = null,Object? previewUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,modelUri: null == modelUri ? _self.modelUri : modelUri // ignore: cast_nullable_to_non_nullable
 as String,scale: null == scale ? _self.scale : scale // ignore: cast_nullable_to_non_nullable
 as double,previewIcon: null == previewIcon ? _self.previewIcon : previewIcon // ignore: cast_nullable_to_non_nullable
-as ArAssetPreviewIcon,
+as ArAssetPreviewIcon,previewUrl: freezed == previewUrl ? _self.previewUrl : previewUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -154,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String modelUri,  double scale,  ArAssetPreviewIcon previewIcon)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String modelUri,  double scale,  ArAssetPreviewIcon previewIcon,  String? previewUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ArAssetEntity() when $default != null:
-return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon);case _:
+return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon,_that.previewUrl);case _:
   return orElse();
 
 }
@@ -175,10 +176,10 @@ return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String modelUri,  double scale,  ArAssetPreviewIcon previewIcon)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String modelUri,  double scale,  ArAssetPreviewIcon previewIcon,  String? previewUrl)  $default,) {final _that = this;
 switch (_that) {
 case _ArAssetEntity():
-return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon);case _:
+return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon,_that.previewUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +196,10 @@ return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String modelUri,  double scale,  ArAssetPreviewIcon previewIcon)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String modelUri,  double scale,  ArAssetPreviewIcon previewIcon,  String? previewUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _ArAssetEntity() when $default != null:
-return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon);case _:
+return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon,_that.previewUrl);case _:
   return null;
 
 }
@@ -210,7 +211,7 @@ return $default(_that.id,_that.name,_that.modelUri,_that.scale,_that.previewIcon
 
 
 class _ArAssetEntity implements ArAssetEntity {
-  const _ArAssetEntity({required this.id, required this.name, required this.modelUri, required this.scale, required this.previewIcon});
+  const _ArAssetEntity({required this.id, required this.name, required this.modelUri, required this.scale, required this.previewIcon, this.previewUrl});
   
 
 @override final  int id;
@@ -218,6 +219,7 @@ class _ArAssetEntity implements ArAssetEntity {
 @override final  String modelUri;
 @override final  double scale;
 @override final  ArAssetPreviewIcon previewIcon;
+@override final  String? previewUrl;
 
 /// Create a copy of ArAssetEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +231,16 @@ _$ArAssetEntityCopyWith<_ArAssetEntity> get copyWith => __$ArAssetEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArAssetEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.modelUri, modelUri) || other.modelUri == modelUri)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.previewIcon, previewIcon) || other.previewIcon == previewIcon));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArAssetEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.modelUri, modelUri) || other.modelUri == modelUri)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.previewIcon, previewIcon) || other.previewIcon == previewIcon)&&(identical(other.previewUrl, previewUrl) || other.previewUrl == previewUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,modelUri,scale,previewIcon);
+int get hashCode => Object.hash(runtimeType,id,name,modelUri,scale,previewIcon,previewUrl);
 
 @override
 String toString() {
-  return 'ArAssetEntity(id: $id, name: $name, modelUri: $modelUri, scale: $scale, previewIcon: $previewIcon)';
+  return 'ArAssetEntity(id: $id, name: $name, modelUri: $modelUri, scale: $scale, previewIcon: $previewIcon, previewUrl: $previewUrl)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$ArAssetEntityCopyWith<$Res> implements $ArAssetEntityCopy
   factory _$ArAssetEntityCopyWith(_ArAssetEntity value, $Res Function(_ArAssetEntity) _then) = __$ArAssetEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String modelUri, double scale, ArAssetPreviewIcon previewIcon
+ int id, String name, String modelUri, double scale, ArAssetPreviewIcon previewIcon, String? previewUrl
 });
 
 
@@ -266,14 +268,15 @@ class __$ArAssetEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArAssetEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? modelUri = null,Object? scale = null,Object? previewIcon = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? modelUri = null,Object? scale = null,Object? previewIcon = null,Object? previewUrl = freezed,}) {
   return _then(_ArAssetEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,modelUri: null == modelUri ? _self.modelUri : modelUri // ignore: cast_nullable_to_non_nullable
 as String,scale: null == scale ? _self.scale : scale // ignore: cast_nullable_to_non_nullable
 as double,previewIcon: null == previewIcon ? _self.previewIcon : previewIcon // ignore: cast_nullable_to_non_nullable
-as ArAssetPreviewIcon,
+as ArAssetPreviewIcon,previewUrl: freezed == previewUrl ? _self.previewUrl : previewUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
