@@ -163,6 +163,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 MobileScanner(
                   controller: _controller,
                   onDetect: (capture) {
+                    if (!mounted) {
+                      return;
+                    }
                     if (context.read<QrScannerBloc>().state.status !=
                         QrScannerStatus.idle) {
                       return;
