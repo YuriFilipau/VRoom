@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/router/app_routes.dart';
+import 'package:vroom/core/shared/widgets/auth_failure_redirect.dart';
 import 'package:vroom/features/organizer/domain/repository/organizer_repository.dart';
 import 'package:vroom/features/organizer/view/components/organizer_logout_button.dart';
 
@@ -28,6 +29,9 @@ class OrganizerEventsScreen extends StatelessWidget {
             final message = error is ApiException
                 ? error.message
                 : 'Не удалось загрузить мероприятия organizer';
+            if (error is ApiException && error.statusCode == 401) {
+              return AuthFailureRedirect(message: message);
+            }
             return Center(child: Text(message));
           }
 

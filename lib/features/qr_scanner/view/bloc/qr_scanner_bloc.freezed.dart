@@ -278,7 +278,7 @@ String toString() {
 /// @nodoc
 mixin _$QrScannerState {
 
- QrScannerStatus get status; int? get questId; int? get eventId; String? get scanSessionId; String? get errorMessage;
+ QrScannerStatus get status; int? get questId; int? get eventId; String? get scanSessionId; String? get errorMessage; bool get authFailure;
 /// Create a copy of QrScannerState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -289,16 +289,16 @@ $QrScannerStateCopyWith<QrScannerState> get copyWith => _$QrScannerStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is QrScannerState&&(identical(other.status, status) || other.status == status)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.scanSessionId, scanSessionId) || other.scanSessionId == scanSessionId)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is QrScannerState&&(identical(other.status, status) || other.status == status)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.scanSessionId, scanSessionId) || other.scanSessionId == scanSessionId)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.authFailure, authFailure) || other.authFailure == authFailure));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,questId,eventId,scanSessionId,errorMessage);
+int get hashCode => Object.hash(runtimeType,status,questId,eventId,scanSessionId,errorMessage,authFailure);
 
 @override
 String toString() {
-  return 'QrScannerState(status: $status, questId: $questId, eventId: $eventId, scanSessionId: $scanSessionId, errorMessage: $errorMessage)';
+  return 'QrScannerState(status: $status, questId: $questId, eventId: $eventId, scanSessionId: $scanSessionId, errorMessage: $errorMessage, authFailure: $authFailure)';
 }
 
 
@@ -309,7 +309,7 @@ abstract mixin class $QrScannerStateCopyWith<$Res>  {
   factory $QrScannerStateCopyWith(QrScannerState value, $Res Function(QrScannerState) _then) = _$QrScannerStateCopyWithImpl;
 @useResult
 $Res call({
- QrScannerStatus status, int? questId, int? eventId, String? scanSessionId, String? errorMessage
+ QrScannerStatus status, int? questId, int? eventId, String? scanSessionId, String? errorMessage, bool authFailure
 });
 
 
@@ -326,14 +326,15 @@ class _$QrScannerStateCopyWithImpl<$Res>
 
 /// Create a copy of QrScannerState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? questId = freezed,Object? eventId = freezed,Object? scanSessionId = freezed,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? questId = freezed,Object? eventId = freezed,Object? scanSessionId = freezed,Object? errorMessage = freezed,Object? authFailure = null,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as QrScannerStatus,questId: freezed == questId ? _self.questId : questId // ignore: cast_nullable_to_non_nullable
 as int?,eventId: freezed == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as int?,scanSessionId: freezed == scanSessionId ? _self.scanSessionId : scanSessionId // ignore: cast_nullable_to_non_nullable
 as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,authFailure: null == authFailure ? _self.authFailure : authFailure // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -418,10 +419,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( QrScannerStatus status,  int? questId,  int? eventId,  String? scanSessionId,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( QrScannerStatus status,  int? questId,  int? eventId,  String? scanSessionId,  String? errorMessage,  bool authFailure)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _QrScannerState() when $default != null:
-return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_that.errorMessage);case _:
+return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_that.errorMessage,_that.authFailure);case _:
   return orElse();
 
 }
@@ -439,10 +440,10 @@ return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( QrScannerStatus status,  int? questId,  int? eventId,  String? scanSessionId,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( QrScannerStatus status,  int? questId,  int? eventId,  String? scanSessionId,  String? errorMessage,  bool authFailure)  $default,) {final _that = this;
 switch (_that) {
 case _QrScannerState():
-return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_that.errorMessage);case _:
+return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_that.errorMessage,_that.authFailure);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -459,10 +460,10 @@ return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( QrScannerStatus status,  int? questId,  int? eventId,  String? scanSessionId,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( QrScannerStatus status,  int? questId,  int? eventId,  String? scanSessionId,  String? errorMessage,  bool authFailure)?  $default,) {final _that = this;
 switch (_that) {
 case _QrScannerState() when $default != null:
-return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_that.errorMessage);case _:
+return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_that.errorMessage,_that.authFailure);case _:
   return null;
 
 }
@@ -474,7 +475,7 @@ return $default(_that.status,_that.questId,_that.eventId,_that.scanSessionId,_th
 
 
 class _QrScannerState implements QrScannerState {
-  const _QrScannerState({this.status = QrScannerStatus.idle, this.questId, this.eventId, this.scanSessionId, this.errorMessage});
+  const _QrScannerState({this.status = QrScannerStatus.idle, this.questId, this.eventId, this.scanSessionId, this.errorMessage, this.authFailure = false});
   
 
 @override@JsonKey() final  QrScannerStatus status;
@@ -482,6 +483,7 @@ class _QrScannerState implements QrScannerState {
 @override final  int? eventId;
 @override final  String? scanSessionId;
 @override final  String? errorMessage;
+@override@JsonKey() final  bool authFailure;
 
 /// Create a copy of QrScannerState
 /// with the given fields replaced by the non-null parameter values.
@@ -493,16 +495,16 @@ _$QrScannerStateCopyWith<_QrScannerState> get copyWith => __$QrScannerStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _QrScannerState&&(identical(other.status, status) || other.status == status)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.scanSessionId, scanSessionId) || other.scanSessionId == scanSessionId)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _QrScannerState&&(identical(other.status, status) || other.status == status)&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.scanSessionId, scanSessionId) || other.scanSessionId == scanSessionId)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.authFailure, authFailure) || other.authFailure == authFailure));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,questId,eventId,scanSessionId,errorMessage);
+int get hashCode => Object.hash(runtimeType,status,questId,eventId,scanSessionId,errorMessage,authFailure);
 
 @override
 String toString() {
-  return 'QrScannerState(status: $status, questId: $questId, eventId: $eventId, scanSessionId: $scanSessionId, errorMessage: $errorMessage)';
+  return 'QrScannerState(status: $status, questId: $questId, eventId: $eventId, scanSessionId: $scanSessionId, errorMessage: $errorMessage, authFailure: $authFailure)';
 }
 
 
@@ -513,7 +515,7 @@ abstract mixin class _$QrScannerStateCopyWith<$Res> implements $QrScannerStateCo
   factory _$QrScannerStateCopyWith(_QrScannerState value, $Res Function(_QrScannerState) _then) = __$QrScannerStateCopyWithImpl;
 @override @useResult
 $Res call({
- QrScannerStatus status, int? questId, int? eventId, String? scanSessionId, String? errorMessage
+ QrScannerStatus status, int? questId, int? eventId, String? scanSessionId, String? errorMessage, bool authFailure
 });
 
 
@@ -530,14 +532,15 @@ class __$QrScannerStateCopyWithImpl<$Res>
 
 /// Create a copy of QrScannerState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? questId = freezed,Object? eventId = freezed,Object? scanSessionId = freezed,Object? errorMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? questId = freezed,Object? eventId = freezed,Object? scanSessionId = freezed,Object? errorMessage = freezed,Object? authFailure = null,}) {
   return _then(_QrScannerState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as QrScannerStatus,questId: freezed == questId ? _self.questId : questId // ignore: cast_nullable_to_non_nullable
 as int?,eventId: freezed == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as int?,scanSessionId: freezed == scanSessionId ? _self.scanSessionId : scanSessionId // ignore: cast_nullable_to_non_nullable
 as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,authFailure: null == authFailure ? _self.authFailure : authFailure // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

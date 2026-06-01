@@ -56,7 +56,12 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
           ),
           actions: [
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (result.questCompleted && mounted && context.canPop()) {
+                  context.pop();
+                }
+              },
               child: const Text('Готово'),
             ),
           ],

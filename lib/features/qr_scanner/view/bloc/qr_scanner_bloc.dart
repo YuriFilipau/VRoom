@@ -35,6 +35,7 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
           questId: result.questId,
           eventId: result.eventId,
           scanSessionId: result.scanSessionId,
+          authFailure: false,
         ),
       );
     } on ApiException catch (error) {
@@ -42,6 +43,7 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
         state.copyWith(
           status: QrScannerStatus.failure,
           errorMessage: error.message,
+          authFailure: error.statusCode == 401,
         ),
       );
     } catch (_) {
@@ -62,6 +64,7 @@ class QrScannerBloc extends Bloc<QrScannerEvent, QrScannerState> {
         eventId: null,
         scanSessionId: null,
         errorMessage: null,
+        authFailure: false,
       ),
     );
   }

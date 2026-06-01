@@ -1,7 +1,9 @@
 part of 'ar_session_screen.dart';
 
 const _actionAnchorMarkerAssetPath = 'assets/models/ar_test_anchor_marker.glb';
-const _actionAnchorMarkerScale = 0.12;
+const _finishAnchorMarkerAssetPath =
+    'assets/models/ar_finish_anchor_marker.glb';
+const _actionAnchorMarkerScale = 1.0;
 
 extension _ArSessionObjectController on _ArSessionViewState {
   Future<void> _onPlaneOrPointTapped(List<ARHitTestResult> results) async {
@@ -70,10 +72,9 @@ extension _ArSessionObjectController on _ArSessionViewState {
       name: placementId,
       type: _nodeTypeForModelUri(selectedAsset.modelUri),
       uri: selectedAsset.modelUri,
-      transformation: localTransform,
+      transformation: _transformWithScale(localTransform, selectedAsset.scale),
       data: {'assetId': selectedAsset.id},
     );
-    node.scale = Vector3.all(selectedAsset.scale);
 
     final didAddNode =
         await _arObjectManager!.addNode(node, planeAnchor: _sceneRootAnchor!) ??
@@ -91,7 +92,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
           id: placementId,
           assetId: selectedAsset.id,
           nodeName: placementId,
-          localTransform: node.transform.storage.toList(),
+          localTransform: _transformWithScale(
+            node.transform,
+            1,
+          ).storage.toList(),
           meta: {'scale': selectedAsset.scale},
         ),
       ),
@@ -163,7 +167,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
         placement.copyWith(
           localTransform: _transformWithScale(
             localTransform,
-            scale,
+            1,
           ).storage.toList(),
           meta: {...placement.meta, 'scale': scale},
         ),
@@ -248,7 +252,9 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
     bloc.add(
       ArSessionPlacementUpserted(
-        currentPlacement.copyWith(localTransform: transform.storage.toList()),
+        currentPlacement.copyWith(
+          localTransform: _transformWithScale(transform, 1).storage.toList(),
+        ),
       ),
     );
   }
@@ -271,9 +277,14 @@ extension _ArSessionObjectController on _ArSessionViewState {
     final assetById = {for (final asset in state.assets) asset.id: asset};
     for (final placement in state.placements) {
       final transform = _matrixFromPlacement(placement);
+      final placementScale = arPlacementScale(placement);
+      final renderTransform = _transformWithScale(
+        transform,
+        placement.isActionAnchor ? _actionAnchorMarkerScale : placementScale,
+      );
       final renderedNode = _renderedNodes[placement.id];
       if (renderedNode != null) {
-        renderedNode.transform = transform;
+        renderedNode.transform = renderTransform;
         continue;
       }
 
@@ -286,21 +297,19 @@ extension _ArSessionObjectController on _ArSessionViewState {
           ? ARNode(
               name: placement.nodeName,
               type: NodeType.localGLTF2,
-              uri: _actionAnchorMarkerAssetPath,
-              transformation: _transformWithScale(
-                transform,
-                _actionAnchorMarkerScale,
-              ),
+              uri: placement.isFinishAnchor
+                  ? _finishAnchorMarkerAssetPath
+                  : _actionAnchorMarkerAssetPath,
+              transformation: renderTransform,
               data: {'anchorRole': placement.role ?? placement.id},
             )
           : ARNode(
               name: placement.nodeName,
               type: _nodeTypeForModelUri(asset!.modelUri),
               uri: asset.modelUri,
-              transformation: transform,
+              transformation: renderTransform,
               data: {'assetId': placement.assetId},
             );
-
       final didAddNode =
           await _arObjectManager!.addNode(
             node,
@@ -317,7 +326,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     final transform = placement.localTransform.length == 16
         ? Matrix4.fromList(placement.localTransform)
         : Matrix4.identity();
-    return _transformWithScale(transform, arPlacementScale(placement));
+    return _transformWithScale(transform, 1);
   }
 
   Matrix4 _transformWithScale(Matrix4 transform, double scale) {

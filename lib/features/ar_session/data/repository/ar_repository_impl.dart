@@ -26,7 +26,7 @@ class ArRepositoryImpl implements ArRepository {
   final Dio _dio;
   final SharedPreferences _sharedPreferences;
 
-  static const _sceneCachePrefix = 'ar_scene_cache_v4_';
+  static const _sceneCachePrefix = 'ar_scene_cache_v5_';
   static const _iosGlbCacheVersion = 'ios_v2';
 
   @override

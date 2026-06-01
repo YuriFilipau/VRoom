@@ -10,5 +10,6 @@ abstract class QrScannerState with _$QrScannerState {
     int? eventId,
     String? scanSessionId,
     String? errorMessage,
+    @Default(false) bool authFailure,
   }) = _QrScannerState;
 }

@@ -79,7 +79,7 @@ as List<ParticipantScannedQuestEntity>,
 @override
 @pragma('vm:prefer-inline')
 $ParticipantCertificateEntityCopyWith<$Res> get certificate {
-
+  
   return $ParticipantCertificateEntityCopyWith<$Res>(_self.certificate, (value) {
     return _then(_self.copyWith(certificate: value));
   });
@@ -222,7 +222,7 @@ return $default(_that.id,_that.title,_that.description,_that.imageUrl,_that.prog
 
 class _ParticipantEventDetailEntity implements ParticipantEventDetailEntity {
   const _ParticipantEventDetailEntity({required this.id, required this.title, required this.description, required this.imageUrl, required this.progressPercent, required this.certificate, required final  List<ParticipantScannedQuestEntity> scannedQuests}): _scannedQuests = scannedQuests;
-
+  
 
 @override final  int id;
 @override final  String title;
@@ -303,7 +303,7 @@ as List<ParticipantScannedQuestEntity>,
 @override
 @pragma('vm:prefer-inline')
 $ParticipantCertificateEntityCopyWith<$Res> get certificate {
-
+  
   return $ParticipantCertificateEntityCopyWith<$Res>(_self.certificate, (value) {
     return _then(_self.copyWith(certificate: value));
   });

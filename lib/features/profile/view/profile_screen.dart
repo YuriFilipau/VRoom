@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/network/api_exception.dart';
+import 'package:vroom/core/shared/widgets/auth_failure_redirect.dart';
 import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 import 'package:vroom/features/participant/domain/entities/participant_profile_entity.dart';
 import 'package:vroom/features/participant/domain/repository/participant_repository.dart';
@@ -63,6 +64,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       final message = error is ApiException
                           ? error.message
                           : l10n.profileLoadFailed;
+                      if (error is ApiException && error.statusCode == 401) {
+                        return AuthFailureRedirect(message: message);
+                      }
                       return Center(child: Text(message));
                     }
 

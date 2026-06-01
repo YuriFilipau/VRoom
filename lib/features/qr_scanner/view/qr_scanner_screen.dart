@@ -8,6 +8,7 @@ import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/router/app_routes.dart';
+import 'package:vroom/features/auth/view/bloc/auth_bloc.dart';
 import 'package:vroom/features/qr_scanner/view/bloc/qr_scanner_bloc.dart';
 import 'package:vroom/features/qr_scanner/view/components/qr_scanner_controls.dart';
 
@@ -140,6 +141,23 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             unawaited(_stopScanner());
             final messenger = ScaffoldMessenger.of(context);
             messenger.hideCurrentSnackBar();
+            if (state.authFailure) {
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${state.errorMessage!} Возвращаем на экран входа...',
+                  ),
+                ),
+              );
+              Future.delayed(const Duration(seconds: 2), () {
+                if (!mounted || !context.mounted) {
+                  return;
+                }
+                context.read<AuthBloc>().add(const AuthEvent.logout());
+                context.go(AppRoutes.login.path);
+              });
+              return;
+            }
             messenger.showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),

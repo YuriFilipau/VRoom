@@ -8,6 +8,7 @@ import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
+import 'package:vroom/core/shared/widgets/auth_failure_redirect.dart';
 import 'package:vroom/features/home/view/components/quest_card.dart';
 import 'package:vroom/features/participant/domain/entities/participant_certificate_entity.dart';
 import 'package:vroom/features/participant/domain/entities/participant_event_detail_entity.dart';
@@ -132,6 +133,9 @@ class _ParticipantEventDetailsScreenState
             final message = error is ApiException
                 ? error.message
                 : 'Не удалось загрузить мероприятие';
+            if (error is ApiException && error.statusCode == 401) {
+              return AuthFailureRedirect(message: message);
+            }
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),

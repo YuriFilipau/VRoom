@@ -248,7 +248,7 @@ return snackbarConsumed();case _:
 
 class ArSessionLoadRequested implements ArSessionEvent {
   const ArSessionLoadRequested({required this.questId, required this.mode});
-
+  
 
  final  int questId;
  final  ArSessionMode mode;
@@ -316,7 +316,7 @@ as ArSessionMode,
 
 class ArSessionAssetSelected implements ArSessionEvent {
   const ArSessionAssetSelected(this.assetId);
-
+  
 
  final  int assetId;
 
@@ -382,7 +382,7 @@ as int,
 
 class ArSessionPlacementSelected implements ArSessionEvent {
   const ArSessionPlacementSelected(this.placementId);
-
+  
 
  final  String? placementId;
 
@@ -448,7 +448,7 @@ as String?,
 
 class ArSessionPlacementUpserted implements ArSessionEvent {
   const ArSessionPlacementUpserted(this.placement);
-
+  
 
  final  ArAssetPlacementEntity placement;
 
@@ -511,7 +511,7 @@ as ArAssetPlacementEntity,
 @override
 @pragma('vm:prefer-inline')
 $ArAssetPlacementEntityCopyWith<$Res> get placement {
-
+  
   return $ArAssetPlacementEntityCopyWith<$Res>(_self.placement, (value) {
     return _then(_self.copyWith(placement: value));
   });
@@ -523,7 +523,7 @@ $ArAssetPlacementEntityCopyWith<$Res> get placement {
 
 class ArSessionPlacementScaleChanged implements ArSessionEvent {
   const ArSessionPlacementScaleChanged({required this.placementId, required this.scale});
-
+  
 
  final  String placementId;
  final  double scale;
@@ -591,7 +591,7 @@ as double,
 
 class ArSessionPlacementRemoved implements ArSessionEvent {
   const ArSessionPlacementRemoved(this.placementId);
-
+  
 
  final  String placementId;
 
@@ -657,7 +657,7 @@ as String,
 
 class ArSessionFinishAnchorAdded implements ArSessionEvent {
   const ArSessionFinishAnchorAdded();
-
+  
 
 
 
@@ -689,7 +689,7 @@ String toString() {
 
 class ArSessionFinishAnchorRemoved implements ArSessionEvent {
   const ArSessionFinishAnchorRemoved();
-
+  
 
 
 
@@ -721,7 +721,7 @@ String toString() {
 
 class ArSessionSceneAnchorUpdated implements ArSessionEvent {
   const ArSessionSceneAnchorUpdated({this.anchorName, this.cloudAnchorId, final  List<double>? anchorTransform, this.ttl, this.clearCloudAnchorId = false, this.clearAnchorTransform = false, this.clearAnchorName = false, this.clearTtl = false}): _anchorTransform = anchorTransform;
-
+  
 
  final  String? anchorName;
  final  String? cloudAnchorId;
@@ -809,7 +809,7 @@ as bool,
 
 class ArSessionSaveRequested implements ArSessionEvent {
   const ArSessionSaveRequested();
-
+  
 
 
 
@@ -841,7 +841,7 @@ String toString() {
 
 class ArSessionAnchorReached implements ArSessionEvent {
   const ArSessionAnchorReached({required this.anchorId, this.sessionId});
-
+  
 
  final  String anchorId;
  final  String? sessionId;
@@ -909,7 +909,7 @@ as String?,
 
 class ArSessionAnchorReachResultConsumed implements ArSessionEvent {
   const ArSessionAnchorReachResultConsumed();
-
+  
 
 
 
@@ -941,7 +941,7 @@ String toString() {
 
 class ArSessionSnackbarConsumed implements ArSessionEvent {
   const ArSessionSnackbarConsumed();
-
+  
 
 
 
@@ -1206,7 +1206,7 @@ return $default(_that.status,_that.mode,_that.sceneId,_that.questId,_that.eventI
 
 class _ArSessionState extends ArSessionState {
   const _ArSessionState({this.status = ArSessionStatus.initial, this.mode = ArSessionMode.user, this.sceneId = '', this.questId = 0, this.eventId = 0, this.eventTitle = '', final  List<ArAssetEntity> assets = const [], final  List<ArAssetPlacementEntity> placements = const [], this.version, this.updatedAt, this.createdBy, this.isPublished = false, this.hasTest = false, this.rootAnchor, this.arcoreToken, this.selectedAssetId, this.selectedPlacementId, this.anchorReachResult, this.message}): _assets = assets,_placements = placements,super._();
-
+  
 
 @override@JsonKey() final  ArSessionStatus status;
 @override@JsonKey() final  ArSessionMode mode;

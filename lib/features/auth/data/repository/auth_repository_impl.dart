@@ -18,11 +18,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
     try {
-      final cachedUser = await localDatasource.getCachedUser();
-      if (cachedUser != null) {
-        return Right(cachedUser.toEntity());
-      }
-
       final accessToken = await localDatasource.getCachedToken();
       if (accessToken == null) {
         return const Right(null);
