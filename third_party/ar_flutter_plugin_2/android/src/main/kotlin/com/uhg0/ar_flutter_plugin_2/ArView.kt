@@ -162,6 +162,7 @@ class ArView(
                     handleRemoveAnchor(anchorName, result)
                 }
                 "initGoogleCloudAnchorMode" -> handleInitGoogleCloudAnchorMode(result)
+                "estimateCloudAnchorQuality" -> handleEstimateCloudAnchorQuality(call, result)
                 "uploadAnchor" -> handleUploadAnchor(call, result)
                 "downloadAnchor" -> handleDownloadAnchor(call, result)
                 else -> result.notImplemented()
@@ -1068,6 +1069,54 @@ class ArView(
             Log.e(TAG, "❌ Exception lors de l'upload de l'ancre", e)
             Log.e(TAG, "Stack trace:", e)
             result.error("UPLOAD_ANCHOR_ERROR", e.message, null)
+        }
+    }
+
+    private fun handleEstimateCloudAnchorQuality(call: MethodCall, result: MethodChannel.Result) {
+        try {
+            val anchorName = call.argument<String>("name")
+            if (anchorName == null) {
+                result.error("INVALID_ARGUMENT", "Anchor name is required", null)
+                return
+            }
+
+            val session = sceneView.session
+            if (session == null) {
+                result.error("SESSION_ERROR", "AR Session is not available", null)
+                return
+            }
+
+            try {
+                sceneView.configureSession { _, config ->
+                    config.cloudAnchorMode = Config.CloudAnchorMode.ENABLED
+                    config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+                }
+            } catch (e: Exception) {
+                result.error("CLOUD_ANCHOR_CONFIG_ERROR", e.message, null)
+                return
+            }
+
+            val anchorNode = anchorNodesMap[anchorName]
+            val anchor = anchorNode?.anchor
+            if (anchor == null) {
+                result.error("ANCHOR_NOT_FOUND", "Anchor not found: $anchorName", null)
+                return
+            }
+
+            if (!session.canHostCloudAnchor(sceneView.cameraNode)) {
+                result.success("insufficient")
+                return
+            }
+
+            val quality = session.estimateFeatureMapQualityForHosting(anchor.pose)
+            val serializedQuality = when (quality) {
+                com.google.ar.core.Session.FeatureMapQuality.INSUFFICIENT -> "insufficient"
+                com.google.ar.core.Session.FeatureMapQuality.SUFFICIENT -> "sufficient"
+                com.google.ar.core.Session.FeatureMapQuality.GOOD -> "good"
+            }
+            result.success(serializedQuality)
+        } catch (e: Exception) {
+            result.error("FEATURE_MAP_QUALITY_ERROR", e.message, null)
         }
     }
 

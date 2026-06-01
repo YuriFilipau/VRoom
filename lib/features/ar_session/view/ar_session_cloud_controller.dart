@@ -113,6 +113,16 @@ extension _ArSessionCloudController on _ArSessionViewState {
 
     if (!(state.rootAnchor?.cloudAnchorId.isNotEmpty ?? false) &&
         _sceneRootAnchor != null) {
+      final hostingQuality =
+          await _arAnchorManager?.estimateCloudAnchorQuality(
+            _sceneRootAnchor!,
+          ) ??
+          ARCloudAnchorHostingQuality.unknown;
+      if (hostingQuality == ARCloudAnchorHostingQuality.insufficient) {
+        _showMessage(_cloudAnchorScanInstruction);
+        return;
+      }
+
       _isUploadingSceneAnchor = true;
       _saveAfterSceneAnchorUpload = true;
       if (mounted) {
@@ -126,15 +136,35 @@ extension _ArSessionCloudController on _ArSessionViewState {
         if (mounted) {
           _refresh(() {});
         }
-        _showMessage(
-          'Не удалось подключить облачную AR-сцену. Проверьте, что телефон находится в корректной сети, и попробуйте ещё раз.',
-        );
+        _showMessage(_cloudAnchorUploadFailureMessage());
       }
       return;
     }
 
     context.read<ArSessionBloc>().add(const ArSessionSaveRequested());
   }
+
+  String _cloudAnchorUploadFailureMessage() {
+    final error = _arAnchorManager?.lastErrorMessage?.trim().toLowerCase() ?? '';
+    if (error.contains('insufficient visual data')) {
+      return _cloudAnchorScanInstruction;
+    }
+    if (error.contains('not authorized') ||
+        error.contains('not_authorized') ||
+        error.contains('unauthorized') ||
+        error.contains('permission')) {
+      return 'Cloud Anchor не авторизован. Проверьте настройки Google Cloud для Android: package com.example.vroom, SHA-1 сертификата и включенный ARCore API.';
+    }
+    if (error.contains('network') ||
+        error.contains('internet') ||
+        error.contains('unavailable')) {
+      return 'Не удалось подключить облачную AR-сцену. Проверьте интернет и повторите сохранение.';
+    }
+    return 'Не удалось создать облачную точку. Медленно поводите камерой вокруг точки сцены и повторите сохранение.';
+  }
+
+  static const String _cloudAnchorScanInstruction =
+      'Недостаточно визуальных данных для облачной точки. Медленно поводите камерой вокруг точки сцены 10-20 секунд и повторите сохранение.';
 
   void _showMessage(String message) {
     final normalizedMessage = message.trim();

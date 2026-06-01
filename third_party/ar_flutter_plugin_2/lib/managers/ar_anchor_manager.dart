@@ -7,6 +7,13 @@ typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
 typedef AnchorDownloadedHandler = ARAnchor Function(
     Map<String, dynamic> serializedAnchor);
 
+enum ARCloudAnchorHostingQuality {
+  insufficient,
+  sufficient,
+  good,
+  unknown,
+}
+
 /// Handles all anchor-related functionality of an [ARView], including configuration and usage of collaborative sessions
 class ARAnchorManager {
   /// Platform channel used for communication from and to [ARAnchorManager]
@@ -104,13 +111,43 @@ class ARAnchorManager {
   Future<bool?> uploadAnchor(ARAnchor anchor) async {
     try {
       lastErrorMessage = null;
+      pendingAnchors.removeWhere((element) => element.name == anchor.name);
+      pendingAnchors.add(anchor);
       final response =
           await _channel.invokeMethod<bool>('uploadAnchor', anchor.toJson());
-      pendingAnchors.add(anchor);
+      if (response != true) {
+        pendingAnchors.remove(anchor);
+      }
       return response;
     } on PlatformException catch (e) {
+      pendingAnchors.remove(anchor);
       lastErrorMessage = e.message;
       return false;
+    }
+  }
+
+  Future<ARCloudAnchorHostingQuality> estimateCloudAnchorQuality(
+    ARAnchor anchor,
+  ) async {
+    try {
+      lastErrorMessage = null;
+      final response = await _channel.invokeMethod<String>(
+        'estimateCloudAnchorQuality',
+        anchor.toJson(),
+      );
+      switch (response) {
+        case 'insufficient':
+          return ARCloudAnchorHostingQuality.insufficient;
+        case 'sufficient':
+          return ARCloudAnchorHostingQuality.sufficient;
+        case 'good':
+          return ARCloudAnchorHostingQuality.good;
+        default:
+          return ARCloudAnchorHostingQuality.unknown;
+      }
+    } on PlatformException catch (e) {
+      lastErrorMessage = e.message;
+      return ARCloudAnchorHostingQuality.unknown;
     }
   }
 
