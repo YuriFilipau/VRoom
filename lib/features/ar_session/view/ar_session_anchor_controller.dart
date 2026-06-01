@@ -27,8 +27,8 @@ extension _ArSessionAnchorController on _ArSessionViewState {
       showPlanes: false,
       showWorldOrigin: false,
       handleTaps: true,
-      handlePans: widget.mode == ArSessionMode.admin,
-      handleRotation: widget.mode == ArSessionMode.admin,
+      handlePans: false,
+      handleRotation: false,
     );
     await objectManager.onInitialize();
     await anchorManager.initGoogleCloudAnchorMode();

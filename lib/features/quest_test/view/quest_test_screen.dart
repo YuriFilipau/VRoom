@@ -154,9 +154,9 @@ class _QuestionCard extends StatelessWidget {
           children: [
             Text(question.text, style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 10),
-            ...question.options.map((option) {
-              final selected = selectedOptions.contains(option.id);
-              if (question.type == QuestTestQuestionType.multiple) {
+            if (question.type == QuestTestQuestionType.multiple)
+              ...question.options.map((option) {
+                final selected = selectedOptions.contains(option.id);
                 return CheckboxListTile(
                   value: selected,
                   contentPadding: EdgeInsets.zero,
@@ -164,15 +164,25 @@ class _QuestionCard extends StatelessWidget {
                   controlAffinity: ListTileControlAffinity.leading,
                   onChanged: (_) => _toggle(context, option.id),
                 );
-              }
-              return RadioListTile<int>(
-                value: option.id,
+              })
+            else
+              RadioGroup<int>(
                 groupValue: selectedOptions.firstOrNull,
-                contentPadding: EdgeInsets.zero,
-                title: Text(option.text),
-                onChanged: (_) => _toggle(context, option.id),
-              );
-            }),
+                onChanged: (optionId) {
+                  if (optionId != null) {
+                    _toggle(context, optionId);
+                  }
+                },
+                child: Column(
+                  children: question.options.map((option) {
+                    return RadioListTile<int>(
+                      value: option.id,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(option.text),
+                    );
+                  }).toList(),
+                ),
+              ),
           ],
         ),
       ),

@@ -27,7 +27,8 @@ dependencies:
   shared_preferences: ^2.3.3
   flutter_secure_storage: ^10.0.0
   mobile_scanner: ^7.2.0
-  ar_flutter_plugin_2: ^0.0.3
+  ar_flutter_plugin_2:
+    path: third_party/ar_flutter_plugin_2
   pointer_interceptor: ^0.10.1+2
   path_provider: ^2.1.5
   url_launcher: ^6.3.2

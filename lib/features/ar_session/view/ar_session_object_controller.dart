@@ -1,6 +1,7 @@
 part of 'ar_session_screen.dart';
 
-const _actionAnchorMarkerAssetPath = 'assets/models/ar_test_anchor_marker.gltf';
+const _actionAnchorMarkerAssetPath = 'assets/models/ar_test_anchor_marker.glb';
+const _actionAnchorMarkerScale = 0.12;
 
 extension _ArSessionObjectController on _ArSessionViewState {
   Future<void> _onPlaneOrPointTapped(List<ARHitTestResult> results) async {
@@ -281,7 +282,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
               name: placement.nodeName,
               type: NodeType.localGLTF2,
               uri: _actionAnchorMarkerAssetPath,
-              transformation: transform,
+              transformation: _transformWithScale(
+                transform,
+                _actionAnchorMarkerScale,
+              ),
               data: {'anchorRole': placement.role ?? placement.id},
             )
           : ARNode(
