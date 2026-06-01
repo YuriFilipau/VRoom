@@ -119,8 +119,9 @@ extension _ArSessionCloudController on _ArSessionViewState {
           ) ??
           ARCloudAnchorHostingQuality.unknown;
       if (hostingQuality == ARCloudAnchorHostingQuality.insufficient) {
-        _showMessage(_cloudAnchorScanInstruction);
-        return;
+        _showMessage(
+          'Качество карты сцены пока низкое, но пробую создать облачную точку. Если не получится, поводите камерой вокруг QR и повторите.',
+        );
       }
 
       _isUploadingSceneAnchor = true;
@@ -146,7 +147,8 @@ extension _ArSessionCloudController on _ArSessionViewState {
 
   String _cloudAnchorUploadFailureMessage() {
     final error = _arAnchorManager?.lastErrorMessage?.trim().toLowerCase() ?? '';
-    if (error.contains('insufficient visual data')) {
+    if (error.contains('insufficient visual data') ||
+        error.contains('feature map quality is insufficient')) {
       return _cloudAnchorScanInstruction;
     }
     if (error.contains('not authorized') ||

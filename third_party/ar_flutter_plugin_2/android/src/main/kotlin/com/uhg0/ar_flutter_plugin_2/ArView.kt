@@ -1023,14 +1023,6 @@ class ArView(
                 result.error("INVALID_ARGUMENT", "Anchor name is required", null)
                 return
             }
-
-            Log.d(TAG, "📱 Vérification de la capacité à héberger l'ancre cloud...")
-            if (!session.canHostCloudAnchor(sceneView.cameraNode)) {
-                Log.e(TAG, "❌ Erreur: données visuelles insuffisantes pour héberger l'ancre cloud")
-                result.error("HOSTING_ERROR", "Insufficient visual data to host", null)
-                return
-            }
-
             val anchorNode = anchorNodesMap[anchorName]
             if (anchorNode == null) {
                 Log.e(TAG, "❌ Erreur: ancre non trouvée: $anchorName")
@@ -1038,6 +1030,9 @@ class ArView(
                 result.error("ANCHOR_NOT_FOUND", "Anchor not found: $anchorName", null)
                 return
             }
+
+            val quality = session.estimateFeatureMapQualityForHosting(anchorNode.anchor!!.pose)
+            Log.d(TAG, "Cloud Anchor feature map quality before host: $quality")
 
             Log.d(TAG, "🔄 Création du CloudAnchorNode...")
             val cloudAnchorNode = CloudAnchorNode(sceneView.engine, anchorNode.anchor!!)
@@ -1054,10 +1049,11 @@ class ArView(
                         )
                         anchorChannel.invokeMethod("onCloudAnchorUploaded", args)
                         result.success(true)
-                    } else {
-                        Log.e(TAG, "❌ Échec de l'hébergement de l'ancre cloud: $state")
-                        sessionChannel.invokeMethod("onError", listOf("Failed to host cloud anchor: $state"))
-                        result.error("HOSTING_ERROR", "Failed to host cloud anchor: $state", null)
+                    } else if (state.isError) {
+                        Log.e(TAG, "Cloud Anchor hosting failed: $state")
+                        val message = "Failed to host cloud anchor: $state"
+                        sessionChannel.invokeMethod("onError", listOf(message))
+                        result.error("HOSTING_ERROR", message, null)
                     }
                 }
             }
@@ -1102,12 +1098,6 @@ class ArView(
                 result.error("ANCHOR_NOT_FOUND", "Anchor not found: $anchorName", null)
                 return
             }
-
-            if (!session.canHostCloudAnchor(sceneView.cameraNode)) {
-                result.success("insufficient")
-                return
-            }
-
             val quality = session.estimateFeatureMapQualityForHosting(anchor.pose)
             val serializedQuality = when (quality) {
                 com.google.ar.core.Session.FeatureMapQuality.INSUFFICIENT -> "insufficient"
