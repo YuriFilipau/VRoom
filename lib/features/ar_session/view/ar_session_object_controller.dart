@@ -204,6 +204,11 @@ extension _ArSessionObjectController on _ArSessionViewState {
     }
 
     if (widget.mode == ArSessionMode.user && placement.isActionAnchor) {
+      _showMessage(
+        placement.isTestAnchor
+            ? 'Проверяем точку начала теста...'
+            : 'Проверяем точку завершения квеста...',
+      );
       context.read<ArSessionBloc>().add(
         ArSessionAnchorReached(
           anchorId: placement.role ?? placement.id,
@@ -309,9 +314,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
   }
 
   Matrix4 _matrixFromPlacement(ArAssetPlacementEntity placement) {
-    return placement.localTransform.length == 16
+    final transform = placement.localTransform.length == 16
         ? Matrix4.fromList(placement.localTransform)
         : Matrix4.identity();
+    return _transformWithScale(transform, arPlacementScale(placement));
   }
 
   Matrix4 _transformWithScale(Matrix4 transform, double scale) {

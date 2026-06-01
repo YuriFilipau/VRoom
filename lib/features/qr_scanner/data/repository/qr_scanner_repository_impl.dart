@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/network/json_utils.dart';
 import 'package:vroom/features/qr_scanner/domain/entities/qr_scan_result_entity.dart';
@@ -11,6 +12,9 @@ class QrScannerRepositoryImpl implements QrScannerRepository {
 
   @override
   Future<QrScanResultEntity> processQr(String rawValue) async {
+    if (kDebugMode) {
+      debugPrint('QR scan raw value: $rawValue');
+    }
     final access = _parseQuestAccess(rawValue);
     if (access == null) {
       throw const ApiException(
