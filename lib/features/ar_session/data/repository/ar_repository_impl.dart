@@ -48,11 +48,7 @@ class ArRepositoryImpl implements ArRepository {
         final arcoreToken = await _fetchArcoreToken();
 
         final assets = await _prepareLocalAssets(
-          _parseAssets(
-            arConfigJson['assets'] ??
-                asMap(arConfigJson['quest'])['assets'] ??
-                asMap(arConfigJson['scene'])['assets'],
-          ),
+          _parseAssetsFromConfig(arConfigJson),
         );
 
         final scene = _parseScene(
@@ -75,16 +71,17 @@ class ArRepositoryImpl implements ArRepository {
       );
       final bundleJson = asMap(bundleResponse.data);
       final layoutJson = await _fetchParticipantLayoutJson(questId);
+      final sceneJson = layoutJson.isNotEmpty
+          ? _sceneJsonFromLayout(layoutJson, fallbackQuestId: questId)
+          : asMap(bundleJson['scene']).isNotEmpty
+          ? asMap(bundleJson['scene'])
+          : asMap(bundleJson['layout']);
       final assets = await _prepareLocalAssets(
-        _parseAssets(bundleJson['assets']),
+        _parseAssetsFromConfig(bundleJson, layoutJson: layoutJson),
       );
       final scene = _parseScene(
         questId: questId,
-        sceneJson: layoutJson.isNotEmpty
-            ? _sceneJsonFromLayout(layoutJson, fallbackQuestId: questId)
-            : asMap(bundleJson['scene']).isNotEmpty
-            ? asMap(bundleJson['scene'])
-            : asMap(bundleJson['layout']),
+        sceneJson: sceneJson,
         assets: assets,
         fallbackJson: bundleJson,
       );
@@ -156,9 +153,7 @@ class ArRepositoryImpl implements ArRepository {
       final responseJson = asMap(response.data);
       final persistedSceneJson = await _fetchOrganizerSceneJson(questId);
       final assets = await _prepareLocalAssets(
-        _parseAssets(
-          arConfigJson['assets'] ?? asMap(arConfigJson['quest'])['assets'],
-        ),
+        _parseAssetsFromConfig(arConfigJson),
       );
       final savedScene = _parseScene(
         questId: questId,
@@ -272,41 +267,59 @@ class ArRepositoryImpl implements ArRepository {
       return const <String, dynamic>{};
     }
 
-    final anchorPayload = asMap(layoutJson['anchor_payload']);
+    final anchorPayload = asMap(
+      layoutJson['anchor_payload'] ??
+          layoutJson['anchorPayload'] ??
+          layoutJson['root_anchor'] ??
+          layoutJson['rootAnchor'],
+    );
     final rootAnchor = <String, dynamic>{
-      'anchorName': readString(anchorPayload['anchorName']) ?? '',
-      'cloudAnchorId': readString(anchorPayload['cloudAnchorId']) ?? '',
+      'anchorName':
+          readString(anchorPayload['anchorName']) ??
+          readString(anchorPayload['anchor_name']) ??
+          '',
+      'cloudAnchorId':
+          readString(anchorPayload['cloudAnchorId']) ??
+          readString(anchorPayload['cloud_anchor_id']) ??
+          '',
       'anchorTransform':
           readDoubleList(anchorPayload['transformation']) ??
           readDoubleList(anchorPayload['anchorTransform']) ??
+          readDoubleList(anchorPayload['anchor_transform']) ??
           const <double>[],
       'ttl': readInt(anchorPayload['ttl']) ?? 1,
       'platform': readString(anchorPayload['platform']),
     };
 
     final objects = asList(layoutJson['items'])
+        .whereType<Map>()
         .map((item) {
-          final json = Map<String, dynamic>.from(item as Map);
+          final json = Map<String, dynamic>.from(item);
           final meta = asMap(json['meta']);
           final transform = asMap(json['transform']);
+          final assetId =
+              readInt(json['asset_id']) ??
+              readInt(json['assetId']) ??
+              readInt(asMap(json['asset'])['id']) ??
+              0;
+          final placementId =
+              readString(meta['id']) ??
+              readString(json['id']) ??
+              'placement_$assetId';
+          final nodeName =
+              readString(meta['nodeName']) ??
+              readString(meta['node_name']) ??
+              readString(json['nodeName']) ??
+              readString(json['node_name']) ??
+              placementId;
           return {
-            'id':
-                readString(meta['id']) ??
-                readString(json['id']) ??
-                'placement_${readInt(json['asset_id']) ?? 0}',
-            'assetId':
-                readInt(json['asset_id']) ??
-                readInt(json['assetId']) ??
-                readInt(asMap(json['asset'])['id']) ??
-                0,
-            'nodeName':
-                readString(meta['nodeName']) ??
-                readString(meta['node_name']) ??
-                readString(json['nodeName']) ??
-                '',
+            'id': placementId,
+            'assetId': assetId,
+            'nodeName': nodeName,
             'localTransform':
                 readDoubleList(transform['transformation']) ??
                 readDoubleList(json['localTransform']) ??
+                readDoubleList(json['local_transform']) ??
                 const <double>[],
             'meta': meta,
           };
@@ -356,27 +369,57 @@ class ArRepositoryImpl implements ArRepository {
     String? arcoreToken,
   }) {
     final scene = sceneJson.isEmpty ? fallbackJson : sceneJson;
-    final rootAnchorJson = asMap(scene['rootAnchor']);
+    final rootAnchorJson = asMap(scene['rootAnchor'] ?? scene['root_anchor']);
     final rootAnchor = rootAnchorJson.isEmpty
         ? null
         : ArSceneRootAnchorEntity(
-            anchorName: readString(rootAnchorJson['anchorName']) ?? '',
-            cloudAnchorId: readString(rootAnchorJson['cloudAnchorId']) ?? '',
+            anchorName:
+                readString(rootAnchorJson['anchorName']) ??
+                readString(rootAnchorJson['anchor_name']) ??
+                '',
+            cloudAnchorId:
+                readString(rootAnchorJson['cloudAnchorId']) ??
+                readString(rootAnchorJson['cloud_anchor_id']) ??
+                '',
             anchorTransform:
-                readDoubleList(rootAnchorJson['anchorTransform']) ?? const [],
+                readDoubleList(rootAnchorJson['anchorTransform']) ??
+                readDoubleList(rootAnchorJson['anchor_transform']) ??
+                readDoubleList(rootAnchorJson['transformation']) ??
+                const [],
             ttl: readInt(rootAnchorJson['ttl']) ?? 1,
             platform: readString(rootAnchorJson['platform']),
           );
 
-    final objects = asList(scene['objects'])
+    final objects = asList(scene['objects'] ?? scene['items'])
+        .whereType<Map>()
         .map((item) {
-          final json = Map<String, dynamic>.from(item as Map);
+          final json = Map<String, dynamic>.from(item);
+          final meta = asMap(json['meta']);
+          final transform = asMap(json['transform']);
+          final assetId =
+              readInt(json['assetId']) ??
+              readInt(json['asset_id']) ??
+              readInt(asMap(json['asset'])['id']) ??
+              0;
+          final placementId =
+              readString(json['id']) ??
+              readString(meta['id']) ??
+              'placement_$assetId';
           return ArAssetPlacementEntity(
-            id: readString(json['id']) ?? '',
-            assetId: readInt(json['assetId']) ?? 0,
-            nodeName: readString(json['nodeName']) ?? '',
-            localTransform: readDoubleList(json['localTransform']) ?? const [],
-            meta: asMap(json['meta']),
+            id: placementId,
+            assetId: assetId,
+            nodeName:
+                readString(json['nodeName']) ??
+                readString(json['node_name']) ??
+                readString(meta['nodeName']) ??
+                readString(meta['node_name']) ??
+                placementId,
+            localTransform:
+                readDoubleList(json['localTransform']) ??
+                readDoubleList(json['local_transform']) ??
+                readDoubleList(transform['transformation']) ??
+                const [],
+            meta: meta,
           );
         })
         .toList(growable: false);
@@ -414,22 +457,101 @@ class ArRepositoryImpl implements ArRepository {
     );
   }
 
+  List<ArAssetEntity> _parseAssetsFromConfig(
+    Map<String, dynamic> json, {
+    Map<String, dynamic>? layoutJson,
+  }) {
+    final rawAssets = <dynamic>[
+      json['assets'],
+      json['ar_assets'],
+      json['arAssets'],
+      json['quest_assets'],
+      json['questAssets'],
+      json['materials'],
+      json['digital_materials'],
+      json['digitalMaterials'],
+      asMap(json['quest'])['assets'],
+      asMap(json['quest'])['ar_assets'],
+      asMap(json['quest'])['arAssets'],
+      asMap(json['quest'])['materials'],
+      asMap(json['quest'])['digital_materials'],
+      asMap(json['quest'])['digitalMaterials'],
+      asMap(json['scene'])['assets'],
+      asMap(json['scene'])['ar_assets'],
+      asMap(json['scene'])['arAssets'],
+      asMap(json['layout'])['assets'],
+      asMap(json['latest_layout'] ?? json['latestLayout'])['assets'],
+      asMap(json['ar_config'] ?? json['arConfig'])['assets'],
+      asMap(json['bundle'])['assets'],
+      if (layoutJson != null) layoutJson['assets'],
+    ];
+
+    for (final item in asList(layoutJson?['items'])) {
+      final map = asMap(item);
+      if (map.isNotEmpty) {
+        rawAssets.add(map['asset']);
+      }
+    }
+    for (final item in asList(json['items'])) {
+      final map = asMap(item);
+      if (map.isNotEmpty) {
+        rawAssets.add(map['asset']);
+      }
+    }
+    for (final item in asList(asMap(json['layout'])['items'])) {
+      final map = asMap(item);
+      if (map.isNotEmpty) {
+        rawAssets.add(map['asset']);
+      }
+    }
+    for (final item in asList(asMap(json['scene'])['objects'])) {
+      final map = asMap(item);
+      if (map.isNotEmpty) {
+        rawAssets.add(map['asset']);
+      }
+    }
+
+    final deduped = <String, ArAssetEntity>{};
+    for (final rawAsset in rawAssets) {
+      final parsed = _parseAssets(rawAsset);
+      for (final asset in parsed) {
+        final key = asset.id == 0
+            ? 'uri:${asset.modelUri}'
+            : 'id:${asset.id}:${asset.modelUri}';
+        deduped[key] = asset;
+      }
+    }
+    return deduped.values.toList(growable: false);
+  }
+
   List<ArAssetEntity> _parseAssets(dynamic rawAssets) {
-    final assets = asList(rawAssets);
+    final assets = rawAssets is Map ? [rawAssets] : asList(rawAssets);
     return assets
         .asMap()
         .entries
         .map<ArAssetEntity?>((entry) {
           final index = entry.key;
-          final json = Map<String, dynamic>.from(entry.value as Map);
+          final json = asMap(entry.value);
+          if (json.isEmpty) {
+            return null;
+          }
           final meta = asMap(json['meta']);
+          final fileJson = asMap(json['file'] ?? json['storage']);
           final rawModelUri =
               readString(json['model_url']) ??
+              readString(json['modelUrl']) ??
               readString(json['modelUri']) ??
               readString(json['glb_url']) ??
+              readString(json['glbUrl']) ??
               readString(json['file_url']) ??
+              readString(json['fileUrl']) ??
+              readString(fileJson['url']) ??
+              readString(fileJson['download_url']) ??
+              readString(fileJson['downloadUrl']) ??
               readString(json['storage_url']) ??
               readString(json['storageUrl']) ??
+              readString(json['download_url']) ??
+              readString(json['downloadUrl']) ??
               readString(json['url']) ??
               '';
           final modelUri = rawModelUri.trim();

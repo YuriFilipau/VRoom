@@ -6,6 +6,7 @@ import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
 import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
+import 'package:vroom/features/ar_session/view/components/ar_interaction_editor_dialog.dart';
 import 'package:vroom/features/ar_session/view/components/ar_placement_helpers.dart';
 
 class ArSelectedObjectControls extends StatelessWidget {
@@ -94,6 +95,19 @@ class ArSelectedObjectControls extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
+                OutlinedButton.icon(
+                  onPressed: placement.isActionAnchor
+                      ? null
+                      : () => showArInteractionEditorDialog(
+                          context: context,
+                          placement: placement,
+                          asset: asset,
+                        ),
+                  icon: const Icon(Icons.touch_app_outlined),
+                  label: const Text('Действие'),
+                  style: _controlButtonStyle(),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     const Text(
@@ -128,7 +142,8 @@ class ArSelectedObjectControls extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => _move(context, placement, dy: moveStep),
+                        onPressed: () =>
+                            _move(context, placement, dy: moveStep),
                         icon: const Icon(Icons.arrow_upward_rounded),
                         label: const Text('Выше'),
                         style: _controlButtonStyle(),
@@ -161,10 +176,11 @@ class ArSelectedObjectControls extends StatelessWidget {
                         style: _controlButtonStyle().copyWith(
                           foregroundColor:
                               WidgetStateProperty.resolveWith<Color?>(
-                            (states) => states.contains(WidgetState.disabled)
-                                ? Colors.white38
-                                : Colors.white,
-                          ),
+                                (states) =>
+                                    states.contains(WidgetState.disabled)
+                                    ? Colors.white38
+                                    : Colors.white,
+                              ),
                         ),
                       ),
                     ),

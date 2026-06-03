@@ -18,6 +18,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
+import 'package:vroom/core/network/json_utils.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_anchor_reach_result_entity.dart';
@@ -85,6 +86,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
   String? _activeSnackBarMessage;
   String? _lastSnackBarMessage;
   DateTime? _lastSnackBarShownAt;
+  final Set<String> _completedInteractivePlacementIds = {};
   int _detectedPlaneCount = 0;
 
   bool get _supportsAr => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
@@ -131,6 +133,15 @@ class _ArSessionViewState extends State<_ArSessionView> {
         }
       },
       builder: (context, state) {
+        final interactivePlacements = _trackableInteractivePlacements(state);
+        final interactiveTotal = interactivePlacements.length;
+        final interactiveCompleted = interactivePlacements
+            .where(
+              (placement) =>
+                  _completedInteractivePlacementIds.contains(placement.id),
+            )
+            .length;
+
         return Scaffold(
           backgroundColor: Colors.black,
           body: Stack(
@@ -260,6 +271,22 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     ),
                   ),
                 ),
+              if (!state.isAdmin && interactiveTotal > 0 && _hasSceneRootAnchor)
+                Positioned(
+                  left: 16,
+                  right: 88,
+                  bottom: 18,
+                  child: SafeArea(
+                    top: false,
+                    child: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: _ArInteractionProgressPill(
+                        completed: interactiveCompleted,
+                        total: interactiveTotal,
+                      ),
+                    ),
+                  ),
+                ),
               Positioned(
                 right: 18,
                 bottom: 18,
@@ -285,6 +312,50 @@ class _ArSessionViewState extends State<_ArSessionView> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ArInteractionProgressPill extends StatelessWidget {
+  const _ArInteractionProgressPill({
+    required this.completed,
+    required this.total,
+  });
+
+  final int completed;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return PointerInterceptor(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.62),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.flag_circle_outlined,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Найдено $completed/$total',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
