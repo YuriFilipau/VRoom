@@ -21,9 +21,7 @@ class OnboardingPageContent extends StatelessWidget {
           OnboardingIllustration(icon: page.icon),
           const SizedBox(height: AppSizes.spacing32),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.spacing12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacing12),
             child: Text(
               page.title,
               textAlign: TextAlign.center,
@@ -32,9 +30,7 @@ class OnboardingPageContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSizes.spacing12),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.spacing16,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacing16),
             child: Text(
               page.description,
               textAlign: TextAlign.center,

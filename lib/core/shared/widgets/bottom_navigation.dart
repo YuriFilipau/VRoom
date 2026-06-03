@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vroom/core/constants/app_colors.dart';
+import 'package:vroom/core/localization/app_localizations.dart';
+import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/core/theme/dashboard_material_theme.dart';
 
 class BottomNavigationScaffold extends StatelessWidget {
@@ -13,12 +15,7 @@ class BottomNavigationScaffold extends StatelessWidget {
   }
 
   void _onQRScan(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Сканер QR-кода открыт'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    context.push(AppRoutes.scanner.path);
   }
 
   @override
@@ -26,6 +23,7 @@ class BottomNavigationScaffold extends StatelessWidget {
     final dashboardTheme = Theme.of(
       context,
     ).extension<DashboardMaterialTheme>()!;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: shell,
@@ -56,7 +54,7 @@ class BottomNavigationScaffold extends StatelessWidget {
                           child: _NavItem(
                             icon: Icons.home_outlined,
                             selectedIcon: Icons.home,
-                            label: 'Главная',
+                            label: l10n.navHome,
                             selected: shell.currentIndex == 0,
                             onTap: () => _onTap(0),
                           ),
@@ -66,7 +64,7 @@ class BottomNavigationScaffold extends StatelessWidget {
                           child: _NavItem(
                             icon: Icons.person_outline,
                             selectedIcon: Icons.person,
-                            label: 'Профиль',
+                            label: l10n.navProfile,
                             selected: shell.currentIndex == 1,
                             onTap: () => _onTap(1),
                           ),

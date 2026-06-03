@@ -37,10 +37,7 @@ class OnboardingIllustration extends StatelessWidget {
           const Positioned(
             left: 26,
             bottom: 28,
-            child: _IllustrationBadge(
-              icon: Icons.stars_rounded,
-              size: 30,
-            ),
+            child: _IllustrationBadge(icon: Icons.stars_rounded, size: 30),
           ),
           Positioned(
             left: 24,
@@ -62,11 +59,7 @@ class OnboardingIllustration extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(34),
               ),
-              child: Icon(
-                icon,
-                size: 54,
-                color: AppColors.primaryBlue,
-              ),
+              child: Icon(icon, size: 54, color: AppColors.primaryBlue),
             ),
           ),
           Positioned(

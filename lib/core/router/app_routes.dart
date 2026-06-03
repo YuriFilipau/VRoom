@@ -5,7 +5,12 @@ enum AppRoutes {
   register('/register', 'Register'),
   home('/home', 'Home'),
   scanner('/scanner', 'Scanner'),
-  profile('/profile', 'Profile');
+  ar('/ar', 'Ar'),
+  questTest('/quests', 'QuestTest'),
+  profile('/profile', 'Profile'),
+  participantEvent('/events', 'ParticipantEvent'),
+  organizerEvents('/organizer/events', 'OrganizerEvents'),
+  organizerQuests('/organizer/events', 'OrganizerQuests');
 
   const AppRoutes(this.path, this.name);
 

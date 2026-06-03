@@ -1,18 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class UserAchievementEntity extends Equatable {
-  const UserAchievementEntity({
-    required this.id,
-    required this.title,
-    required this.iconKey,
-    required this.isUnlocked,
-  });
+part 'user_achievement_entity.freezed.dart';
 
-  final int id;
-  final String title;
-  final String iconKey;
-  final bool isUnlocked;
-
-  @override
-  List<Object?> get props => [id, title, iconKey, isUnlocked];
+@freezed
+abstract class UserAchievementEntity with _$UserAchievementEntity {
+  const factory UserAchievementEntity({
+    required int id,
+    required String title,
+    required String iconKey,
+    required bool isUnlocked,
+  }) = _UserAchievementEntity;
 }

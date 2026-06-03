@@ -14,7 +14,9 @@ class ProfileStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardTheme = Theme.of(context).extension<DashboardMaterialTheme>()!;
+    final dashboardTheme = Theme.of(
+      context,
+    ).extension<DashboardMaterialTheme>()!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -28,9 +30,9 @@ class ProfileStatCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.primaryBlue,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: AppColors.primaryBlue),
             ),
             const SizedBox(height: 2),
             Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),

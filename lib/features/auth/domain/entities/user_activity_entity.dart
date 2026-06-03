@@ -1,16 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class UserActivityEntity extends Equatable {
-  const UserActivityEntity({
-    required this.id,
-    required this.title,
-    required this.timeLabel,
-  });
+part 'user_activity_entity.freezed.dart';
 
-  final int id;
-  final String title;
-  final String timeLabel;
-
-  @override
-  List<Object?> get props => [id, title, timeLabel];
+@freezed
+abstract class UserActivityEntity with _$UserActivityEntity {
+  const factory UserActivityEntity({
+    required int id,
+    required String title,
+    required String timeLabel,
+  }) = _UserActivityEntity;
 }

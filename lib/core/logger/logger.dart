@@ -6,16 +6,13 @@ class AppLogger {
 }
 
 final class _CustomPrinter extends LogPrinter {
-
   _CustomPrinter(this.className);
   final String className;
 
   @override
   List<String> log(LogEvent event) {
-    final color =
-        PrettyPrinter.defaultLevelColors[event.level] ?? const AnsiColor.none();
     final emoji = PrettyPrinter.defaultLevelEmojis[event.level];
     final message = event.message;
-    return [color('$emoji: $className - $message')];
+    return ['$emoji: $className - $message'];
   }
 }

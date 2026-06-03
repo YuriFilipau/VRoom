@@ -17,9 +17,6 @@ abstract class UserActivity with _$UserActivity {
   factory UserActivity.fromJson(Map<String, dynamic> json) =>
       _$UserActivityFromJson(json);
 
-  UserActivityEntity toEntity() => UserActivityEntity(
-    id: id,
-    title: title,
-    timeLabel: timeLabel,
-  );
+  UserActivityEntity toEntity() =>
+      UserActivityEntity(id: id, title: title, timeLabel: timeLabel);
 }

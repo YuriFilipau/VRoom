@@ -53,10 +53,7 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
 
   @override
   Future<void> cacheUser(User user) async {
-    await secureStorage.write(
-      key: _userKey,
-      value: json.encode(user.toJson()),
-    );
+    await secureStorage.write(key: _userKey, value: json.encode(user.toJson()));
   }
 
   @override

@@ -150,7 +150,8 @@ class DashboardMaterialTheme extends ThemeExtension<DashboardMaterialTheme> {
       navIconActive:
           Color.lerp(navIconActive, other.navIconActive, t) ?? navIconActive,
       navIconInactive:
-          Color.lerp(navIconInactive, other.navIconInactive, t) ?? navIconInactive,
+          Color.lerp(navIconInactive, other.navIconInactive, t) ??
+          navIconInactive,
       navLabelInactive:
           Color.lerp(navLabelInactive, other.navLabelInactive, t) ??
           navLabelInactive,
@@ -162,7 +163,11 @@ class DashboardMaterialTheme extends ThemeExtension<DashboardMaterialTheme> {
           ) ??
           achievementActiveBackground,
       achievementActiveBorder:
-          Color.lerp(achievementActiveBorder, other.achievementActiveBorder, t) ??
+          Color.lerp(
+            achievementActiveBorder,
+            other.achievementActiveBorder,
+            t,
+          ) ??
           achievementActiveBorder,
       achievementInactiveBackground:
           Color.lerp(
@@ -179,7 +184,11 @@ class DashboardMaterialTheme extends ThemeExtension<DashboardMaterialTheme> {
           ) ??
           achievementInactiveBorder,
       achievementInactiveText:
-          Color.lerp(achievementInactiveText, other.achievementInactiveText, t) ??
+          Color.lerp(
+            achievementInactiveText,
+            other.achievementInactiveText,
+            t,
+          ) ??
           achievementInactiveText,
     );
   }

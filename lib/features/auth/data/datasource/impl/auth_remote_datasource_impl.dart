@@ -6,14 +6,9 @@ import 'package:vroom/features/auth/data/models/user_model.dart';
 
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final Dio dio;
-  final String baseUrl;
   final bool useMockData;
 
-  AuthRemoteDatasourceImpl({
-    required this.dio,
-    required this.baseUrl,
-    this.useMockData = true,
-  });
+  AuthRemoteDatasourceImpl({required this.dio, this.useMockData = false});
 
   @override
   Future<AuthResponse> login(String login, String password) async {
@@ -23,7 +18,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
     try {
       final response = await dio.post(
-        '$baseUrl/api/auth/login',
+        '/api/auth/login',
         data: {'login': login, 'password': password},
       );
 
@@ -51,6 +46,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String password,
     required String firstName,
     required String lastName,
+    String? school,
+    String? schoolClass,
   }) async {
     if (useMockData) {
       return _mockAuthResponse(
@@ -62,12 +59,16 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
     try {
       final response = await dio.post(
-        '$baseUrl/api/auth/register',
+        '/api/auth/register',
         data: {
           'first_name': firstName,
           'last_name': lastName,
           'login': login,
           'password': password,
+          if (school != null && school.trim().isNotEmpty)
+            'school': school.trim(),
+          if (schoolClass != null && schoolClass.trim().isNotEmpty)
+            'school_class': schoolClass.trim().toUpperCase(),
         },
       );
 
@@ -96,7 +97,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
 
     try {
-      final response = await dio.get('$baseUrl/api/me');
+      final response = await dio.get('/api/me');
 
       if (response.statusCode == 200) {
         return User.fromJson(response.data);
@@ -123,7 +124,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
     try {
       final response = await dio.post(
-        '$baseUrl/api/auth/refresh',
+        '/api/auth/refresh',
         data: {'refresh': refreshToken},
       );
 

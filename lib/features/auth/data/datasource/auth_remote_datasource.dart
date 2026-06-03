@@ -9,6 +9,8 @@ abstract class AuthRemoteDatasource {
     required String password,
     required String firstName,
     required String lastName,
+    String? school,
+    String? schoolClass,
   });
 
   Future<User> getCurrentUser();

@@ -1,18 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class UserQuestEntity extends Equatable {
-  const UserQuestEntity({
-    required this.id,
-    required this.title,
-    required this.imageUrl,
-    required this.progressPercent,
-  });
+part 'user_quest_entity.freezed.dart';
 
-  final int id;
-  final String title;
-  final String imageUrl;
-  final int progressPercent;
-
-  @override
-  List<Object?> get props => [id, title, imageUrl, progressPercent];
+@freezed
+abstract class UserQuestEntity with _$UserQuestEntity {
+  const factory UserQuestEntity({
+    required int id,
+    required String title,
+    required String imageUrl,
+    required int progressPercent,
+  }) = _UserQuestEntity;
 }

@@ -10,7 +10,9 @@ class ProfileAchievementTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardTheme = Theme.of(context).extension<DashboardMaterialTheme>()!;
+    final dashboardTheme = Theme.of(
+      context,
+    ).extension<DashboardMaterialTheme>()!;
     final active = item.isUnlocked;
 
     final iconColor = active

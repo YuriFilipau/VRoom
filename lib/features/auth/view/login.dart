@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/core/constants/app_sizes.dart';
+import 'package:vroom/core/localization/app_localizations.dart';
 import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
 import 'package:vroom/core/theme/auth_material_theme.dart';
@@ -27,15 +28,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final authTheme = theme.extension<AuthMaterialTheme>()!;
+    final l10n = AppLocalizations.of(context);
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         state.maybeWhen(
           authenticated: (user) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Добро пожаловать, ${user.login}!')),
+              SnackBar(content: Text(l10n.welcomeUser(user.login))),
             );
-            context.go(AppRoutes.home.path);
+            context.go(
+              user.isStaff
+                  ? AppRoutes.organizerEvents.path
+                  : AppRoutes.home.path,
+            );
           },
           error: (message) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -118,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: AppSizes.spacing8),
                         Center(
                           child: Text(
-                            'Войди и начни исследовать',
+                            l10n.loginSubtitle,
                             style: theme.textTheme.bodyMedium,
                           ),
                         ),
@@ -127,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _loginController,
                           enabled: !isLoading,
                           decoration: _inputDecoration(
-                            hint: 'Логин',
+                            hint: l10n.loginFieldLogin,
                             authTheme: authTheme,
                           ),
                         ),
@@ -137,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           enabled: !isLoading,
                           obscureText: _obscurePassword,
                           decoration: _inputDecoration(
-                            hint: 'Пароль',
+                            hint: l10n.loginFieldPassword,
                             authTheme: authTheme,
                             suffix: IconButton(
                               onPressed: () {
@@ -156,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: AppSizes.spacing16),
                         AppGradientButton(
-                          label: 'Войти',
+                          label: l10n.loginButton,
                           isLoading: isLoading,
                           onPressed: isLoading
                               ? null
@@ -175,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: OutlinedButton.icon(
                             onPressed: isLoading ? null : () {},
                             icon: const Icon(Icons.qr_code_2_rounded),
-                            label: const Text('Войти по QR-коду'),
+                            label: Text(l10n.loginQrButton),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: authTheme.primaryText,
                               backgroundColor: authTheme.inputFill,
@@ -193,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Нет аккаунта?',
+                              l10n.loginNoAccount,
                               style: theme.textTheme.bodyMedium,
                             ),
                             TextButton(
@@ -205,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextButton.styleFrom(
                                 foregroundColor: authTheme.accent,
                               ),
-                              child: const Text('Зарегистрируйся'),
+                              child: Text(l10n.loginRegisterLink),
                             ),
                           ],
                         ),
