@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
+import 'package:vroom/core/router/app_routes.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
 import 'package:vroom/features/quest_test/domain/entities/quest_test_entity.dart';
 import 'package:vroom/features/quest_test/view/bloc/quest_test_bloc.dart';
 
 class QuestTestScreen extends StatelessWidget {
-  const QuestTestScreen({required this.questId, super.key});
+  const QuestTestScreen({required this.questId, this.eventId, super.key});
 
   final int questId;
+  final int? eventId;
 
   @override
   Widget build(BuildContext context) {
@@ -18,18 +21,30 @@ class QuestTestScreen extends StatelessWidget {
       create: (_) =>
           di.locator<QuestTestBloc>()
             ..add(QuestTestEvent.loadRequested(questId)),
-      child: const _QuestTestView(),
+      child: _QuestTestView(eventId: eventId),
     );
   }
 }
 
 class _QuestTestView extends StatelessWidget {
-  const _QuestTestView();
+  const _QuestTestView({required this.eventId});
+
+  final int? eventId;
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<QuestTestBloc, QuestTestState>(
       listener: (context, state) {
+        if (state.status == QuestTestStatus.submitted) {
+          final targetEventId = eventId;
+          if (targetEventId != null && targetEventId > 0) {
+            context.go('${AppRoutes.participantEvent.path}/$targetEventId');
+          } else {
+            context.go(AppRoutes.home.path);
+          }
+          return;
+        }
+
         final message = state.message;
         if (message != null && message.isNotEmpty) {
           ScaffoldMessenger.of(

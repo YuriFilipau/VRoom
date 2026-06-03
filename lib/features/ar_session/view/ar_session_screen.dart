@@ -306,8 +306,10 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     onResetSceneAnchor: () => _resetSceneRootAnchor(state),
                     onPlaceTestAnchor: () =>
                         _beginActionAnchorPlacement('test_anchor'),
-                    onOpenTest: () => context.push(
-                      '${AppRoutes.questTest.path}/${state.questId}/test',
+                    onOpenTest: () => _openQuestTest(
+                      state: state,
+                      interactiveCompleted: interactiveCompleted,
+                      interactiveTotal: interactiveTotal,
                     ),
                   ),
                 ),
@@ -316,6 +318,27 @@ class _ArSessionViewState extends State<_ArSessionView> {
           ),
         );
       },
+    );
+  }
+
+  void _openQuestTest({
+    required ArSessionState state,
+    required int interactiveCompleted,
+    required int interactiveTotal,
+  }) {
+    final hasKnownProgress =
+        state.interactiveProgressCompleted != null &&
+        state.interactiveProgressTotal != null;
+    if (hasKnownProgress &&
+        interactiveTotal > 0 &&
+        interactiveCompleted < interactiveTotal) {
+      _showMessage('Сначала соберите все дополнительные точки.');
+      return;
+    }
+
+    final eventQuery = state.eventId > 0 ? '?eventId=${state.eventId}' : '';
+    context.push(
+      '${AppRoutes.questTest.path}/${state.questId}/test$eventQuery',
     );
   }
 }

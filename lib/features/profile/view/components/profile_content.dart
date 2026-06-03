@@ -92,21 +92,30 @@ class ProfileContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          GridView.builder(
-            itemCount: user.achievements.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 0.9,
+          if (user.achievements.isEmpty)
+            StaggeredAppear(
+              index: 5,
+              child: Text(
+                l10n.profileAchievementsEmpty,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            )
+          else
+            GridView.builder(
+              itemCount: user.achievements.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.9,
+              ),
+              itemBuilder: (context, index) => StaggeredAppear(
+                index: index + 5,
+                child: ProfileAchievementTile(item: user.achievements[index]),
+              ),
             ),
-            itemBuilder: (context, index) => StaggeredAppear(
-              index: index + 5,
-              child: ProfileAchievementTile(item: user.achievements[index]),
-            ),
-          ),
           const SizedBox(height: 22),
           StaggeredAppear(
             index: user.achievements.length + 5,

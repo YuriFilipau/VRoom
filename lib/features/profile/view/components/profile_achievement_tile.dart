@@ -13,30 +13,19 @@ class ProfileAchievementTile extends StatelessWidget {
     final dashboardTheme = Theme.of(
       context,
     ).extension<DashboardMaterialTheme>()!;
-    final active = item.isUnlocked;
-
-    final iconColor = active
-        ? AppColors.primaryBlue
-        : dashboardTheme.achievementInactiveText;
-    final bg = active
-        ? dashboardTheme.achievementActiveBackground
-        : dashboardTheme.achievementInactiveBackground;
-    final border = active
-        ? dashboardTheme.achievementActiveBorder
-        : dashboardTheme.achievementInactiveBorder;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: bg,
+        color: dashboardTheme.achievementActiveBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: border),
+        border: Border.all(color: dashboardTheme.achievementActiveBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(_iconForKey(item.iconKey), color: iconColor, size: 22),
+            Icon(_iconForKey(item.iconKey), color: AppColors.primaryBlue, size: 22),
             const SizedBox(height: 6),
             Text(
               item.title,
@@ -46,9 +35,7 @@ class ProfileAchievementTile extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontSize: 12,
                 height: 1.15,
-                color: active
-                    ? Theme.of(context).textTheme.bodyLarge?.color
-                    : dashboardTheme.achievementInactiveText,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
           ],

@@ -40,6 +40,7 @@ class AppLocalizations {
   String get profileJoinedEvents => _t('profileJoinedEvents');
   String get profileScannedQuests => _t('profileScannedQuests');
   String get profileAchievements => _t('profileAchievements');
+  String get profileAchievementsEmpty => _t('profileAchievementsEmpty');
   String get profileRecentActivities => _t('profileRecentActivities');
   String get profileLogout => _t('profileLogout');
   String get profileLoadFailed => _t('profileLoadFailed');
@@ -146,6 +147,7 @@ const _localizedValues = <AppLanguage, Map<String, String>>{
     'profileJoinedEvents': 'Мероприятий',
     'profileScannedQuests': 'Сканированных квестов',
     'profileAchievements': 'Достижения',
+    'profileAchievementsEmpty': 'Пока нет полученных достижений',
     'profileRecentActivities': 'Последние активности',
     'profileLogout': 'Выйти',
     'profileLoadFailed': 'Не удалось загрузить профиль',
@@ -221,6 +223,7 @@ const _localizedValues = <AppLanguage, Map<String, String>>{
     'profileJoinedEvents': 'Events',
     'profileScannedQuests': 'Scanned quests',
     'profileAchievements': 'Achievements',
+    'profileAchievementsEmpty': 'No achievements earned yet',
     'profileRecentActivities': 'Recent activities',
     'profileLogout': 'Log out',
     'profileLoadFailed': 'Could not load profile',

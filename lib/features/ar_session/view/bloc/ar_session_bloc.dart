@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:vector_math/vector_math_64.dart';
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_anchor_reach_result_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_entity.dart';
@@ -170,6 +171,10 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
 
     final placement = nextPlacements[index];
     nextPlacements[index] = placement.copyWith(
+      localTransform: _withScaleBaked(
+        placement.localTransform,
+        scale,
+      ),
       meta: {...placement.meta, 'scale': scale},
     );
 
@@ -181,6 +186,20 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
         message: null,
       ),
     );
+  }
+
+  List<double> _withScaleBaked(List<double> localTransform, double scale) {
+    final transform = localTransform.length == 16
+        ? Matrix4.fromList(localTransform)
+        : Matrix4.identity();
+    final translation = Vector3.zero();
+    final rotation = Quaternion.identity();
+    transform.decompose(translation, rotation, Vector3.zero());
+    return Matrix4.compose(
+      translation,
+      rotation,
+      Vector3.all(scale),
+    ).storage.toList();
   }
 
   void _onPlacementRemoved(

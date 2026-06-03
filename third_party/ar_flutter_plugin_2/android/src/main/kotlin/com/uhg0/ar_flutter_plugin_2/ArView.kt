@@ -229,16 +229,36 @@ class ArView(
 
             modelInstance?.let { loadedModelInstance ->
                 val (position, rotation) = deserializeMatrix4(transformation)
-                val scaleToUnits = kotlin.math.sqrt(
-                    (
-                        transformation[0] * transformation[0] +
-                            transformation[1] * transformation[1] +
-                            transformation[2] * transformation[2]
-                    ).toFloat()
-                ).coerceAtLeast(0.01f)
+                val sceneScale =
+                    SceneScale(
+                        x =
+                            kotlin.math.sqrt(
+                                (
+                                    transformation[0] * transformation[0] +
+                                        transformation[1] * transformation[1] +
+                                        transformation[2] * transformation[2]
+                                ).toFloat()
+                            ).coerceAtLeast(0.01f),
+                        y =
+                            kotlin.math.sqrt(
+                                (
+                                    transformation[4] * transformation[4] +
+                                        transformation[5] * transformation[5] +
+                                        transformation[6] * transformation[6]
+                                ).toFloat()
+                            ).coerceAtLeast(0.01f),
+                        z =
+                            kotlin.math.sqrt(
+                                (
+                                    transformation[8] * transformation[8] +
+                                        transformation[9] * transformation[9] +
+                                        transformation[10] * transformation[10]
+                                ).toFloat()
+                            ).coerceAtLeast(0.01f),
+                    )
                 object : ModelNode(
                     modelInstance = loadedModelInstance,
-                    scaleToUnits = scaleToUnits,
+                    scaleToUnits = 1.0f,
                 ) {
                     override fun onMove(detector: MoveGestureDetector, e: MotionEvent): Boolean {
                             if (handlePans) {
@@ -298,9 +318,10 @@ class ArView(
                         }
                     }
                 }.apply {
-                    transform = Transform(
+                    transform(
                         position = position,
                         rotation = rotation,
+                        scale = sceneScale,
                     )
                     isPositionEditable = handlePans
                     isRotationEditable = handleRotation

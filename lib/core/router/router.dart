@@ -155,7 +155,9 @@ class AppRouter {
         builder: (context, state) {
           final questId =
               int.tryParse(state.pathParameters['questId'] ?? '') ?? 0;
-          return QuestTestScreen(questId: questId);
+          final eventId =
+              int.tryParse(state.uri.queryParameters['eventId'] ?? '');
+          return QuestTestScreen(questId: questId, eventId: eventId);
         },
       ),
       GoRoute(

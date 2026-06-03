@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vroom/core/constants/app_colors.dart';
 import 'package:vroom/core/constants/app_radii.dart';
@@ -72,23 +73,31 @@ class _ParticipantEventDetailsScreenState
     ParticipantCertificateEntity certificate,
   ) async {
     try {
-      final resolved = certificate.artifactUrl?.isNotEmpty == true
-          ? certificate
-          : await _repository.getCertificate(widget.eventId);
-      final url = resolved.artifactUrl;
-      if (url == null || url.isEmpty) {
-        _showCertificateReady(resolved);
+      final resolved = await _repository.getCertificate(widget.eventId);
+      final filePath = await _repository.downloadCertificatePdf(widget.eventId);
+      final openResult = await OpenFilex.open(filePath);
+      if (openResult.type == ResultType.done) {
         return;
       }
 
-      final uri = Uri.tryParse(url);
+      final url = resolved.artifactUrl ?? certificate.artifactUrl;
+      final uri = url == null ? null : Uri.tryParse(url);
       if (uri != null && await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
         return;
       }
 
-      await Clipboard.setData(ClipboardData(text: url));
-      _showMessage('Ссылка на сертификат скопирована.');
+      if (url != null && url.isNotEmpty) {
+        await Clipboard.setData(ClipboardData(text: url));
+        _showMessage('Не удалось открыть PDF автоматически. Ссылка скопирована.');
+        return;
+      }
+
+      _showMessage(
+        openResult.message.isEmpty
+            ? 'Не удалось открыть сертификат'
+            : openResult.message,
+      );
     } on ApiException catch (error) {
       _showMessage(error.message);
     } catch (_) {
@@ -187,7 +196,7 @@ class _ParticipantEventDetailsScreenState
                 ...event.scannedQuests.map(
                   (quest) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _ScannedQuestTile(quest: quest),
+                    child: _ScannedQuestTile(quest: quest, eventId: event.id),
                   ),
                 ),
               ],
@@ -268,9 +277,10 @@ class _CertificatePanel extends StatelessWidget {
 }
 
 class _ScannedQuestTile extends StatelessWidget {
-  const _ScannedQuestTile({required this.quest});
+  const _ScannedQuestTile({required this.quest, required this.eventId});
 
   final ParticipantScannedQuestEntity quest;
+  final int eventId;
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +296,7 @@ class _ScannedQuestTile extends StatelessWidget {
         trailing: quest.hasTest && !quest.testPassed
             ? TextButton(
                 onPressed: () => context.push(
-                  '${AppRoutes.questTest.path}/${quest.id}/test',
+                  '${AppRoutes.questTest.path}/${quest.id}/test?eventId=$eventId',
                 ),
                 child: const Text('Пройти тест'),
               )

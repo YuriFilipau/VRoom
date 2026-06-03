@@ -28,8 +28,10 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
               FilledButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
+                  final eventId = context.read<ArSessionBloc>().state.eventId;
+                  final eventQuery = eventId > 0 ? '?eventId=$eventId' : '';
                   context.push(
-                    '${AppRoutes.questTest.path}/${result.questId}/test',
+                    '${AppRoutes.questTest.path}/${result.questId}/test$eventQuery',
                   );
                 },
                 child: Text(actionLabel ?? 'Начать тест'),

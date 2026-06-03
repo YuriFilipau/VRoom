@@ -84,6 +84,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
       return;
     }
 
+    await _stabilizeNodeTransform(
+      node,
+      _transformWithScale(localTransform, selectedAsset.scale),
+    );
     _renderedNodes[placementId] = node;
     bloc.add(
       ArSessionPlacementUpserted(
@@ -92,8 +96,8 @@ extension _ArSessionObjectController on _ArSessionViewState {
           assetId: selectedAsset.id,
           nodeName: placementId,
           localTransform: _transformWithScale(
-            node.transform,
-            1,
+            localTransform,
+            selectedAsset.scale,
           ).storage.toList(),
           meta: {'scale': selectedAsset.scale},
         ),
@@ -166,7 +170,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
         placement.copyWith(
           localTransform: _transformWithScale(
             localTransform,
-            1,
+            scale,
           ).storage.toList(),
           meta: {...placement.meta, 'scale': scale},
         ),
@@ -293,7 +297,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
     bloc.add(
       ArSessionPlacementUpserted(
         currentPlacement.copyWith(
-          localTransform: _transformWithScale(transform, 1).storage.toList(),
+          localTransform: _transformWithScale(
+            transform,
+            arPlacementScale(currentPlacement),
+          ).storage.toList(),
         ),
       ),
     );
@@ -316,12 +323,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
     final assetById = {for (final asset in state.assets) asset.id: asset};
     for (final placement in state.placements) {
-      final transform = _matrixFromPlacement(placement);
-      final placementScale = arPlacementScale(placement);
-      final renderTransform = _transformWithScale(transform, placementScale);
+      final renderTransform = _renderTransformForPlacement(placement);
       final renderedNode = _renderedNodes[placement.id];
       if (renderedNode != null) {
-        renderedNode.transform = renderTransform;
+        await _stabilizeNodeTransform(renderedNode, renderTransform);
         continue;
       }
 
@@ -360,6 +365,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
           ) ??
           false;
       if (didAddNode) {
+        await _stabilizeNodeTransform(node, renderTransform);
         _renderedNodes[placement.id] = node;
       }
     }
@@ -384,10 +390,22 @@ extension _ArSessionObjectController on _ArSessionViewState {
   }
 
   Matrix4 _matrixFromPlacement(ArAssetPlacementEntity placement) {
-    final transform = placement.localTransform.length == 16
+    return placement.localTransform.length == 16
         ? Matrix4.fromList(placement.localTransform)
         : Matrix4.identity();
-    return _transformWithScale(transform, 1);
+  }
+
+  Matrix4 _renderTransformForPlacement(ArAssetPlacementEntity placement) {
+    final transform = _matrixFromPlacement(placement);
+    final desiredScale = arPlacementScale(placement);
+    final currentScale = Vector3.zero();
+    transform.decompose(Vector3.zero(), Quaternion.identity(), currentScale);
+    if ((currentScale.x - desiredScale).abs() < 0.001 &&
+        (currentScale.y - desiredScale).abs() < 0.001 &&
+        (currentScale.z - desiredScale).abs() < 0.001) {
+      return transform;
+    }
+    return _transformWithScale(transform, desiredScale);
   }
 
   Matrix4 _transformWithScale(Matrix4 transform, double scale) {
@@ -395,6 +413,12 @@ extension _ArSessionObjectController on _ArSessionViewState {
     final rotation = Quaternion.identity();
     transform.decompose(translation, rotation, Vector3.zero());
     return Matrix4.compose(translation, rotation, Vector3.all(scale));
+  }
+
+  Future<void> _stabilizeNodeTransform(ARNode node, Matrix4 transform) async {
+    node.transform = transform;
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    node.transform = transform;
   }
 
   List<ArAssetPlacementEntity> _trackableInteractivePlacements(

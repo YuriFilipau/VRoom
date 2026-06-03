@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:vroom/core/network/api_exception.dart';
 import 'package:vroom/core/network/json_utils.dart';
 import 'package:vroom/features/auth/domain/entities/user_achievement_entity.dart';
@@ -287,6 +290,41 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     }
   }
 
+  @override
+  Future<String> downloadCertificatePdf(int eventId) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        '/api/events/$eventId/certificate/download',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final bytes = response.data;
+      if (bytes == null || bytes.isEmpty) {
+        throw ApiException(
+          message: 'Сертификат пустой или недоступен.',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final fileName = _extractFilename(
+            response.headers.value('content-disposition'),
+          ) ??
+          'certificate_event_$eventId.pdf';
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}${Platform.pathSeparator}$fileName');
+      await file.writeAsBytes(bytes, flush: true);
+      return file.path;
+    } on DioException catch (error) {
+      throw _mapDioException(
+        error,
+        fallbackMessage: 'Не удалось скачать сертификат',
+      );
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw const ApiException(message: 'Не удалось скачать сертификат');
+    }
+  }
+
   ParticipantEventEntity _parseEventSummary(Map<String, dynamic> json) {
     final scannedQuests =
         readInt(json['scanned_quests_count']) ??
@@ -336,6 +374,21 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
       completedQuestsCount: completedQuests,
       totalQuestsCount: totalQuests,
     );
+  }
+
+  String? _extractFilename(String? contentDisposition) {
+    final header = contentDisposition?.trim();
+    if (header == null || header.isEmpty) {
+      return null;
+    }
+    final utfMatch = RegExp(r"filename\*=UTF-8''([^;]+)", caseSensitive: false)
+        .firstMatch(header);
+    if (utfMatch != null) {
+      return Uri.decodeComponent(utfMatch.group(1)!);
+    }
+    final plainMatch = RegExp(r'filename="?([^\";]+)"?', caseSensitive: false)
+        .firstMatch(header);
+    return plainMatch?.group(1);
   }
 
   ParticipantScannedQuestEntity _parseScannedQuest(Map<String, dynamic> json) {

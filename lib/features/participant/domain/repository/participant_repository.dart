@@ -29,4 +29,6 @@ abstract interface class ParticipantRepository {
   Future<ParticipantCertificateEntity> issueCertificate(int eventId);
 
   Future<ParticipantCertificateEntity> getCertificate(int eventId);
+
+  Future<String> downloadCertificatePdf(int eventId);
 }
