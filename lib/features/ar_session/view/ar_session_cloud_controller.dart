@@ -20,6 +20,10 @@ extension _ArSessionCloudController on _ArSessionViewState {
       ),
     );
 
+    final cloudAnchorId = anchor.cloudanchorid?.trim();
+    if (cloudAnchorId != null && cloudAnchorId.isNotEmpty) {
+      _unavailableSceneCloudAnchorIds.remove(cloudAnchorId);
+    }
     _isUploadingSceneAnchor = false;
     if (_saveAfterSceneAnchorUpload) {
       _saveAfterSceneAnchorUpload = false;
@@ -51,6 +55,7 @@ extension _ArSessionCloudController on _ArSessionViewState {
     _sceneRootAnchor = anchor;
     _sceneRootTransform = Matrix4.copy(anchor.transformation);
     _isResolvingSceneAnchor = false;
+    _pendingSceneCloudAnchorId = null;
     context.read<ArSessionBloc>().add(
       ArSessionSceneAnchorUpdated(
         anchorName: anchor.name,
@@ -82,12 +87,26 @@ extension _ArSessionCloudController on _ArSessionViewState {
 
     final wasCloudAnchorFlow =
         _isResolvingSceneAnchor || _isUploadingSceneAnchor;
+    final wasCloudAnchorDownload = _isResolvingSceneAnchor;
+    final failedCloudAnchorId =
+        _pendingSceneCloudAnchorId ??
+        context.read<ArSessionBloc>().state.rootAnchor?.cloudAnchorId.trim();
+    final isCloudAnchorIdNotFound = _isCloudAnchorIdNotFoundError(message);
     if (wasCloudAnchorFlow) {
       _refresh(() {
         _isResolvingSceneAnchor = false;
         _isUploadingSceneAnchor = false;
         _saveAfterSceneAnchorUpload = false;
       });
+    }
+    _pendingSceneCloudAnchorId = null;
+
+    if (wasCloudAnchorDownload && isCloudAnchorIdNotFound) {
+      if (failedCloudAnchorId != null && failedCloudAnchorId.isNotEmpty) {
+        _unavailableSceneCloudAnchorIds.add(failedCloudAnchorId);
+      }
+      unawaited(_fallbackToStoredSceneAnchorAfterCloudFailure());
+      return;
     }
 
     final renderableDetails =
@@ -96,7 +115,7 @@ extension _ArSessionCloudController on _ArSessionViewState {
         : '';
     _showMessage(
       wasCloudAnchorFlow
-          ? 'Не удалось подключить облачную AR-сцену. Проверьте, что телефон находится в корректной сети, и попробуйте ещё раз.'
+          ? _cloudAnchorRuntimeFailureMessage(message)
           : 'Не удалось продолжить AR-сессию. Попробуйте ещё раз.$renderableDetails',
     );
   }
@@ -113,17 +132,6 @@ extension _ArSessionCloudController on _ArSessionViewState {
 
     if (!(state.rootAnchor?.cloudAnchorId.isNotEmpty ?? false) &&
         _sceneRootAnchor != null) {
-      final hostingQuality =
-          await _arAnchorManager?.estimateCloudAnchorQuality(
-            _sceneRootAnchor!,
-          ) ??
-          ARCloudAnchorHostingQuality.unknown;
-      if (hostingQuality == ARCloudAnchorHostingQuality.insufficient) {
-        _showMessage(
-          'Качество карты сцены пока низкое, но пробую создать облачную точку. Если не получится, поводите камерой вокруг QR и повторите.',
-        );
-      }
-
       _isUploadingSceneAnchor = true;
       _saveAfterSceneAnchorUpload = true;
       if (mounted) {
@@ -146,27 +154,38 @@ extension _ArSessionCloudController on _ArSessionViewState {
   }
 
   String _cloudAnchorUploadFailureMessage() {
-    final error = _arAnchorManager?.lastErrorMessage?.trim().toLowerCase() ?? '';
-    if (error.contains('insufficient visual data') ||
-        error.contains('feature map quality is insufficient')) {
-      return _cloudAnchorScanInstruction;
-    }
-    if (error.contains('not authorized') ||
-        error.contains('not_authorized') ||
-        error.contains('unauthorized') ||
-        error.contains('permission')) {
-      return 'Cloud Anchor не авторизован. Проверьте настройки Google Cloud для Android: package com.example.vroom, SHA-1 сертификата и включенный ARCore API.';
-    }
-    if (error.contains('network') ||
-        error.contains('internet') ||
-        error.contains('unavailable')) {
-      return 'Не удалось подключить облачную AR-сцену. Проверьте интернет и повторите сохранение.';
-    }
     return 'Не удалось создать облачную точку. Медленно поводите камерой вокруг точки сцены и повторите сохранение.';
   }
 
-  static const String _cloudAnchorScanInstruction =
-      'Недостаточно визуальных данных для облачной точки. Медленно поводите камерой вокруг точки сцены 10-20 секунд и повторите сохранение.';
+  bool _isCloudAnchorIdNotFoundError(String message) {
+    final normalized = message.toLowerCase();
+    return normalized.contains('rawvalue: -6') ||
+        normalized.contains('cloudidnotfound') ||
+        normalized.contains('cloud anchor id not found') ||
+        normalized.contains('cloud id not found');
+  }
+
+  String _cloudAnchorRuntimeFailureMessage(String message) {
+    final normalized = message.toLowerCase();
+    if (_isCloudAnchorIdNotFoundError(message)) {
+      return 'Cloud Anchor не найден. Если сцена не восстановится автоматически, пересоздайте начальную точку и сохраните сцену.';
+    }
+    if (normalized.contains('not authorized') ||
+        normalized.contains('not_authorized') ||
+        normalized.contains('unauthorized') ||
+        normalized.contains('permission') ||
+        normalized.contains('rawvalue: -2')) {
+      return 'Cloud Anchor не авторизован. Проверьте настройки Google Cloud и ключи ARCore/Cloud Anchors.';
+    }
+    if (normalized.contains('network') ||
+        normalized.contains('internet') ||
+        normalized.contains('unavailable') ||
+        normalized.contains('rawvalue: -3') ||
+        normalized.contains('rawvalue: -10')) {
+      return 'Не удалось подключить облачную AR-сцену. Проверьте интернет и повторите попытку.';
+    }
+    return 'Не удалось подключить облачную AR-сцену. Попробуйте ещё раз.';
+  }
 
   void _showMessage(String message) {
     final normalizedMessage = message.trim();

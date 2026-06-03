@@ -99,6 +99,7 @@ extension _ArSessionAnchorController on _ArSessionViewState {
     _sceneRootAnchor = null;
     _sceneRootTransform = null;
     _hasRequestedSceneAnchorDownload = false;
+    _pendingSceneCloudAnchorId = null;
     _renderedNodes.clear();
   }
 
@@ -176,34 +177,89 @@ extension _ArSessionAnchorController on _ArSessionViewState {
       return;
     }
 
-    if ((state.rootAnchor?.cloudAnchorId.isNotEmpty ?? false) &&
+    final cloudAnchorId = state.rootAnchor?.cloudAnchorId.trim() ?? '';
+    if (cloudAnchorId.isNotEmpty &&
+        !_unavailableSceneCloudAnchorIds.contains(cloudAnchorId) &&
         !_hasRequestedSceneAnchorDownload) {
       _hasRequestedSceneAnchorDownload = true;
+      _pendingSceneCloudAnchorId = cloudAnchorId;
       _isResolvingSceneAnchor = true;
       if (mounted) {
         _refresh(() {});
       }
-      await _arAnchorManager!.downloadAnchor(state.rootAnchor!.cloudAnchorId);
+      await _arAnchorManager!.downloadAnchor(cloudAnchorId);
       return;
     }
 
-    if ((state.rootAnchor?.anchorTransform.length ?? 0) == 16) {
-      final anchor = ARPlaneAnchor(
-        transformation: Matrix4.fromList(state.rootAnchor!.anchorTransform),
-        name: state.rootAnchor?.anchorName ?? 'scene-root-local',
-        cloudanchorid: state.rootAnchor?.cloudAnchorId,
-        ttl: state.rootAnchor?.ttl,
-      );
-      final didAddRoot = await _arAnchorManager!.addAnchor(anchor) ?? false;
-      if (didAddRoot) {
-        _sceneRootAnchor = anchor;
-        _sceneRootTransform = Matrix4.copy(anchor.transformation);
-        _isResolvingSceneAnchor = false;
-        if (mounted) {
-          _refresh(() {});
-        }
+    await _restoreSceneRootFromStoredTransform(state);
+  }
+
+  Future<bool> _restoreSceneRootFromStoredTransform(
+    ArSessionState state,
+  ) async {
+    if (_arAnchorManager == null ||
+        _sceneRootAnchor != null ||
+        (state.rootAnchor?.anchorTransform.length ?? 0) != 16) {
+      return false;
+    }
+
+    final cloudAnchorId = state.rootAnchor?.cloudAnchorId.trim() ?? '';
+    final anchor = ARPlaneAnchor(
+      transformation: Matrix4.fromList(state.rootAnchor!.anchorTransform),
+      name: state.rootAnchor?.anchorName ?? 'scene-root-local',
+      cloudanchorid: cloudAnchorId.isEmpty ? null : cloudAnchorId,
+      ttl: state.rootAnchor?.ttl,
+    );
+    final didAddRoot = await _arAnchorManager!.addAnchor(anchor) ?? false;
+    if (didAddRoot) {
+      _sceneRootAnchor = anchor;
+      _sceneRootTransform = Matrix4.copy(anchor.transformation);
+      _isResolvingSceneAnchor = false;
+      _pendingSceneCloudAnchorId = null;
+      if (mounted) {
+        _refresh(() {});
       }
     }
+
+    return didAddRoot;
+  }
+
+  Future<void> _fallbackToStoredSceneAnchorAfterCloudFailure() async {
+    if (!mounted) {
+      return;
+    }
+
+    final bloc = context.read<ArSessionBloc>();
+    final state = bloc.state;
+    final restored = await _restoreSceneRootFromStoredTransform(state);
+    if (!mounted) {
+      return;
+    }
+
+    if (restored) {
+      final rootAnchor = state.rootAnchor;
+      if (rootAnchor != null) {
+        bloc.add(
+          ArSessionSceneAnchorUpdated(
+            anchorName: rootAnchor.anchorName,
+            anchorTransform: rootAnchor.anchorTransform,
+            ttl: rootAnchor.ttl,
+            clearCloudAnchorId: true,
+          ),
+        );
+      }
+      _showMessage(
+        'Cloud Anchor недоступен, сцена восстановлена по локальной точке. В режиме администратора сохраните сцену, чтобы создать новую облачную точку.',
+      );
+      await _syncSceneWithState(bloc.state);
+      return;
+    }
+
+    _showMessage(
+      widget.mode == ArSessionMode.admin
+          ? 'Cloud Anchor не найден. Создайте начальную точку сцены заново в зоне QR-кода и сохраните сцену.'
+          : 'Cloud Anchor сцены не найден. Обратитесь к организатору, чтобы он пересохранил AR-сцену.',
+    );
   }
 
   Future<void> _resetSceneRootAnchor(ArSessionState state) async {

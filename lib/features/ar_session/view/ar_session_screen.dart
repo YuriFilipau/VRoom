@@ -79,6 +79,8 @@ class _ArSessionViewState extends State<_ArSessionView> {
   bool _isUploadingSceneAnchor = false;
   bool _saveAfterSceneAnchorUpload = false;
   bool _hasRequestedSceneAnchorDownload = false;
+  String? _pendingSceneCloudAnchorId;
+  final Set<String> _unavailableSceneCloudAnchorIds = {};
   String? _pendingActionAnchorRole;
   String? _activeSnackBarMessage;
   String? _lastSnackBarMessage;

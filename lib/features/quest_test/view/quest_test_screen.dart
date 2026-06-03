@@ -166,23 +166,19 @@ class _QuestionCard extends StatelessWidget {
                 );
               })
             else
-              RadioGroup<int>(
-                groupValue: selectedOptions.firstOrNull,
-                onChanged: (optionId) {
-                  if (optionId != null) {
-                    _toggle(context, optionId);
-                  }
-                },
-                child: Column(
-                  children: question.options.map((option) {
-                    return RadioListTile<int>(
-                      value: option.id,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(option.text),
-                    );
-                  }).toList(),
-                ),
-              ),
+              ...question.options.map((option) {
+                return RadioListTile<int>(
+                  value: option.id,
+                  groupValue: selectedOptions.firstOrNull,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(option.text),
+                  onChanged: (optionId) {
+                    if (optionId != null) {
+                      _toggle(context, optionId);
+                    }
+                  },
+                );
+              }),
           ],
         ),
       ),
