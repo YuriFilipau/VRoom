@@ -11,11 +11,15 @@ class MarkArAnchorReachedUseCase {
     required int questId,
     required String anchorId,
     String? sessionId,
+    String? interactionType,
+    int? answerIndex,
   }) {
     return _repository.markAnchorReached(
       questId: questId,
       anchorId: anchorId,
       sessionId: sessionId,
+      interactionType: interactionType,
+      answerIndex: answerIndex,
     );
   }
 }

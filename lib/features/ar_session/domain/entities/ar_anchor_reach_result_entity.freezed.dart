@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ArAnchorReachResultEntity {
 
- int get questId; String get anchorId; String get anchorRole; bool get testUnlocked; bool get questCompleted; bool get created; String? get requiredTestAnchorId; String? get finishAnchorId; Map<String, dynamic> get nextAction;
+ int get questId; String get anchorId; String get anchorRole; bool get testUnlocked; bool get questCompleted; bool get created; int? get progressCompleted; int? get progressTotal; String? get requiredTestAnchorId; String? get finishAnchorId; Map<String, dynamic> get nextAction;
 /// Create a copy of ArAnchorReachResultEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ArAnchorReachResultEntityCopyWith<ArAnchorReachResultEntity> get copyWith => _$
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArAnchorReachResultEntity&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.anchorId, anchorId) || other.anchorId == anchorId)&&(identical(other.anchorRole, anchorRole) || other.anchorRole == anchorRole)&&(identical(other.testUnlocked, testUnlocked) || other.testUnlocked == testUnlocked)&&(identical(other.questCompleted, questCompleted) || other.questCompleted == questCompleted)&&(identical(other.created, created) || other.created == created)&&(identical(other.requiredTestAnchorId, requiredTestAnchorId) || other.requiredTestAnchorId == requiredTestAnchorId)&&(identical(other.finishAnchorId, finishAnchorId) || other.finishAnchorId == finishAnchorId)&&const DeepCollectionEquality().equals(other.nextAction, nextAction));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ArAnchorReachResultEntity&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.anchorId, anchorId) || other.anchorId == anchorId)&&(identical(other.anchorRole, anchorRole) || other.anchorRole == anchorRole)&&(identical(other.testUnlocked, testUnlocked) || other.testUnlocked == testUnlocked)&&(identical(other.questCompleted, questCompleted) || other.questCompleted == questCompleted)&&(identical(other.created, created) || other.created == created)&&(identical(other.progressCompleted, progressCompleted) || other.progressCompleted == progressCompleted)&&(identical(other.progressTotal, progressTotal) || other.progressTotal == progressTotal)&&(identical(other.requiredTestAnchorId, requiredTestAnchorId) || other.requiredTestAnchorId == requiredTestAnchorId)&&(identical(other.finishAnchorId, finishAnchorId) || other.finishAnchorId == finishAnchorId)&&const DeepCollectionEquality().equals(other.nextAction, nextAction));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,questId,anchorId,anchorRole,testUnlocked,questCompleted,created,requiredTestAnchorId,finishAnchorId,const DeepCollectionEquality().hash(nextAction));
+int get hashCode => Object.hash(runtimeType,questId,anchorId,anchorRole,testUnlocked,questCompleted,created,progressCompleted,progressTotal,requiredTestAnchorId,finishAnchorId,const DeepCollectionEquality().hash(nextAction));
 
 @override
 String toString() {
-  return 'ArAnchorReachResultEntity(questId: $questId, anchorId: $anchorId, anchorRole: $anchorRole, testUnlocked: $testUnlocked, questCompleted: $questCompleted, created: $created, requiredTestAnchorId: $requiredTestAnchorId, finishAnchorId: $finishAnchorId, nextAction: $nextAction)';
+  return 'ArAnchorReachResultEntity(questId: $questId, anchorId: $anchorId, anchorRole: $anchorRole, testUnlocked: $testUnlocked, questCompleted: $questCompleted, created: $created, progressCompleted: $progressCompleted, progressTotal: $progressTotal, requiredTestAnchorId: $requiredTestAnchorId, finishAnchorId: $finishAnchorId, nextAction: $nextAction)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ArAnchorReachResultEntityCopyWith<$Res>  {
   factory $ArAnchorReachResultEntityCopyWith(ArAnchorReachResultEntity value, $Res Function(ArAnchorReachResultEntity) _then) = _$ArAnchorReachResultEntityCopyWithImpl;
 @useResult
 $Res call({
- int questId, String anchorId, String anchorRole, bool testUnlocked, bool questCompleted, bool created, String? requiredTestAnchorId, String? finishAnchorId, Map<String, dynamic> nextAction
+ int questId, String anchorId, String anchorRole, bool testUnlocked, bool questCompleted, bool created, int? progressCompleted, int? progressTotal, String? requiredTestAnchorId, String? finishAnchorId, Map<String, dynamic> nextAction
 });
 
 
@@ -62,7 +62,7 @@ class _$ArAnchorReachResultEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArAnchorReachResultEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? questId = null,Object? anchorId = null,Object? anchorRole = null,Object? testUnlocked = null,Object? questCompleted = null,Object? created = null,Object? requiredTestAnchorId = freezed,Object? finishAnchorId = freezed,Object? nextAction = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? questId = null,Object? anchorId = null,Object? anchorRole = null,Object? testUnlocked = null,Object? questCompleted = null,Object? created = null,Object? progressCompleted = freezed,Object? progressTotal = freezed,Object? requiredTestAnchorId = freezed,Object? finishAnchorId = freezed,Object? nextAction = null,}) {
   return _then(_self.copyWith(
 questId: null == questId ? _self.questId : questId // ignore: cast_nullable_to_non_nullable
 as int,anchorId: null == anchorId ? _self.anchorId : anchorId // ignore: cast_nullable_to_non_nullable
@@ -70,7 +70,9 @@ as String,anchorRole: null == anchorRole ? _self.anchorRole : anchorRole // igno
 as String,testUnlocked: null == testUnlocked ? _self.testUnlocked : testUnlocked // ignore: cast_nullable_to_non_nullable
 as bool,questCompleted: null == questCompleted ? _self.questCompleted : questCompleted // ignore: cast_nullable_to_non_nullable
 as bool,created: null == created ? _self.created : created // ignore: cast_nullable_to_non_nullable
-as bool,requiredTestAnchorId: freezed == requiredTestAnchorId ? _self.requiredTestAnchorId : requiredTestAnchorId // ignore: cast_nullable_to_non_nullable
+as bool,progressCompleted: freezed == progressCompleted ? _self.progressCompleted : progressCompleted // ignore: cast_nullable_to_non_nullable
+as int?,progressTotal: freezed == progressTotal ? _self.progressTotal : progressTotal // ignore: cast_nullable_to_non_nullable
+as int?,requiredTestAnchorId: freezed == requiredTestAnchorId ? _self.requiredTestAnchorId : requiredTestAnchorId // ignore: cast_nullable_to_non_nullable
 as String?,finishAnchorId: freezed == finishAnchorId ? _self.finishAnchorId : finishAnchorId // ignore: cast_nullable_to_non_nullable
 as String?,nextAction: null == nextAction ? _self.nextAction : nextAction // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>,
@@ -158,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int questId,  String anchorId,  String anchorRole,  bool testUnlocked,  bool questCompleted,  bool created,  String? requiredTestAnchorId,  String? finishAnchorId,  Map<String, dynamic> nextAction)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int questId,  String anchorId,  String anchorRole,  bool testUnlocked,  bool questCompleted,  bool created,  int? progressCompleted,  int? progressTotal,  String? requiredTestAnchorId,  String? finishAnchorId,  Map<String, dynamic> nextAction)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ArAnchorReachResultEntity() when $default != null:
-return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked,_that.questCompleted,_that.created,_that.requiredTestAnchorId,_that.finishAnchorId,_that.nextAction);case _:
+return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked,_that.questCompleted,_that.created,_that.progressCompleted,_that.progressTotal,_that.requiredTestAnchorId,_that.finishAnchorId,_that.nextAction);case _:
   return orElse();
 
 }
@@ -179,10 +181,10 @@ return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int questId,  String anchorId,  String anchorRole,  bool testUnlocked,  bool questCompleted,  bool created,  String? requiredTestAnchorId,  String? finishAnchorId,  Map<String, dynamic> nextAction)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int questId,  String anchorId,  String anchorRole,  bool testUnlocked,  bool questCompleted,  bool created,  int? progressCompleted,  int? progressTotal,  String? requiredTestAnchorId,  String? finishAnchorId,  Map<String, dynamic> nextAction)  $default,) {final _that = this;
 switch (_that) {
 case _ArAnchorReachResultEntity():
-return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked,_that.questCompleted,_that.created,_that.requiredTestAnchorId,_that.finishAnchorId,_that.nextAction);case _:
+return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked,_that.questCompleted,_that.created,_that.progressCompleted,_that.progressTotal,_that.requiredTestAnchorId,_that.finishAnchorId,_that.nextAction);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +201,10 @@ return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int questId,  String anchorId,  String anchorRole,  bool testUnlocked,  bool questCompleted,  bool created,  String? requiredTestAnchorId,  String? finishAnchorId,  Map<String, dynamic> nextAction)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int questId,  String anchorId,  String anchorRole,  bool testUnlocked,  bool questCompleted,  bool created,  int? progressCompleted,  int? progressTotal,  String? requiredTestAnchorId,  String? finishAnchorId,  Map<String, dynamic> nextAction)?  $default,) {final _that = this;
 switch (_that) {
 case _ArAnchorReachResultEntity() when $default != null:
-return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked,_that.questCompleted,_that.created,_that.requiredTestAnchorId,_that.finishAnchorId,_that.nextAction);case _:
+return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked,_that.questCompleted,_that.created,_that.progressCompleted,_that.progressTotal,_that.requiredTestAnchorId,_that.finishAnchorId,_that.nextAction);case _:
   return null;
 
 }
@@ -214,7 +216,7 @@ return $default(_that.questId,_that.anchorId,_that.anchorRole,_that.testUnlocked
 
 
 class _ArAnchorReachResultEntity implements ArAnchorReachResultEntity {
-  const _ArAnchorReachResultEntity({required this.questId, required this.anchorId, required this.anchorRole, required this.testUnlocked, required this.questCompleted, required this.created, this.requiredTestAnchorId, this.finishAnchorId, final  Map<String, dynamic> nextAction = const {}}): _nextAction = nextAction;
+  const _ArAnchorReachResultEntity({required this.questId, required this.anchorId, required this.anchorRole, required this.testUnlocked, required this.questCompleted, required this.created, this.progressCompleted, this.progressTotal, this.requiredTestAnchorId, this.finishAnchorId, final  Map<String, dynamic> nextAction = const {}}): _nextAction = nextAction;
   
 
 @override final  int questId;
@@ -223,6 +225,8 @@ class _ArAnchorReachResultEntity implements ArAnchorReachResultEntity {
 @override final  bool testUnlocked;
 @override final  bool questCompleted;
 @override final  bool created;
+@override final  int? progressCompleted;
+@override final  int? progressTotal;
 @override final  String? requiredTestAnchorId;
 @override final  String? finishAnchorId;
  final  Map<String, dynamic> _nextAction;
@@ -243,16 +247,16 @@ _$ArAnchorReachResultEntityCopyWith<_ArAnchorReachResultEntity> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArAnchorReachResultEntity&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.anchorId, anchorId) || other.anchorId == anchorId)&&(identical(other.anchorRole, anchorRole) || other.anchorRole == anchorRole)&&(identical(other.testUnlocked, testUnlocked) || other.testUnlocked == testUnlocked)&&(identical(other.questCompleted, questCompleted) || other.questCompleted == questCompleted)&&(identical(other.created, created) || other.created == created)&&(identical(other.requiredTestAnchorId, requiredTestAnchorId) || other.requiredTestAnchorId == requiredTestAnchorId)&&(identical(other.finishAnchorId, finishAnchorId) || other.finishAnchorId == finishAnchorId)&&const DeepCollectionEquality().equals(other._nextAction, _nextAction));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ArAnchorReachResultEntity&&(identical(other.questId, questId) || other.questId == questId)&&(identical(other.anchorId, anchorId) || other.anchorId == anchorId)&&(identical(other.anchorRole, anchorRole) || other.anchorRole == anchorRole)&&(identical(other.testUnlocked, testUnlocked) || other.testUnlocked == testUnlocked)&&(identical(other.questCompleted, questCompleted) || other.questCompleted == questCompleted)&&(identical(other.created, created) || other.created == created)&&(identical(other.progressCompleted, progressCompleted) || other.progressCompleted == progressCompleted)&&(identical(other.progressTotal, progressTotal) || other.progressTotal == progressTotal)&&(identical(other.requiredTestAnchorId, requiredTestAnchorId) || other.requiredTestAnchorId == requiredTestAnchorId)&&(identical(other.finishAnchorId, finishAnchorId) || other.finishAnchorId == finishAnchorId)&&const DeepCollectionEquality().equals(other._nextAction, _nextAction));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,questId,anchorId,anchorRole,testUnlocked,questCompleted,created,requiredTestAnchorId,finishAnchorId,const DeepCollectionEquality().hash(_nextAction));
+int get hashCode => Object.hash(runtimeType,questId,anchorId,anchorRole,testUnlocked,questCompleted,created,progressCompleted,progressTotal,requiredTestAnchorId,finishAnchorId,const DeepCollectionEquality().hash(_nextAction));
 
 @override
 String toString() {
-  return 'ArAnchorReachResultEntity(questId: $questId, anchorId: $anchorId, anchorRole: $anchorRole, testUnlocked: $testUnlocked, questCompleted: $questCompleted, created: $created, requiredTestAnchorId: $requiredTestAnchorId, finishAnchorId: $finishAnchorId, nextAction: $nextAction)';
+  return 'ArAnchorReachResultEntity(questId: $questId, anchorId: $anchorId, anchorRole: $anchorRole, testUnlocked: $testUnlocked, questCompleted: $questCompleted, created: $created, progressCompleted: $progressCompleted, progressTotal: $progressTotal, requiredTestAnchorId: $requiredTestAnchorId, finishAnchorId: $finishAnchorId, nextAction: $nextAction)';
 }
 
 
@@ -263,7 +267,7 @@ abstract mixin class _$ArAnchorReachResultEntityCopyWith<$Res> implements $ArAnc
   factory _$ArAnchorReachResultEntityCopyWith(_ArAnchorReachResultEntity value, $Res Function(_ArAnchorReachResultEntity) _then) = __$ArAnchorReachResultEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int questId, String anchorId, String anchorRole, bool testUnlocked, bool questCompleted, bool created, String? requiredTestAnchorId, String? finishAnchorId, Map<String, dynamic> nextAction
+ int questId, String anchorId, String anchorRole, bool testUnlocked, bool questCompleted, bool created, int? progressCompleted, int? progressTotal, String? requiredTestAnchorId, String? finishAnchorId, Map<String, dynamic> nextAction
 });
 
 
@@ -280,7 +284,7 @@ class __$ArAnchorReachResultEntityCopyWithImpl<$Res>
 
 /// Create a copy of ArAnchorReachResultEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? questId = null,Object? anchorId = null,Object? anchorRole = null,Object? testUnlocked = null,Object? questCompleted = null,Object? created = null,Object? requiredTestAnchorId = freezed,Object? finishAnchorId = freezed,Object? nextAction = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? questId = null,Object? anchorId = null,Object? anchorRole = null,Object? testUnlocked = null,Object? questCompleted = null,Object? created = null,Object? progressCompleted = freezed,Object? progressTotal = freezed,Object? requiredTestAnchorId = freezed,Object? finishAnchorId = freezed,Object? nextAction = null,}) {
   return _then(_ArAnchorReachResultEntity(
 questId: null == questId ? _self.questId : questId // ignore: cast_nullable_to_non_nullable
 as int,anchorId: null == anchorId ? _self.anchorId : anchorId // ignore: cast_nullable_to_non_nullable
@@ -288,7 +292,9 @@ as String,anchorRole: null == anchorRole ? _self.anchorRole : anchorRole // igno
 as String,testUnlocked: null == testUnlocked ? _self.testUnlocked : testUnlocked // ignore: cast_nullable_to_non_nullable
 as bool,questCompleted: null == questCompleted ? _self.questCompleted : questCompleted // ignore: cast_nullable_to_non_nullable
 as bool,created: null == created ? _self.created : created // ignore: cast_nullable_to_non_nullable
-as bool,requiredTestAnchorId: freezed == requiredTestAnchorId ? _self.requiredTestAnchorId : requiredTestAnchorId // ignore: cast_nullable_to_non_nullable
+as bool,progressCompleted: freezed == progressCompleted ? _self.progressCompleted : progressCompleted // ignore: cast_nullable_to_non_nullable
+as int?,progressTotal: freezed == progressTotal ? _self.progressTotal : progressTotal // ignore: cast_nullable_to_non_nullable
+as int?,requiredTestAnchorId: freezed == requiredTestAnchorId ? _self.requiredTestAnchorId : requiredTestAnchorId // ignore: cast_nullable_to_non_nullable
 as String?,finishAnchorId: freezed == finishAnchorId ? _self.finishAnchorId : finishAnchorId // ignore: cast_nullable_to_non_nullable
 as String?,nextAction: null == nextAction ? _self._nextAction : nextAction // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>,

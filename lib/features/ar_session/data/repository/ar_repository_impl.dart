@@ -26,8 +26,9 @@ class ArRepositoryImpl implements ArRepository {
   final Dio _dio;
   final SharedPreferences _sharedPreferences;
 
-  static const _sceneCachePrefix = 'ar_scene_cache_v5_';
-  static const _iosGlbCacheVersion = 'ios_v2';
+  static const _sceneCachePrefix = 'ar_scene_cache_v6_';
+  static const _glbCacheVersion = 'v3';
+  static const _iosGlbCacheVersion = 'ios_v3';
 
   @override
   Future<ArQuestSceneEntity> loadScene({
@@ -179,6 +180,8 @@ class ArRepositoryImpl implements ArRepository {
     required int questId,
     required String anchorId,
     String? sessionId,
+    String? interactionType,
+    int? answerIndex,
   }) async {
     try {
       final rawSessionId = sessionId == null
@@ -189,6 +192,9 @@ class ArRepositoryImpl implements ArRepository {
         data: {
           'anchor_id': anchorId,
           if (rawSessionId != null) 'session_id': rawSessionId,
+          if (interactionType != null && interactionType.trim().isNotEmpty)
+            'interaction_type': interactionType.trim(),
+          if (answerIndex != null) 'answer_index': answerIndex,
         },
       );
       return _parseAnchorReachResult(questId, anchorId, response.data);
@@ -206,6 +212,7 @@ class ArRepositoryImpl implements ArRepository {
     dynamic raw,
   ) {
     final json = asMap(raw);
+    final progress = asMap(json['progress']);
     return ArAnchorReachResultEntity(
       questId:
           readInt(json['quest_id']) ??
@@ -222,12 +229,28 @@ class ArRepositoryImpl implements ArRepository {
       testUnlocked:
           readBool(json['test_unlocked']) ??
           readBool(json['testUnlocked']) ??
+          readBool(progress['test_unlocked']) ??
+          readBool(progress['testUnlocked']) ??
           false,
       questCompleted:
           readBool(json['quest_completed']) ??
           readBool(json['questCompleted']) ??
+          readBool(progress['quest_completed']) ??
+          readBool(progress['questCompleted']) ??
           false,
       created: readBool(json['created']) ?? false,
+      progressCompleted:
+          readInt(progress['completed']) ??
+          readInt(progress['completed_count']) ??
+          readInt(progress['completedCount']) ??
+          readInt(json['progress_completed']) ??
+          readInt(json['progressCompleted']),
+      progressTotal:
+          readInt(progress['total']) ??
+          readInt(progress['required_total']) ??
+          readInt(progress['requiredTotal']) ??
+          readInt(json['progress_total']) ??
+          readInt(json['progressTotal']),
       requiredTestAnchorId:
           readString(json['required_test_anchor_id']) ??
           readString(json['requiredTestAnchorId']),
@@ -295,7 +318,7 @@ class ArRepositoryImpl implements ArRepository {
         .whereType<Map>()
         .map((item) {
           final json = Map<String, dynamic>.from(item);
-          final meta = asMap(json['meta']);
+          final meta = _placementMetaFromJson(json);
           final transform = asMap(json['transform']);
           final assetId =
               readInt(json['asset_id']) ??
@@ -394,7 +417,7 @@ class ArRepositoryImpl implements ArRepository {
         .whereType<Map>()
         .map((item) {
           final json = Map<String, dynamic>.from(item);
-          final meta = asMap(json['meta']);
+          final meta = _placementMetaFromJson(json);
           final transform = asMap(json['transform']);
           final assetId =
               readInt(json['assetId']) ??
@@ -537,23 +560,7 @@ class ArRepositoryImpl implements ArRepository {
           }
           final meta = asMap(json['meta']);
           final fileJson = asMap(json['file'] ?? json['storage']);
-          final rawModelUri =
-              readString(json['model_url']) ??
-              readString(json['modelUrl']) ??
-              readString(json['modelUri']) ??
-              readString(json['glb_url']) ??
-              readString(json['glbUrl']) ??
-              readString(json['file_url']) ??
-              readString(json['fileUrl']) ??
-              readString(fileJson['url']) ??
-              readString(fileJson['download_url']) ??
-              readString(fileJson['downloadUrl']) ??
-              readString(json['storage_url']) ??
-              readString(json['storageUrl']) ??
-              readString(json['download_url']) ??
-              readString(json['downloadUrl']) ??
-              readString(json['url']) ??
-              '';
+          final rawModelUri = _bestModelUri(json, fileJson);
           final modelUri = rawModelUri.trim();
           if (!_isModelAsset(json, modelUri)) {
             return null;
@@ -604,6 +611,95 @@ class ArRepositoryImpl implements ArRepository {
         normalized.endsWith('.gltf') ||
         normalized.contains('.glb?') ||
         normalized.contains('.gltf?');
+  }
+
+  Map<String, dynamic> _placementMetaFromJson(Map<String, dynamic> json) {
+    final meta = {...asMap(json['meta'])};
+    for (final key in const [
+      'role',
+      'anchor_role',
+      'anchorRole',
+      'interaction_type',
+      'interactionType',
+      'type',
+      'title',
+      'description',
+      'text',
+      'body',
+      'hint',
+      'question',
+      'options',
+      'correct_index',
+      'correctIndex',
+      'correct_answer',
+      'correctAnswer',
+      'action_type',
+      'actionType',
+      'scale',
+      'isTestAnchor',
+      'is_test_anchor',
+      'isFinishAnchor',
+      'is_finish_anchor',
+    ]) {
+      if (!meta.containsKey(key) && json.containsKey(key)) {
+        meta[key] = json[key];
+      }
+    }
+
+    for (final key in const [
+      'action',
+      'interaction',
+      'interactive',
+      'payload',
+    ]) {
+      final payload = asMap(json[key]);
+      if (!meta.containsKey(key) && payload.isNotEmpty) {
+        meta[key] = payload;
+      }
+    }
+
+    return meta;
+  }
+
+  String _bestModelUri(
+    Map<String, dynamic> json,
+    Map<String, dynamic> fileJson,
+  ) {
+    final downloadableUri = _firstDownloadableModelUri([
+      json['model_url'],
+      json['modelUrl'],
+      json['glb_url'],
+      json['glbUrl'],
+      json['file_url'],
+      json['fileUrl'],
+      fileJson['url'],
+      fileJson['download_url'],
+      fileJson['downloadUrl'],
+      json['storage_url'],
+      json['storageUrl'],
+      json['download_url'],
+      json['downloadUrl'],
+      json['url'],
+    ]);
+    final modelUri =
+        readString(json['modelUri']) ?? readString(json['model_uri']);
+    if (downloadableUri != null) {
+      return downloadableUri;
+    }
+    if (modelUri != null && !_isLocalModelUri(modelUri)) {
+      return modelUri.trim();
+    }
+    return modelUri?.trim() ?? '';
+  }
+
+  String? _firstDownloadableModelUri(Iterable<dynamic> values) {
+    for (final value in values) {
+      final uri = readString(value)?.trim();
+      if (uri != null && uri.isNotEmpty && !_isLocalModelUri(uri)) {
+        return uri;
+      }
+    }
+    return null;
   }
 
   Future<List<ArAssetEntity>> _prepareLocalAssets(
@@ -921,7 +1017,9 @@ class ArRepositoryImpl implements ArRepository {
 
   String _localAssetFilename(ArAssetEntity asset) {
     final hash = _stableHash(asset.modelUri);
-    final platformSuffix = Platform.isIOS ? '_$_iosGlbCacheVersion' : '';
+    final platformSuffix = Platform.isIOS
+        ? '_$_iosGlbCacheVersion'
+        : '_$_glbCacheVersion';
     return 'ar_asset_${asset.id}_$hash$platformSuffix.glb';
   }
 
@@ -1064,6 +1162,13 @@ class ArRepositoryImpl implements ArRepository {
     if (code == 'test_anchor_not_configured') {
       return ApiException(
         message: 'Квест настроен некорректно. Обратитесь к организатору.',
+        code: code,
+        statusCode: error.response?.statusCode,
+      );
+    }
+    if (code == 'interactive_answer_invalid') {
+      return ApiException(
+        message: 'Ответ неверный. Попробуйте ещё раз.',
         code: code,
         statusCode: error.response?.statusCode,
       );

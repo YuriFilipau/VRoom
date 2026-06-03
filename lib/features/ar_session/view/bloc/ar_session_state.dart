@@ -24,6 +24,8 @@ abstract class ArSessionState with _$ArSessionState {
     String? arcoreToken,
     int? selectedAssetId,
     String? selectedPlacementId,
+    int? interactiveProgressCompleted,
+    int? interactiveProgressTotal,
     ArAnchorReachResultEntity? anchorReachResult,
     String? message,
   }) = _ArSessionState;

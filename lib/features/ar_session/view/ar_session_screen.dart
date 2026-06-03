@@ -124,6 +124,7 @@ class _ArSessionViewState extends State<_ArSessionView> {
           context.read<ArSessionBloc>().add(
             const ArSessionAnchorReachResultConsumed(),
           );
+          _applyAnchorReachProgress(anchorReachResult);
           await _handleAnchorReachResult(anchorReachResult);
         }
 
@@ -134,13 +135,16 @@ class _ArSessionViewState extends State<_ArSessionView> {
       },
       builder: (context, state) {
         final interactivePlacements = _trackableInteractivePlacements(state);
-        final interactiveTotal = interactivePlacements.length;
-        final interactiveCompleted = interactivePlacements
-            .where(
-              (placement) =>
-                  _completedInteractivePlacementIds.contains(placement.id),
-            )
-            .length;
+        final interactiveTotal =
+            state.interactiveProgressTotal ?? interactivePlacements.length;
+        final interactiveCompleted =
+            state.interactiveProgressCompleted ??
+            interactivePlacements
+                .where(
+                  (placement) =>
+                      _completedInteractivePlacementIds.contains(placement.id),
+                )
+                .length;
 
         return Scaffold(
           backgroundColor: Colors.black,

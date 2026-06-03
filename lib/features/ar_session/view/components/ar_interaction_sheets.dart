@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ArMiniQuestionOption {
-  const ArMiniQuestionOption({required this.label, required this.isCorrect});
+  const ArMiniQuestionOption({
+    required this.label,
+    required this.isCorrect,
+    this.answerIndex,
+  });
 
   final String label;
   final bool isCorrect;
+  final int? answerIndex;
 }
 
 class ArInteractionSheet extends StatelessWidget {

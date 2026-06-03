@@ -11,6 +11,8 @@ abstract class ArAnchorReachResultEntity with _$ArAnchorReachResultEntity {
     required bool testUnlocked,
     required bool questCompleted,
     required bool created,
+    int? progressCompleted,
+    int? progressTotal,
     String? requiredTestAnchorId,
     String? finishAnchorId,
     @Default({}) Map<String, dynamic> nextAction,

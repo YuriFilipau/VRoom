@@ -21,5 +21,7 @@ abstract interface class ArRepository {
     required int questId,
     required String anchorId,
     String? sessionId,
+    String? interactionType,
+    int? answerIndex,
   });
 }

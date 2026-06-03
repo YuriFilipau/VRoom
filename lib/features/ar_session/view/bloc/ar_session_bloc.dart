@@ -85,6 +85,8 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
           arcoreToken: scene.arcoreToken,
           selectedAssetId: scene.assets.isEmpty ? null : scene.assets.first.id,
           selectedPlacementId: null,
+          interactiveProgressCompleted: null,
+          interactiveProgressTotal: null,
           anchorReachResult: null,
         ),
       );
@@ -127,9 +129,15 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     Emitter<ArSessionState> emit,
   ) {
     final nextPlacements = [...state.placements];
-    final index = nextPlacements.indexWhere(
-      (placement) => placement.id == event.placement.id,
-    );
+    final index = nextPlacements.indexWhere((placement) {
+      if (event.placement.isTestAnchor) {
+        return placement.isTestAnchor;
+      }
+      if (event.placement.isFinishAnchor) {
+        return placement.isFinishAnchor;
+      }
+      return placement.id == event.placement.id;
+    });
 
     if (index == -1) {
       nextPlacements.add(event.placement);
@@ -412,11 +420,17 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
         questId: state.questId,
         anchorId: event.anchorId,
         sessionId: event.sessionId,
+        interactionType: event.interactionType,
+        answerIndex: event.answerIndex,
       );
       emit(
         state.copyWith(
           status: ArSessionStatus.ready,
           anchorReachResult: result,
+          interactiveProgressCompleted:
+              result.progressCompleted ?? state.interactiveProgressCompleted,
+          interactiveProgressTotal:
+              result.progressTotal ?? state.interactiveProgressTotal,
           message: null,
         ),
       );
@@ -452,7 +466,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
     ArQuestSceneEntity scene, {
     required bool createMissingTestAnchor,
   }) {
-    final placements = [...scene.objects];
+    final placements = _dedupeActionAnchors(scene.objects);
     if (!scene.hasTest ||
         !createMissingTestAnchor ||
         placements.any((item) => item.isTestAnchor)) {
@@ -469,7 +483,86 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
         presentation: 'world_button',
       ),
     );
+    return _dedupeActionAnchors(placements);
+  }
+
+  List<ArAssetPlacementEntity> _dedupeActionAnchors(
+    List<ArAssetPlacementEntity> source,
+  ) {
+    ArAssetPlacementEntity? testAnchor;
+    ArAssetPlacementEntity? finishAnchor;
+    final placements = <ArAssetPlacementEntity>[];
+
+    for (final placement in source) {
+      if (placement.isTestAnchor) {
+        testAnchor = _preferredActionAnchor(testAnchor, placement);
+        continue;
+      }
+      if (placement.isFinishAnchor) {
+        finishAnchor = _preferredActionAnchor(finishAnchor, placement);
+        continue;
+      }
+      placements.add(placement);
+    }
+
+    if (testAnchor != null) {
+      placements.add(testAnchor);
+    }
+    if (finishAnchor != null) {
+      placements.add(finishAnchor);
+    }
     return placements;
+  }
+
+  ArAssetPlacementEntity _preferredActionAnchor(
+    ArAssetPlacementEntity? current,
+    ArAssetPlacementEntity candidate,
+  ) {
+    if (current == null) {
+      return candidate;
+    }
+
+    final currentIsDefault = _hasDefaultActionAnchorTransform(current);
+    final candidateIsDefault = _hasDefaultActionAnchorTransform(candidate);
+    if (currentIsDefault && !candidateIsDefault) {
+      return candidate;
+    }
+    if (!currentIsDefault && candidateIsDefault) {
+      return current;
+    }
+    return candidate;
+  }
+
+  bool _hasDefaultActionAnchorTransform(ArAssetPlacementEntity placement) {
+    const defaultTransform = [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      -1.5,
+      1.0,
+    ];
+    if (placement.localTransform.length != defaultTransform.length) {
+      return true;
+    }
+
+    for (var index = 0; index < defaultTransform.length; index++) {
+      if ((placement.localTransform[index] - defaultTransform[index]).abs() >
+          0.0001) {
+        return false;
+      }
+    }
+    return true;
   }
 
   ArAssetPlacementEntity _buildActionAnchor({

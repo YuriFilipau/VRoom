@@ -70,18 +70,11 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
       return;
     }
 
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Контрольная точка'),
-        content: const Text('Точка найдена, действие зафиксировано.'),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Готово'),
-          ),
-        ],
-      ),
-    );
+    final completed = result.progressCompleted;
+    final total = result.progressTotal;
+    final progress = completed == null || total == null
+        ? ''
+        : ' Прогресс: найдено $completed/$total.';
+    _showMessage('${actionLabel ?? 'Действие зафиксировано.'}$progress');
   }
 }

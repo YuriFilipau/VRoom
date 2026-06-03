@@ -46,6 +46,8 @@ class ArSessionEvent with _$ArSessionEvent {
   const factory ArSessionEvent.anchorReached({
     required String anchorId,
     String? sessionId,
+    String? interactionType,
+    int? answerIndex,
   }) = ArSessionAnchorReached;
 
   const factory ArSessionEvent.anchorReachResultConsumed() =

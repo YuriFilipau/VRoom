@@ -3,7 +3,6 @@ part of 'ar_session_screen.dart';
 const _actionAnchorMarkerAssetPath = 'assets/models/ar_test_anchor_marker.glb';
 const _finishAnchorMarkerAssetPath =
     'assets/models/ar_finish_anchor_marker.glb';
-const _actionAnchorMarkerScale = 1.0;
 
 extension _ArSessionObjectController on _ArSessionViewState {
   Future<void> _onPlaneOrPointTapped(List<ARHitTestResult> results) async {
@@ -115,7 +114,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     }
 
     final hasAnchor = context.read<ArSessionBloc>().state.placements.any(
-      (placement) => placement.role == role || placement.id == role,
+      (placement) => _matchesActionAnchorRole(placement, role),
     );
     if (!hasAnchor) {
       _showMessage('Эта контрольная точка ещё не создана в сцене');
@@ -145,7 +144,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
   }) async {
     final bloc = context.read<ArSessionBloc>();
     final placement = state.placements
-        .where((item) => item.role == role || item.id == role)
+        .where((item) => _matchesActionAnchorRole(item, role))
         .firstOrNull;
     if (placement == null) {
       _cancelActionAnchorPlacement();
@@ -225,8 +224,9 @@ extension _ArSessionObjectController on _ArSessionViewState {
       );
       context.read<ArSessionBloc>().add(
         ArSessionAnchorReached(
-          anchorId: placement.role ?? placement.id,
+          anchorId: placement.id,
           sessionId: widget.scanSessionId,
+          interactionType: _actionAnchorRole(placement),
         ),
       );
       return;
@@ -282,7 +282,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
     final bloc = context.read<ArSessionBloc>();
     final placements = bloc.state.placements.where(
-      (item) => item.nodeName == nodeName,
+      (item) => item.nodeName == nodeName || item.id == nodeName,
     );
     if (placements.isEmpty) {
       return;
@@ -318,10 +318,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     for (final placement in state.placements) {
       final transform = _matrixFromPlacement(placement);
       final placementScale = arPlacementScale(placement);
-      final renderTransform = _transformWithScale(
-        transform,
-        placement.isActionAnchor ? _actionAnchorMarkerScale : placementScale,
-      );
+      final renderTransform = _transformWithScale(transform, placementScale);
       final renderedNode = _renderedNodes[placement.id];
       if (renderedNode != null) {
         renderedNode.transform = renderTransform;
@@ -347,7 +344,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
                   ? _finishAnchorMarkerAssetPath
                   : _actionAnchorMarkerAssetPath,
               transformation: renderTransform,
-              data: {'anchorRole': placement.role ?? placement.id},
+              data: {'anchorRole': _actionAnchorRole(placement)},
             )
           : ARNode(
               name: placement.nodeName,
@@ -366,6 +363,24 @@ extension _ArSessionObjectController on _ArSessionViewState {
         _renderedNodes[placement.id] = node;
       }
     }
+  }
+
+  bool _matchesActionAnchorRole(ArAssetPlacementEntity placement, String role) {
+    return switch (role) {
+      'test_anchor' => placement.isTestAnchor,
+      'finish_anchor' => placement.isFinishAnchor,
+      _ => placement.role == role || placement.id == role,
+    };
+  }
+
+  String _actionAnchorRole(ArAssetPlacementEntity placement) {
+    if (placement.isTestAnchor) {
+      return 'test_anchor';
+    }
+    if (placement.isFinishAnchor) {
+      return 'finish_anchor';
+    }
+    return placement.role ?? placement.id;
   }
 
   Matrix4 _matrixFromPlacement(ArAssetPlacementEntity placement) {
@@ -446,15 +461,17 @@ extension _ArSessionObjectController on _ArSessionViewState {
     final title = _interactionTitle(placement, asset, payload);
 
     if (interactionType == 'mini_question') {
-      final answeredCorrectly = await _showMiniQuestionSheet(
+      final selectedOption = await _showMiniQuestionSheet(
         placement: placement,
         title: title,
         payload: payload,
       );
-      if (answeredCorrectly == true) {
-        _markInteractivePlacementCompleted(placement, message: 'Верно.');
-      } else if (answeredCorrectly == false) {
-        _showMessage('Ответ неверный. Попробуйте ещё раз.');
+      if (selectedOption != null) {
+        _recordInteractivePlacement(
+          placement,
+          interactionType: interactionType,
+          answerIndex: selectedOption.answerIndex,
+        );
       }
       return;
     }
@@ -477,11 +494,11 @@ extension _ArSessionObjectController on _ArSessionViewState {
       ),
     );
     if (completed == true) {
-      _markInteractivePlacementCompleted(placement);
+      _recordInteractivePlacement(placement, interactionType: interactionType);
     }
   }
 
-  Future<bool?> _showMiniQuestionSheet({
+  Future<ArMiniQuestionOption?> _showMiniQuestionSheet({
     required ArAssetPlacementEntity placement,
     required String title,
     required Map<String, dynamic> payload,
@@ -492,7 +509,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
         _interactionBody(placement, null, payload);
     final options = _miniQuestionOptions(placement, payload);
     if (options.isEmpty) {
-      return showModalBottomSheet<bool>(
+      return showModalBottomSheet<ArMiniQuestionOption>(
         context: context,
         backgroundColor: Colors.transparent,
         builder: (sheetContext) => ArInteractionSheet(
@@ -500,20 +517,21 @@ extension _ArSessionObjectController on _ArSessionViewState {
           title: title,
           body: question,
           primaryLabel: 'Готово',
-          onPrimaryPressed: () => Navigator.of(sheetContext).pop(true),
+          onPrimaryPressed: () => Navigator.of(
+            sheetContext,
+          ).pop(const ArMiniQuestionOption(label: '', isCorrect: true)),
         ),
       );
     }
 
-    return showModalBottomSheet<bool>(
+    return showModalBottomSheet<ArMiniQuestionOption>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => ArMiniQuestionSheet(
         title: title,
         question: question,
         options: options,
-        onOptionSelected: (option) =>
-            Navigator.of(sheetContext).pop(option.isCorrect),
+        onOptionSelected: (option) => Navigator.of(sheetContext).pop(option),
       ),
     );
   }
@@ -567,51 +585,42 @@ extension _ArSessionObjectController on _ArSessionViewState {
                         correctAnswer.trim().toLowerCase() ==
                             label.trim().toLowerCase()) ??
               false;
-          return ArMiniQuestionOption(label: label, isCorrect: isCorrect);
+          return ArMiniQuestionOption(
+            label: label,
+            isCorrect: isCorrect,
+            answerIndex: index,
+          );
         })
         .toList(growable: false);
   }
 
-  void _markInteractivePlacementCompleted(
+  void _recordInteractivePlacement(
     ArAssetPlacementEntity placement, {
-    String? message,
+    required String interactionType,
+    int? answerIndex,
   }) {
-    if (!mounted) {
+    if (!mounted || widget.mode == ArSessionMode.admin) {
       return;
     }
 
-    final wasCompleted = _completedInteractivePlacementIds.contains(
-      placement.id,
+    context.read<ArSessionBloc>().add(
+      ArSessionAnchorReached(
+        anchorId: placement.id,
+        sessionId: widget.scanSessionId,
+        interactionType: interactionType,
+        answerIndex: answerIndex,
+      ),
     );
-    if (!wasCompleted) {
-      _refresh(() {
-        _completedInteractivePlacementIds.add(placement.id);
-      });
-    }
-
-    final progressMessage = message == null
-        ? _progressMessage()
-        : '$message ${_progressMessage()}';
-    _showMessage(progressMessage);
-
-    final state = context.read<ArSessionBloc>().state;
-    final trackable = _trackableInteractivePlacements(state);
-    if (!wasCompleted &&
-        trackable.isNotEmpty &&
-        trackable.every(
-          (item) => _completedInteractivePlacementIds.contains(item.id),
-        )) {
-      _showMessage('Все интерактивные точки найдены. Можно идти дальше.');
-    }
   }
 
-  String _progressMessage() {
-    final state = context.read<ArSessionBloc>().state;
-    final trackable = _trackableInteractivePlacements(state);
-    final completed = trackable
-        .where((item) => _completedInteractivePlacementIds.contains(item.id))
-        .length;
-    return 'Прогресс: найдено $completed/${trackable.length}';
+  void _applyAnchorReachProgress(ArAnchorReachResultEntity result) {
+    if (!mounted || result.anchorId.isEmpty) {
+      return;
+    }
+
+    _refresh(() {
+      _completedInteractivePlacementIds.add(result.anchorId);
+    });
   }
 
   String _interactionTitle(
