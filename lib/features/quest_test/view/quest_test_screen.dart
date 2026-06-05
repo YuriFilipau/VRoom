@@ -36,12 +36,7 @@ class _QuestTestView extends StatelessWidget {
     return BlocConsumer<QuestTestBloc, QuestTestState>(
       listener: (context, state) {
         if (state.status == QuestTestStatus.submitted) {
-          final targetEventId = eventId;
-          if (targetEventId != null && targetEventId > 0) {
-            context.go('${AppRoutes.participantEvent.path}/$targetEventId');
-          } else {
-            context.go(AppRoutes.home.path);
-          }
+          _goBackAfterSubmit(context);
           return;
         }
 
@@ -67,6 +62,23 @@ class _QuestTestView extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _goBackAfterSubmit(BuildContext context) {
+    Future<void>.delayed(const Duration(milliseconds: 700), () {
+      if (!context.mounted) {
+        return;
+      }
+
+      final targetEventId = eventId;
+      if (targetEventId != null && targetEventId > 0) {
+        context.go(
+          '${AppRoutes.participantEvent.path}/$targetEventId?refresh=certificate',
+        );
+      } else {
+        context.go(AppRoutes.home.path);
+      }
+    });
   }
 }
 

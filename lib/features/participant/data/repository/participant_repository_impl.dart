@@ -305,9 +305,8 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
         );
       }
 
-      final fileName = _extractFilename(
-            response.headers.value('content-disposition'),
-          ) ??
+      final fileName =
+          _extractFilename(response.headers.value('content-disposition')) ??
           'certificate_event_$eventId.pdf';
       final directory = await getTemporaryDirectory();
       final file = File('${directory.path}${Platform.pathSeparator}$fileName');
@@ -381,13 +380,17 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     if (header == null || header.isEmpty) {
       return null;
     }
-    final utfMatch = RegExp(r"filename\*=UTF-8''([^;]+)", caseSensitive: false)
-        .firstMatch(header);
+    final utfMatch = RegExp(
+      r"filename\*=UTF-8''([^;]+)",
+      caseSensitive: false,
+    ).firstMatch(header);
     if (utfMatch != null) {
       return Uri.decodeComponent(utfMatch.group(1)!);
     }
-    final plainMatch = RegExp(r'filename="?([^\";]+)"?', caseSensitive: false)
-        .firstMatch(header);
+    final plainMatch = RegExp(
+      r'filename="?([^\";]+)"?',
+      caseSensitive: false,
+    ).firstMatch(header);
     return plainMatch?.group(1);
   }
 
@@ -429,22 +432,34 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     dynamic raw,
   ) {
     final json = asMap(raw);
+    final certificateNumber = readString(json['certificate_number']);
+    final issuedAt = readString(json['issued_at']);
+    final artifactUrl = readString(json['artifact_url']);
+    final renderedContent = readString(json['rendered_content']);
+    final hasIssuedArtifact =
+        certificateNumber != null ||
+        issuedAt != null ||
+        artifactUrl != null ||
+        renderedContent != null;
+    final issued =
+        readBool(json['issued']) ??
+        readBool(json['certificate_issued']) ??
+        hasIssuedArtifact;
+    final available =
+        readBool(json['available']) ??
+        readBool(json['certificate_available']) ??
+        issued;
+
     return ParticipantCertificateEntity(
       eventId: eventId,
-      available:
-          readBool(json['available']) ??
-          readBool(json['certificate_available']) ??
-          false,
-      issued:
-          readBool(json['issued']) ??
-          readBool(json['certificate_issued']) ??
-          false,
+      available: available || issued,
+      issued: issued,
       requirementMode: readString(json['requirement_mode']) ?? '',
       scoreThreshold: readInt(json['score_threshold']),
-      certificateNumber: readString(json['certificate_number']),
-      issuedAt: readString(json['issued_at']),
-      artifactUrl: readString(json['artifact_url']),
-      renderedContent: readString(json['rendered_content']),
+      certificateNumber: certificateNumber,
+      issuedAt: issuedAt,
+      artifactUrl: artifactUrl,
+      renderedContent: renderedContent,
     );
   }
 

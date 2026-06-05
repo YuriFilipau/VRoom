@@ -329,10 +329,12 @@ class _ArSessionViewState extends State<_ArSessionView> {
     final hasKnownProgress =
         state.interactiveProgressCompleted != null &&
         state.interactiveProgressTotal != null;
-    if (hasKnownProgress &&
+    if ((hasKnownProgress || interactiveTotal > 0) &&
         interactiveTotal > 0 &&
         interactiveCompleted < interactiveTotal) {
-      _showMessage('Сначала соберите все дополнительные точки.');
+      _showMessage(
+        'Ещё не все AR-объекты собраны: найдено $interactiveCompleted/$interactiveTotal.',
+      );
       return;
     }
 

@@ -155,8 +155,9 @@ class AppRouter {
         builder: (context, state) {
           final questId =
               int.tryParse(state.pathParameters['questId'] ?? '') ?? 0;
-          final eventId =
-              int.tryParse(state.uri.queryParameters['eventId'] ?? '');
+          final eventId = int.tryParse(
+            state.uri.queryParameters['eventId'] ?? '',
+          );
           return QuestTestScreen(questId: questId, eventId: eventId);
         },
       ),
@@ -194,7 +195,11 @@ class AppRouter {
                 builder: (context, state) {
                   final eventId =
                       int.tryParse(state.pathParameters['eventId'] ?? '') ?? 0;
-                  return ParticipantEventDetailsScreen(eventId: eventId);
+                  return ParticipantEventDetailsScreen(
+                    eventId: eventId,
+                    refreshCertificate:
+                        state.uri.queryParameters['refresh'] == 'certificate',
+                  );
                 },
               ),
             ],

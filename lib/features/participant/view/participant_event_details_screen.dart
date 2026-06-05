@@ -17,9 +17,14 @@ import 'package:vroom/features/participant/domain/entities/participant_scanned_q
 import 'package:vroom/features/participant/domain/repository/participant_repository.dart';
 
 class ParticipantEventDetailsScreen extends StatefulWidget {
-  const ParticipantEventDetailsScreen({super.key, required this.eventId});
+  const ParticipantEventDetailsScreen({
+    super.key,
+    required this.eventId,
+    this.refreshCertificate = false,
+  });
 
   final int eventId;
+  final bool refreshCertificate;
 
   @override
   State<ParticipantEventDetailsScreen> createState() =>
@@ -37,6 +42,11 @@ class _ParticipantEventDetailsScreenState
   void initState() {
     super.initState();
     _eventFuture = _repository.getEventDetail(widget.eventId);
+    if (widget.refreshCertificate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _refreshCertificateAfterTest();
+      });
+    }
   }
 
   void _reloadEvent() {
@@ -45,11 +55,56 @@ class _ParticipantEventDetailsScreenState
     });
   }
 
+  void _replaceEvent(ParticipantEventDetailEntity event) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _eventFuture = Future.value(event);
+    });
+  }
+
+  Future<void> _refreshCertificateAfterTest() async {
+    for (final delay in const [
+      Duration(milliseconds: 800),
+      Duration(milliseconds: 1400),
+    ]) {
+      await Future<void>.delayed(delay);
+      if (!mounted) {
+        return;
+      }
+
+      try {
+        final event = await _repository.getEventDetail(widget.eventId);
+        _replaceEvent(event);
+        if (event.certificate.available || event.certificate.issued) {
+          return;
+        }
+      } catch (_) {
+        return;
+      }
+    }
+  }
+
   Future<void> _issueCertificate() async {
     setState(() {
       _isIssuingCertificate = true;
     });
     try {
+      final event = await _repository.getEventDetail(widget.eventId);
+      if (!mounted) {
+        return;
+      }
+      _replaceEvent(event);
+      if (event.certificate.issued) {
+        _showCertificateReady(event.certificate);
+        return;
+      }
+      if (!event.certificate.available) {
+        _showMessage(_certificateUnavailableMessage());
+        return;
+      }
+
       final certificate = await _repository.issueCertificate(widget.eventId);
       if (!mounted) {
         return;
@@ -57,6 +112,12 @@ class _ParticipantEventDetailsScreenState
       _showCertificateReady(certificate);
       _reloadEvent();
     } on ApiException catch (error) {
+      if (_isCertificateRequirementsPending(error)) {
+        final recovered = await _retryIssueCertificateAfterRefresh();
+        if (recovered) {
+          return;
+        }
+      }
       _showMessage(error.message);
     } catch (_) {
       _showMessage('Не удалось получить сертификат');
@@ -67,6 +128,57 @@ class _ParticipantEventDetailsScreenState
         });
       }
     }
+  }
+
+  Future<bool> _retryIssueCertificateAfterRefresh() async {
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted) {
+      return true;
+    }
+
+    try {
+      final event = await _repository.getEventDetail(widget.eventId);
+      if (!mounted) {
+        return true;
+      }
+      _replaceEvent(event);
+      if (event.certificate.issued) {
+        _showCertificateReady(event.certificate);
+        return true;
+      }
+      if (!event.certificate.available) {
+        _showMessage(_certificateUnavailableMessage());
+        return true;
+      }
+
+      final certificate = await _repository.issueCertificate(widget.eventId);
+      if (!mounted) {
+        return true;
+      }
+      _showCertificateReady(certificate);
+      _reloadEvent();
+      return true;
+    } on ApiException catch (error) {
+      _showMessage(error.message);
+      return true;
+    } catch (_) {
+      _showMessage('Не удалось получить сертификат');
+      return true;
+    }
+  }
+
+  bool _isCertificateRequirementsPending(ApiException error) {
+    final code = error.code?.toLowerCase() ?? '';
+    final message = error.message.toLowerCase();
+    return code.contains('requirement') ||
+        message.contains('требован') ||
+        message.contains('requirements') ||
+        message.contains('not all') ||
+        message.contains('not completed');
+  }
+
+  String _certificateUnavailableMessage() {
+    return 'Сертификат станет доступен после выполнения всех требований мероприятия.';
   }
 
   Future<void> _openCertificate(
@@ -89,7 +201,9 @@ class _ParticipantEventDetailsScreenState
 
       if (url != null && url.isNotEmpty) {
         await Clipboard.setData(ClipboardData(text: url));
-        _showMessage('Не удалось открыть PDF автоматически. Ссылка скопирована.');
+        _showMessage(
+          'Не удалось открыть PDF автоматически. Ссылка скопирована.',
+        );
         return;
       }
 
@@ -223,11 +337,11 @@ class _CertificatePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = !certificate.available
-        ? 'Сертификат пока недоступен'
-        : certificate.issued
+    final status = certificate.issued
         ? 'Сертификат выдан'
-        : 'Сертификат доступен';
+        : certificate.available
+        ? 'Сертификат доступен'
+        : 'Сертификат пока недоступен';
 
     return DecoratedBox(
       decoration: BoxDecoration(

@@ -10,13 +10,26 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
 
     final actionLabel = result.nextAction['label']?.toString();
     if (result.anchorRole == 'test_anchor') {
+      final completed = result.progressCompleted;
+      final total = result.progressTotal;
+      final isProgressIncomplete =
+          total != null && total > 0 && (completed ?? 0) < total;
+      final canOpenTest = result.testUnlocked && !isProgressIncomplete;
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(result.testUnlocked ? 'Тест открыт' : 'Точка теста'),
+          title: Text(
+            canOpenTest
+                ? 'Тест открыт'
+                : isProgressIncomplete
+                ? 'Ещё не все объекты собраны'
+                : 'Точка теста',
+          ),
           content: Text(
-            result.testUnlocked
+            canOpenTest
                 ? 'Контрольная точка пройдена. Можно перейти к тесту.'
+                : isProgressIncomplete
+                ? 'Соберите все AR-объекты: найдено ${completed ?? 0}/$total. После этого тест откроется.'
                 : 'Точка найдена, но тест пока недоступен. Проверьте, что квест открыт из актуального QR-кода.',
           ),
           actions: [
@@ -24,7 +37,7 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Позже'),
             ),
-            if (result.testUnlocked)
+            if (canOpenTest)
               FilledButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();

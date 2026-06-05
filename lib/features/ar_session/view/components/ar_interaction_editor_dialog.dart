@@ -113,31 +113,9 @@ class _ArInteractionEditorDialogState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
+              _ActionTypePicker(
                 value: _type,
-                decoration: const InputDecoration(labelText: 'Тип действия'),
-                items: const [
-                  DropdownMenuItem(value: 'none', child: Text('Без действия')),
-                  DropdownMenuItem(
-                    value: 'information',
-                    child: Text('Информационная карточка'),
-                  ),
-                  DropdownMenuItem(value: 'hint', child: Text('Подсказка')),
-                  DropdownMenuItem(
-                    value: 'mini_question',
-                    child: Text('Мини-вопрос'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'collectable',
-                    child: Text('Собираемый объект'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() => _type = value);
-                },
+                onChanged: (value) => setState(() => _type = value),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -282,3 +260,109 @@ class _ArInteractionEditorDialogState
     return readString(raw);
   }
 }
+
+class _ActionTypePicker extends StatelessWidget {
+  const _ActionTypePicker({required this.value, required this.onChanged});
+
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _actionTypeOptions.firstWhere(
+      (option) => option.value == value,
+      orElse: () => _actionTypeOptions.first,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return PopupMenuButton<String>(
+          initialValue: value,
+          onSelected: onChanged,
+          constraints: const BoxConstraints(minWidth: 260, maxWidth: 340),
+          itemBuilder: (context) => _actionTypeOptions
+              .map(
+                (option) => PopupMenuItem<String>(
+                  value: option.value,
+                  child: Row(
+                    children: [
+                      Icon(option.icon, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          option.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              .toList(growable: false),
+          child: SizedBox(
+            width: constraints.maxWidth,
+            child: InputDecorator(
+              decoration: const InputDecoration(labelText: 'Тип действия'),
+              child: Row(
+                children: [
+                  Icon(selected.icon, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      selected.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ActionTypeOption {
+  const _ActionTypeOption({
+    required this.value,
+    required this.label,
+    required this.icon,
+  });
+
+  final String value;
+  final String label;
+  final IconData icon;
+}
+
+const _actionTypeOptions = [
+  _ActionTypeOption(
+    value: 'none',
+    label: 'Без действия',
+    icon: Icons.block_rounded,
+  ),
+  _ActionTypeOption(
+    value: 'information',
+    label: 'Информационная карточка',
+    icon: Icons.info_outline_rounded,
+  ),
+  _ActionTypeOption(
+    value: 'hint',
+    label: 'Подсказка',
+    icon: Icons.lightbulb_outline_rounded,
+  ),
+  _ActionTypeOption(
+    value: 'mini_question',
+    label: 'Мини-вопрос',
+    icon: Icons.quiz_outlined,
+  ),
+  _ActionTypeOption(
+    value: 'collectable',
+    label: 'Собираемый объект',
+    icon: Icons.add_task_rounded,
+  ),
+];
