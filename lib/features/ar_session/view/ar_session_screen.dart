@@ -319,6 +319,8 @@ class _ArSessionViewState extends State<_ArSessionView> {
                     onResetSceneAnchor: () => _resetSceneRootAnchor(state),
                     onPlaceTestAnchor: () =>
                         _beginActionAnchorPlacement('test_anchor'),
+                    onPlaceFinishAnchor: () =>
+                        _beginActionAnchorPlacement('finish_anchor'),
                     onOpenTest: () => _openQuestTest(
                       state: state,
                       interactiveCompleted: interactiveCompleted,

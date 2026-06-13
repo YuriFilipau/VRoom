@@ -55,6 +55,11 @@ class _ParticipantEventDetailsScreenState
     });
   }
 
+  Future<void> _refreshEvent() async {
+    final event = await _repository.getEventDetail(widget.eventId);
+    _replaceEvent(event);
+  }
+
   void _replaceEvent(ParticipantEventDetailEntity event) {
     if (!mounted) {
       return;
@@ -272,55 +277,59 @@ class _ParticipantEventDetailsScreenState
             return const Center(child: Text('Мероприятие не найдено'));
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                QuestCard(
-                  title: event.title,
-                  imageUrl: event.imageUrl,
-                  progressPercent: event.progressPercent,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Описание',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+          return RefreshIndicator(
+            onRefresh: _refreshEvent,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  QuestCard(
+                    title: event.title,
+                    imageUrl: event.imageUrl,
+                    progressPercent: event.progressPercent,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  event.description,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 16),
-                _CertificatePanel(
-                  certificate: event.certificate,
-                  isIssuing: _isIssuingCertificate,
-                  onIssue: _issueCertificate,
-                  onOpen: () => _openCertificate(event.certificate),
-                ),
-                const SizedBox(height: 22),
-                Text(
-                  'СКАНИРОВАННЫЕ КВЕСТЫ',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(letterSpacing: 0.7),
-                ),
-                const SizedBox(height: 12),
-                if (event.scannedQuests.isEmpty)
+                  const SizedBox(height: 16),
                   Text(
-                    'В этом мероприятии пока нет отсканированных квестов.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    'Описание',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ...event.scannedQuests.map(
-                  (quest) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _ScannedQuestTile(quest: quest, eventId: event.id),
+                  const SizedBox(height: 8),
+                  Text(
+                    event.description,
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  _CertificatePanel(
+                    certificate: event.certificate,
+                    isIssuing: _isIssuingCertificate,
+                    onIssue: _issueCertificate,
+                    onOpen: () => _openCertificate(event.certificate),
+                  ),
+                  const SizedBox(height: 22),
+                  Text(
+                    'СКАНИРОВАННЫЕ КВЕСТЫ',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(letterSpacing: 0.7),
+                  ),
+                  const SizedBox(height: 12),
+                  if (event.scannedQuests.isEmpty)
+                    Text(
+                      'В этом мероприятии пока нет отсканированных квестов.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ...event.scannedQuests.map(
+                    (quest) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ScannedQuestTile(quest: quest, eventId: event.id),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

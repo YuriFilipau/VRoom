@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:vroom/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:vroom/features/auth/data/models/user_model.dart';
+import 'package:vroom/core/network/utf8_response_decoder.dart';
 
 class AuthInterceptor extends Interceptor {
   AuthInterceptor({
@@ -14,6 +15,7 @@ class AuthInterceptor extends Interceptor {
            connectTimeout: dio.options.connectTimeout,
            receiveTimeout: dio.options.receiveTimeout,
            sendTimeout: dio.options.sendTimeout,
+           responseDecoder: utf8ResponseDecoder,
          ),
        );
 

@@ -7,6 +7,7 @@ import 'package:vroom/core/constants/app_sizes.dart';
 import 'package:vroom/core/dependencies/get_it.dart' as di;
 import 'package:vroom/core/network/backend_discovery_service.dart';
 import 'package:vroom/core/network/pretty_dio_logger.dart';
+import 'package:vroom/core/network/utf8_response_decoder.dart';
 import 'package:vroom/core/shared/widgets/app_gradient_button.dart';
 import 'package:vroom/core/shared/widgets/app_splash_screen.dart';
 import 'package:vroom/core/theme/app_theme.dart';
@@ -44,6 +45,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
+        responseDecoder: utf8ResponseDecoder,
       ),
     );
 

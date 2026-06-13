@@ -16,6 +16,7 @@ Future<void> showArSettingsDialog({
   required VoidCallback onSave,
   required VoidCallback onResetSceneAnchor,
   required VoidCallback onPlaceTestAnchor,
+  required VoidCallback onPlaceFinishAnchor,
   required VoidCallback onOpenTest,
 }) {
   return showDialog<void>(
@@ -31,6 +32,7 @@ Future<void> showArSettingsDialog({
         onSave: onSave,
         onResetSceneAnchor: onResetSceneAnchor,
         onPlaceTestAnchor: onPlaceTestAnchor,
+        onPlaceFinishAnchor: onPlaceFinishAnchor,
         onOpenTest: onOpenTest,
       ),
     ),
@@ -47,6 +49,7 @@ class _ArSettingsDialog extends StatelessWidget {
     required this.onSave,
     required this.onResetSceneAnchor,
     required this.onPlaceTestAnchor,
+    required this.onPlaceFinishAnchor,
     required this.onOpenTest,
   });
 
@@ -58,6 +61,7 @@ class _ArSettingsDialog extends StatelessWidget {
   final VoidCallback onSave;
   final VoidCallback onResetSceneAnchor;
   final VoidCallback onPlaceTestAnchor;
+  final VoidCallback onPlaceFinishAnchor;
   final VoidCallback onOpenTest;
 
   @override
@@ -107,6 +111,7 @@ class _ArSettingsDialog extends StatelessWidget {
                             hasSceneRootAnchor: hasSceneRootAnchor,
                             onResetSceneAnchor: onResetSceneAnchor,
                             onPlaceTestAnchor: onPlaceTestAnchor,
+                            onPlaceFinishAnchor: onPlaceFinishAnchor,
                           ),
                           const SizedBox(height: 18),
                           ArSettingsPlacementsSection(

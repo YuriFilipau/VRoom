@@ -13,6 +13,7 @@ class ArSettingsButton extends StatelessWidget {
     required this.onSave,
     required this.onResetSceneAnchor,
     required this.onPlaceTestAnchor,
+    required this.onPlaceFinishAnchor,
     required this.onOpenTest,
     super.key,
   });
@@ -25,6 +26,7 @@ class ArSettingsButton extends StatelessWidget {
   final VoidCallback onSave;
   final VoidCallback onResetSceneAnchor;
   final VoidCallback onPlaceTestAnchor;
+  final VoidCallback onPlaceFinishAnchor;
   final VoidCallback onOpenTest;
 
   @override
@@ -46,6 +48,7 @@ class ArSettingsButton extends StatelessWidget {
             onSave: onSave,
             onResetSceneAnchor: onResetSceneAnchor,
             onPlaceTestAnchor: onPlaceTestAnchor,
+            onPlaceFinishAnchor: onPlaceFinishAnchor,
             onOpenTest: onOpenTest,
           ),
           icon: const Icon(Icons.settings_rounded, color: Colors.white),

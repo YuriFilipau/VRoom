@@ -27,7 +27,7 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
           ),
           content: Text(
             canOpenTest
-                ? 'Контрольная точка пройдена. Можно перейти к тесту.'
+                ? 'Контрольная точка пройдена. Можно перейти к итоговому тесту.'
                 : isProgressIncomplete
                 ? 'Соберите все AR-объекты: найдено ${completed ?? 0}/$total. После этого тест откроется.'
                 : 'Точка найдена, но тест пока недоступен. Проверьте, что квест открыт из актуального QR-кода.',
@@ -56,25 +56,39 @@ extension _ArSessionAnchorActionDialogs on _ArSessionViewState {
     }
 
     if (result.anchorRole == 'finish_anchor') {
+      final completed = result.progressCompleted;
+      final total = result.progressTotal;
+      final isProgressIncomplete =
+          total != null && total > 0 && (completed ?? 0) < total;
+
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text(
             result.questCompleted
                 ? actionLabel ?? 'Квест завершён'
+                : isProgressIncomplete
+                ? 'Ещё не все объекты собраны'
                 : 'Точка завершения',
           ),
           content: Text(
             result.questCompleted
                 ? 'Контрольная точка завершения пройдена. Результат сохранён.'
-                : 'Точка найдена, но квест не был завершён. Если в квесте есть тест, сначала пройдите его.',
+                : isProgressIncomplete
+                ? 'Ещё не все обязательные объекты собраны: найдено ${completed ?? 0}/$total.'
+                : 'Точка завершения найдена, но квест пока нельзя завершить.',
           ),
           actions: [
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                if (result.questCompleted && mounted && context.canPop()) {
-                  context.pop();
+                if (result.questCompleted && mounted) {
+                  final eventId = context.read<ArSessionBloc>().state.eventId;
+                  if (eventId > 0) {
+                    context.go('${AppRoutes.participantEvent.path}/$eventId');
+                  } else if (context.canPop()) {
+                    context.pop();
+                  }
                 }
               },
               child: const Text('Готово'),

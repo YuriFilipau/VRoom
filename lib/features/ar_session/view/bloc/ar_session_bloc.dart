@@ -11,6 +11,7 @@ import 'package:vroom/features/ar_session/domain/entities/ar_session_mode.dart';
 import 'package:vroom/features/ar_session/domain/usecases/get_ar_scene_usecase.dart';
 import 'package:vroom/features/ar_session/domain/usecases/mark_ar_anchor_reached_usecase.dart';
 import 'package:vroom/features/ar_session/domain/usecases/save_ar_layout_usecase.dart';
+import 'package:vroom/features/ar_session/view/components/ar_placement_helpers.dart';
 
 part 'ar_session_bloc.freezed.dart';
 part 'ar_session_event.dart';
@@ -62,10 +63,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
         questId: event.questId,
         mode: event.mode,
       );
-      final placements = _placementsWithRequiredAnchors(
-        scene,
-        createMissingTestAnchor: event.mode == ArSessionMode.admin,
-      );
+      final placements = _placementsWithRequiredAnchors(scene);
 
       emit(
         state.copyWith(
@@ -171,10 +169,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
 
     final placement = nextPlacements[index];
     nextPlacements[index] = placement.copyWith(
-      localTransform: _withScaleBaked(
-        placement.localTransform,
-        scale,
-      ),
+      localTransform: _withScaleBaked(placement.localTransform, scale),
       meta: {...placement.meta, 'scale': scale},
     );
 
@@ -253,28 +248,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
       return;
     }
 
-    if (state.placements.any((item) => item.isFinishAnchor)) {
-      return;
-    }
-
-    emit(
-      state.copyWith(
-        status: ArSessionStatus.ready,
-        placements: [
-          ...state.placements,
-          _buildActionAnchor(
-            id: 'finish_anchor',
-            assetId: state.assets.firstOrNull?.id ?? 0,
-            title: 'Точка окончания квеста',
-            actionType: 'complete_quest',
-            actionLabel: 'Завершить квест',
-            presentation: 'fullscreen_dialog',
-          ),
-        ],
-        selectedPlacementId: 'finish_anchor',
-        message: null,
-      ),
-    );
+    emit(state.copyWith(status: ArSessionStatus.ready, message: null));
   }
 
   void _onFinishAnchorRemoved(
@@ -289,7 +263,13 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
       state.copyWith(
         status: ArSessionStatus.ready,
         placements: state.placements
-            .where((item) => !item.isFinishAnchor)
+            .where(
+              (item) =>
+                  !item.isFinishAnchor &&
+                  item.role != 'finish_anchor' &&
+                  item.id != 'finish_anchor' &&
+                  item.nodeName != 'finish_anchor',
+            )
             .toList(growable: false),
         selectedPlacementId: state.selectedPlacement?.isFinishAnchor == true
             ? null
@@ -355,10 +335,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
           questId: savedScene.questId,
           eventId: savedScene.eventId,
           eventTitle: savedScene.title,
-          placements: _placementsWithRequiredAnchors(
-            savedScene,
-            createMissingTestAnchor: state.isAdmin,
-          ),
+          placements: _placementsWithRequiredAnchors(savedScene),
           assets: savedScene.assets,
           version: savedScene.version,
           updatedAt: savedScene.updatedAt,
@@ -386,10 +363,7 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
               eventId: latestScene.eventId,
               eventTitle: latestScene.title,
               assets: latestScene.assets,
-              placements: _placementsWithRequiredAnchors(
-                latestScene,
-                createMissingTestAnchor: state.isAdmin,
-              ),
+              placements: _placementsWithRequiredAnchors(latestScene),
               version: latestScene.version,
               updatedAt: latestScene.updatedAt,
               createdBy: latestScene.createdBy,
@@ -482,27 +456,10 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
   }
 
   List<ArAssetPlacementEntity> _placementsWithRequiredAnchors(
-    ArQuestSceneEntity scene, {
-    required bool createMissingTestAnchor,
-  }) {
+    ArQuestSceneEntity scene,
+  ) {
     final placements = _dedupeActionAnchors(scene.objects);
-    if (!scene.hasTest ||
-        !createMissingTestAnchor ||
-        placements.any((item) => item.isTestAnchor)) {
-      return placements;
-    }
-
-    placements.add(
-      _buildActionAnchor(
-        id: 'test_anchor',
-        assetId: scene.assets.firstOrNull?.id ?? 0,
-        title: 'Точка начала теста',
-        actionType: 'unlock_test',
-        actionLabel: 'Начать тест',
-        presentation: 'world_button',
-      ),
-    );
-    return _dedupeActionAnchors(placements);
+    return placements;
   }
 
   List<ArAssetPlacementEntity> _dedupeActionAnchors(
@@ -541,8 +498,8 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
       return candidate;
     }
 
-    final currentIsDefault = _hasDefaultActionAnchorTransform(current);
-    final candidateIsDefault = _hasDefaultActionAnchorTransform(candidate);
+    final currentIsDefault = arPlacementHasDefaultActionTransform(current);
+    final candidateIsDefault = arPlacementHasDefaultActionTransform(candidate);
     if (currentIsDefault && !candidateIsDefault) {
       return candidate;
     }
@@ -550,63 +507,5 @@ class ArSessionBloc extends Bloc<ArSessionEvent, ArSessionState> {
       return current;
     }
     return candidate;
-  }
-
-  bool _hasDefaultActionAnchorTransform(ArAssetPlacementEntity placement) {
-    const defaultTransform = [
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      -1.5,
-      1.0,
-    ];
-    if (placement.localTransform.length != defaultTransform.length) {
-      return true;
-    }
-
-    for (var index = 0; index < defaultTransform.length; index++) {
-      if ((placement.localTransform[index] - defaultTransform[index]).abs() >
-          0.0001) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  ArAssetPlacementEntity _buildActionAnchor({
-    required String id,
-    required int assetId,
-    required String title,
-    required String actionType,
-    required String actionLabel,
-    required String presentation,
-  }) {
-    return ArAssetPlacementEntity(
-      id: id,
-      assetId: assetId,
-      nodeName: id,
-      localTransform: const [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -1.5, 1],
-      meta: {
-        'id': id,
-        'role': id,
-        'title': title,
-        'action': {
-          'type': actionType,
-          'label': actionLabel,
-          'presentation': presentation,
-        },
-      },
-    );
   }
 }

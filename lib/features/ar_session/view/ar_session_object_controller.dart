@@ -117,18 +117,14 @@ extension _ArSessionObjectController on _ArSessionViewState {
       return;
     }
 
-    final hasAnchor = context.read<ArSessionBloc>().state.placements.any(
-      (placement) => _matchesActionAnchorRole(placement, role),
-    );
-    if (!hasAnchor) {
-      _showMessage('Эта контрольная точка ещё не создана в сцене');
-      return;
-    }
-
     _refresh(() {
       _pendingActionAnchorRole = role;
     });
-    _showMessage('Тапните по поверхности, чтобы поставить контрольную точку');
+    _showMessage(
+      role == 'test_anchor'
+          ? 'Тапните по поверхности, чтобы поставить точку начала теста'
+          : 'Тапните по поверхности, чтобы поставить точку окончания квеста',
+    );
   }
 
   void _cancelActionAnchorPlacement() {
@@ -141,6 +137,48 @@ extension _ArSessionObjectController on _ArSessionViewState {
     });
   }
 
+  ArAssetPlacementEntity? _placeholderActionAnchor({
+    required String role,
+    required ArSessionState state,
+  }) {
+    final assetId = state.assets.firstOrNull?.id ?? 0;
+    return switch (role) {
+      'test_anchor' => ArAssetPlacementEntity(
+        id: 'test_anchor',
+        assetId: assetId,
+        nodeName: 'test_anchor',
+        localTransform: arDefaultActionAnchorTransform,
+        meta: const {
+          'id': 'test_anchor',
+          'role': 'test_anchor',
+          'title': 'Точка начала теста',
+          'action': {
+            'type': 'unlock_test',
+            'label': 'Начать тест',
+            'presentation': 'world_button',
+          },
+        },
+      ),
+      'finish_anchor' => ArAssetPlacementEntity(
+        id: 'finish_anchor',
+        assetId: assetId,
+        nodeName: 'finish_anchor',
+        localTransform: arDefaultActionAnchorTransform,
+        meta: const {
+          'id': 'finish_anchor',
+          'role': 'finish_anchor',
+          'title': 'Точка окончания квеста',
+          'action': {
+            'type': 'complete_quest',
+            'label': 'Завершить квест',
+            'presentation': 'fullscreen_dialog',
+          },
+        },
+      ),
+      _ => null,
+    };
+  }
+
   Future<void> _placeActionAnchorAtHit({
     required String role,
     required ArSessionState state,
@@ -150,7 +188,9 @@ extension _ArSessionObjectController on _ArSessionViewState {
     final placement = state.placements
         .where((item) => _matchesActionAnchorRole(item, role))
         .firstOrNull;
-    if (placement == null) {
+    final targetPlacement =
+        placement ?? _placeholderActionAnchor(role: role, state: state);
+    if (targetPlacement == null) {
       _cancelActionAnchorPlacement();
       _showMessage('Контрольная точка не найдена в сцене');
       return;
@@ -164,15 +204,15 @@ extension _ArSessionObjectController on _ArSessionViewState {
       return;
     }
 
-    final scale = arPlacementScale(placement);
+    final scale = arPlacementScale(targetPlacement);
     bloc.add(
       ArSessionPlacementUpserted(
-        placement.copyWith(
+        targetPlacement.copyWith(
           localTransform: _transformWithScale(
             localTransform,
             scale,
           ).storage.toList(),
-          meta: {...placement.meta, 'scale': scale},
+          meta: {...targetPlacement.meta, 'scale': scale},
         ),
       ),
     );
@@ -183,7 +223,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     _showMessage(
       role == 'test_anchor'
           ? 'Точка начала теста поставлена'
-          : 'Контрольная точка поставлена',
+          : 'Точка окончания квеста поставлена',
     );
   }
 
@@ -314,10 +354,29 @@ extension _ArSessionObjectController on _ArSessionViewState {
     }
 
     final activePlacementIds = state.placements.map((item) => item.id).toSet();
+    final activeNodeNames = state.placements
+        .map((item) => item.nodeName)
+        .toSet();
+    final hasFinishAnchor = state.placements.any((item) => item.isFinishAnchor);
+    final hasTestAnchor = state.placements.any((item) => item.isTestAnchor);
     for (final entry in _renderedNodes.entries.toList()) {
-      if (!activePlacementIds.contains(entry.key)) {
-        _arObjectManager!.removeNode(entry.value);
-        _renderedNodes.remove(entry.key);
+      final node = entry.value;
+      final nodeRole = node.data?['anchorRole']?.toString();
+      final isStaleFinishAnchor =
+          !hasFinishAnchor &&
+          (entry.key == 'finish_anchor' ||
+              node.name == 'finish_anchor' ||
+              nodeRole == 'finish_anchor');
+      final isStaleTestAnchor =
+          !hasTestAnchor &&
+          (entry.key == 'test_anchor' ||
+              node.name == 'test_anchor' ||
+              nodeRole == 'test_anchor');
+      if (!activePlacementIds.contains(entry.key) ||
+          !activeNodeNames.contains(node.name) ||
+          isStaleFinishAnchor ||
+          isStaleTestAnchor) {
+        await _removeRenderedNode(entry.key, node);
       }
     }
 
@@ -325,6 +384,13 @@ extension _ArSessionObjectController on _ArSessionViewState {
     for (final placement in state.placements) {
       final renderTransform = _renderTransformForPlacement(placement);
       final renderedNode = _renderedNodes[placement.id];
+      if (placement.isActionAnchor &&
+          arPlacementHasDefaultActionTransform(placement)) {
+        if (renderedNode != null) {
+          await _removeRenderedNode(placement.id, renderedNode);
+        }
+        continue;
+      }
       if (renderedNode != null) {
         await _stabilizeNodeTransform(renderedNode, renderTransform);
         continue;
@@ -369,6 +435,17 @@ extension _ArSessionObjectController on _ArSessionViewState {
         _renderedNodes[placement.id] = node;
       }
     }
+  }
+
+  Future<void> _removeRenderedNode(String key, ARNode node) async {
+    node.transform = Matrix4.compose(
+      Vector3(0, -1000, 0),
+      Quaternion.identity(),
+      Vector3.zero(),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    _arObjectManager!.removeNode(node);
+    _renderedNodes.remove(key);
   }
 
   bool _matchesActionAnchorRole(ArAssetPlacementEntity placement, String role) {

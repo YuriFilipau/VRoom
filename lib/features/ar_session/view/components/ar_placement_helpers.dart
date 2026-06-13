@@ -2,6 +2,25 @@ import 'package:vector_math/vector_math_64.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_entity.dart';
 import 'package:vroom/features/ar_session/domain/entities/ar_asset_placement_entity.dart';
 
+const List<double> arDefaultActionAnchorTransform = <double>[
+  1,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  -1.5,
+  1,
+];
+
 double arPlacementScale(ArAssetPlacementEntity placement) {
   final rawScale = placement.meta['scale'];
   if (rawScale is num) {
@@ -22,6 +41,25 @@ double arPlacementScale(ArAssetPlacementEntity placement) {
     placement.localTransform,
   ).decompose(Vector3.zero(), Quaternion.identity(), scale);
   return scale.x <= 0 ? 1 : scale.x;
+}
+
+bool arPlacementHasDefaultActionTransform(ArAssetPlacementEntity placement) {
+  if (!placement.isActionAnchor ||
+      placement.localTransform.length !=
+          arDefaultActionAnchorTransform.length) {
+    return false;
+  }
+
+  for (var index = 0; index < arDefaultActionAnchorTransform.length; index++) {
+    if ((placement.localTransform[index] -
+                arDefaultActionAnchorTransform[index])
+            .abs() >
+        0.0001) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 String arPlacementTitle(

@@ -31,36 +31,60 @@ class _QuestTestView extends StatelessWidget {
 
   final int? eventId;
 
+  void _goToEvent(BuildContext context, {bool refreshCertificate = false}) {
+    final targetEventId = eventId;
+    if (targetEventId != null && targetEventId > 0) {
+      final refreshQuery = refreshCertificate ? '?refresh=certificate' : '';
+      context.go(
+        '${AppRoutes.participantEvent.path}/$targetEventId$refreshQuery',
+      );
+      return;
+    }
+    context.go(AppRoutes.home.path);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<QuestTestBloc, QuestTestState>(
-      listener: (context, state) {
-        if (state.status == QuestTestStatus.submitted) {
-          _goBackAfterSubmit(context);
-          return;
+    return PopScope(
+      canPop: eventId == null || eventId! <= 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _goToEvent(context);
         }
+      },
+      child: BlocConsumer<QuestTestBloc, QuestTestState>(
+        listener: (context, state) {
+          if (state.status == QuestTestStatus.submitted) {
+            _goBackAfterSubmit(context);
+            return;
+          }
 
-        final message = state.message;
-        if (message != null && message.isNotEmpty) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Тест квеста')),
-          body: switch (state.status) {
-            QuestTestStatus.loading || QuestTestStatus.initial => const Center(
-              child: CircularProgressIndicator(),
+          final message = state.message;
+          if (message != null && message.isNotEmpty) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Тест квеста'),
+              leading: eventId != null && eventId! > 0
+                  ? BackButton(onPressed: () => _goToEvent(context))
+                  : null,
             ),
-            QuestTestStatus.failure => _FailureMessage(
-              message: state.message ?? 'Тест для этого квеста недоступен.',
-            ),
-            _ => _TestContent(state: state),
-          },
-        );
-      },
+            body: switch (state.status) {
+              QuestTestStatus.loading || QuestTestStatus.initial =>
+                const Center(child: CircularProgressIndicator()),
+              QuestTestStatus.failure => _FailureMessage(
+                message: state.message ?? 'Тест для этого квеста недоступен.',
+              ),
+              _ => _TestContent(state: state),
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -69,15 +93,7 @@ class _QuestTestView extends StatelessWidget {
       if (!context.mounted) {
         return;
       }
-
-      final targetEventId = eventId;
-      if (targetEventId != null && targetEventId > 0) {
-        context.go(
-          '${AppRoutes.participantEvent.path}/$targetEventId?refresh=certificate',
-        );
-      } else {
-        context.go(AppRoutes.home.path);
-      }
+      _goToEvent(context, refreshCertificate: true);
     });
   }
 }
@@ -231,9 +247,10 @@ class _InfoBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: color.withValues(alpha: 0.32)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vroom/core/constants/app_radii.dart';
 import 'package:vroom/features/ar_session/view/bloc/ar_session_bloc.dart';
+import 'package:vroom/features/ar_session/view/components/ar_placement_helpers.dart';
 import 'package:vroom/features/ar_session/view/components/finish_anchor_button.dart';
 
 class ArSettingsSceneStatus extends StatelessWidget {
@@ -42,6 +43,7 @@ class ArSettingsAnchorsSection extends StatelessWidget {
     required this.hasSceneRootAnchor,
     required this.onResetSceneAnchor,
     required this.onPlaceTestAnchor,
+    required this.onPlaceFinishAnchor,
     super.key,
   });
 
@@ -50,10 +52,16 @@ class ArSettingsAnchorsSection extends StatelessWidget {
   final bool hasSceneRootAnchor;
   final VoidCallback onResetSceneAnchor;
   final VoidCallback onPlaceTestAnchor;
+  final VoidCallback onPlaceFinishAnchor;
 
   @override
   Widget build(BuildContext context) {
-    final hasFinishAnchor = state.placements.any((item) => item.isFinishAnchor);
+    final finishAnchor = state.placements
+        .where((item) => item.isFinishAnchor)
+        .firstOrNull;
+    final hasFinishAnchor =
+        finishAnchor != null &&
+        !arPlacementHasDefaultActionTransform(finishAnchor);
 
     return ArSettingsSection(
       title: 'Anchor-ы',
@@ -83,7 +91,14 @@ class ArSettingsAnchorsSection extends StatelessWidget {
             ),
           ] else ...[
             const SizedBox(height: 10),
-            FinishAnchorButton(hasFinishAnchor: hasFinishAnchor),
+            FinishAnchorButton(
+              hasFinishAnchor: hasFinishAnchor,
+              enabled: supportsAr && hasSceneRootAnchor,
+              onPlaceRequested: () {
+                Navigator.of(context).pop();
+                onPlaceFinishAnchor();
+              },
+            ),
           ],
         ],
       ),
