@@ -56,6 +56,7 @@ extension _ArSessionCloudController on _ArSessionViewState {
     _sceneRootTransform = Matrix4.copy(anchor.transformation);
     _isResolvingSceneAnchor = false;
     _pendingSceneCloudAnchorId = null;
+    _syncPlaneVisibility();
     context.read<ArSessionBloc>().add(
       ArSessionSceneAnchorUpdated(
         anchorName: anchor.name,

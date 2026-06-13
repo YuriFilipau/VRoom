@@ -284,6 +284,13 @@ class _ParticipantEventDetailsScreenState
                 ),
                 const SizedBox(height: 16),
                 Text(
+                  'Описание',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
                   event.description,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
@@ -357,19 +364,6 @@ class _CertificatePanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(status, style: Theme.of(context).textTheme.bodyLarge),
-            if (certificate.certificateNumber != null ||
-                certificate.issuedAt != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                [
-                  if (certificate.certificateNumber != null)
-                    'Номер: ${certificate.certificateNumber}',
-                  if (certificate.issuedAt != null)
-                    'Дата: ${certificate.issuedAt}',
-                ].join('\n'),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
             const SizedBox(height: 12),
             if (certificate.available && !certificate.issued)
               AppGradientButton(

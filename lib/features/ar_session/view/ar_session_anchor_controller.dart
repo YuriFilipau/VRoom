@@ -24,7 +24,7 @@ extension _ArSessionAnchorController on _ArSessionViewState {
     await sessionManager.onInitialize(
       showAnimatedGuide: false,
       showFeaturePoints: false,
-      showPlanes: false,
+      showPlanes: _shouldShowDetectedPlanes,
       showWorldOrigin: false,
       handleTaps: true,
       handlePans: widget.mode == ArSessionMode.admin,
@@ -105,6 +105,7 @@ extension _ArSessionAnchorController on _ArSessionViewState {
     _hasRequestedSceneAnchorDownload = false;
     _pendingSceneCloudAnchorId = null;
     _renderedNodes.clear();
+    _syncPlaneVisibility();
   }
 
   Future<void> _setSceneRootAnchor(
@@ -131,6 +132,7 @@ extension _ArSessionAnchorController on _ArSessionViewState {
 
     _sceneRootAnchor = anchor;
     _sceneRootTransform = Matrix4.copy(worldTransform);
+    _syncPlaneVisibility();
     bloc.add(
       ArSessionSceneAnchorUpdated(
         anchorName: anchor.name,
@@ -220,6 +222,7 @@ extension _ArSessionAnchorController on _ArSessionViewState {
       _sceneRootTransform = Matrix4.copy(anchor.transformation);
       _isResolvingSceneAnchor = false;
       _pendingSceneCloudAnchorId = null;
+      _syncPlaneVisibility();
       if (mounted) {
         _refresh(() {});
       }

@@ -28,9 +28,17 @@ String arPlacementTitle(
   ArAssetPlacementEntity placement,
   ArAssetEntity? asset,
 ) {
-  final title = placement.meta['title'];
-  if (title is String && title.trim().isNotEmpty) {
-    return title.trim();
+  final title = _readHumanReadableTitle(placement.meta['title']);
+  if (title != null) {
+    return title;
+  }
+  final displayName =
+      _readHumanReadableTitle(placement.meta['display_name']) ??
+      _readHumanReadableTitle(placement.meta['displayName']) ??
+      _readHumanReadableTitle(placement.meta['name']) ??
+      _readHumanReadableTitle(placement.meta['label']);
+  if (displayName != null) {
+    return displayName;
   }
   if (placement.isTestAnchor) {
     return 'Точка начала теста';
@@ -38,5 +46,32 @@ String arPlacementTitle(
   if (placement.isFinishAnchor) {
     return 'Точка окончания квеста';
   }
-  return asset?.name ?? placement.nodeName;
+  final assetName = _readHumanReadableTitle(asset?.name);
+  if (assetName != null) {
+    return assetName;
+  }
+  if (asset != null && asset.id > 0) {
+    return 'Модель ${asset.id}';
+  }
+  return _readHumanReadableTitle(placement.nodeName) ?? 'Модель';
+}
+
+String? _readHumanReadableTitle(dynamic raw) {
+  if (raw is! String) {
+    return null;
+  }
+  final value = raw.trim();
+  if (value.isEmpty || _looksLikeModelFilename(value)) {
+    return null;
+  }
+  return value;
+}
+
+bool _looksLikeModelFilename(String value) {
+  final normalized = value.trim().toLowerCase();
+  return normalized.endsWith('.glb') ||
+      normalized.endsWith('.gltf') ||
+      normalized.contains('.glb?') ||
+      normalized.contains('.gltf?') ||
+      normalized.startsWith('ar_asset_');
 }

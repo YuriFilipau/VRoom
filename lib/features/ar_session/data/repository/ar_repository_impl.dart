@@ -572,12 +572,10 @@ class ArRepositoryImpl implements ArRepository {
             _ => ArAssetPreviewIcon.rocket,
           };
 
+          final displayName = _assetDisplayName(json, meta, index);
           return ArAssetEntity(
             id: readInt(json['id']) ?? 0,
-            name:
-                readString(json['title']) ??
-                readString(json['name']) ??
-                'Asset #${index + 1}',
+            name: displayName,
             modelUri: modelUri,
             scale:
                 readDouble(json['scale']) ??
@@ -596,6 +594,40 @@ class ArRepositoryImpl implements ArRepository {
         .whereType<ArAssetEntity>()
         .where((asset) => asset.modelUri.isNotEmpty)
         .toList(growable: false);
+  }
+
+  String _assetDisplayName(
+    Map<String, dynamic> json,
+    Map<String, dynamic> meta,
+    int index,
+  ) {
+    for (final value in [
+      json['title'],
+      json['display_name'],
+      json['displayName'],
+      json['label'],
+      meta['title'],
+      meta['display_name'],
+      meta['displayName'],
+      meta['name'],
+      meta['label'],
+      json['name'],
+    ]) {
+      final name = readString(value)?.trim();
+      if (name != null && name.isNotEmpty && !_looksLikeModelFilename(name)) {
+        return name;
+      }
+    }
+    return 'Модель ${index + 1}';
+  }
+
+  bool _looksLikeModelFilename(String value) {
+    final normalized = value.trim().toLowerCase();
+    return normalized.endsWith('.glb') ||
+        normalized.endsWith('.gltf') ||
+        normalized.contains('.glb?') ||
+        normalized.contains('.gltf?') ||
+        normalized.startsWith('ar_asset_');
   }
 
   bool _isModelAsset(Map<String, dynamic> json, String modelUri) {

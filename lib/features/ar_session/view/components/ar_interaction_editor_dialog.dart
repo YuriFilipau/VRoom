@@ -106,6 +106,7 @@ class _ArInteractionEditorDialogState
     final isQuestion = _type == 'mini_question';
 
     return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: const Text('Действие AR-объекта'),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
@@ -239,11 +240,8 @@ class _ArInteractionEditorDialogState
   String _normalizeType(String? raw) {
     final normalized = raw?.trim().toLowerCase();
     return switch (normalized) {
-      'information' ||
-      'hint' ||
-      'mini_question' ||
-      'collectable' => normalized!,
-      'info' || 'card' || 'information_card' => 'information',
+      'hint' || 'mini_question' || 'collectable' => normalized!,
+      'information' || 'info' || 'card' || 'information_card' => 'hint',
       'question' ||
       'quiz' ||
       'mini-question' ||
@@ -274,54 +272,51 @@ class _ActionTypePicker extends StatelessWidget {
       orElse: () => _actionTypeOptions.first,
     );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return PopupMenuButton<String>(
-          initialValue: value,
-          onSelected: onChanged,
-          constraints: const BoxConstraints(minWidth: 260, maxWidth: 340),
-          itemBuilder: (context) => _actionTypeOptions
-              .map(
-                (option) => PopupMenuItem<String>(
-                  value: option.value,
-                  child: Row(
-                    children: [
-                      Icon(option.icon, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          option.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-              .toList(growable: false),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            child: InputDecorator(
-              decoration: const InputDecoration(labelText: 'Тип действия'),
+    return DropdownButtonFormField<String>(
+      value: selected.value,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'Тип действия'),
+      items: _actionTypeOptions
+          .map(
+            (option) => DropdownMenuItem<String>(
+              value: option.value,
               child: Row(
                 children: [
-                  Icon(selected.icon, size: 20),
+                  Icon(option.icon, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      selected.label,
+                      option.label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
                 ],
               ),
             ),
-          ),
-        );
+          )
+          .toList(growable: false),
+      selectedItemBuilder: (context) => _actionTypeOptions
+          .map(
+            (option) => Row(
+              children: [
+                Icon(option.icon, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    option.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          )
+          .toList(growable: false),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
       },
     );
   }
@@ -344,11 +339,6 @@ const _actionTypeOptions = [
     value: 'none',
     label: 'Без действия',
     icon: Icons.block_rounded,
-  ),
-  _ActionTypeOption(
-    value: 'information',
-    label: 'Информационная карточка',
-    icon: Icons.info_outline_rounded,
   ),
   _ActionTypeOption(
     value: 'hint',

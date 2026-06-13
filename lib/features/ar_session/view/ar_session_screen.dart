@@ -91,6 +91,12 @@ class _ArSessionViewState extends State<_ArSessionView> {
 
   bool get _supportsAr => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
   bool get _hasSceneRootAnchor => _sceneRootAnchor != null;
+  bool get _shouldShowDetectedPlanes =>
+      widget.mode == ArSessionMode.admin || !_hasSceneRootAnchor;
+
+  void _syncPlaneVisibility() {
+    _arSessionManager?.showPlanes(_shouldShowDetectedPlanes);
+  }
 
   void _refresh(VoidCallback update) {
     if (!mounted) {
@@ -135,16 +141,23 @@ class _ArSessionViewState extends State<_ArSessionView> {
       },
       builder: (context, state) {
         final interactivePlacements = _trackableInteractivePlacements(state);
+        final localInteractiveTotal = interactivePlacements.length;
+        final localInteractiveCompleted = interactivePlacements
+            .where(
+              (placement) =>
+                  _completedInteractivePlacementIds.contains(placement.id),
+            )
+            .length;
         final interactiveTotal =
-            state.interactiveProgressTotal ?? interactivePlacements.length;
+            state.interactiveProgressTotal
+                ?.clamp(0, localInteractiveTotal)
+                .toInt() ??
+            localInteractiveTotal;
         final interactiveCompleted =
-            state.interactiveProgressCompleted ??
-            interactivePlacements
-                .where(
-                  (placement) =>
-                      _completedInteractivePlacementIds.contains(placement.id),
-                )
-                .length;
+            state.interactiveProgressCompleted
+                ?.clamp(0, interactiveTotal)
+                .toInt() ??
+            localInteractiveCompleted.clamp(0, interactiveTotal).toInt();
 
         return Scaffold(
           backgroundColor: Colors.black,

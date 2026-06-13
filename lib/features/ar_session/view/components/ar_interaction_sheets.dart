@@ -35,7 +35,7 @@ class ArInteractionSheet extends StatelessWidget {
       child: DecoratedBox(
         decoration: const BoxDecoration(
           color: Color(0xFF141A24),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -102,7 +102,7 @@ class ArMiniQuestionSheet extends StatelessWidget {
       child: DecoratedBox(
         decoration: const BoxDecoration(
           color: Color(0xFF141A24),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),

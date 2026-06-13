@@ -215,7 +215,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
     }
 
     if (widget.mode == ArSessionMode.user &&
-        _isTrackableInteractivePlacement(placement)) {
+        _isUserInteractivePlacement(placement)) {
       await _showInteractivePlacement(placement);
       return;
     }
@@ -431,7 +431,14 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
   bool _isTrackableInteractivePlacement(ArAssetPlacementEntity placement) {
     return switch (_interactionTypeForPlacement(placement)) {
-      'information' || 'hint' || 'mini_question' || 'collectable' => true,
+      'mini_question' || 'collectable' => true,
+      _ => false,
+    };
+  }
+
+  bool _isUserInteractivePlacement(ArAssetPlacementEntity placement) {
+    return switch (_interactionTypeForPlacement(placement)) {
+      'hint' || 'mini_question' || 'collectable' => true,
       _ => false,
     };
   }
@@ -449,7 +456,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
         placement.role;
     final normalized = rawType?.trim().toLowerCase();
     return switch (normalized) {
-      'info' || 'card' || 'information_card' => 'information',
+      'information' || 'info' || 'card' || 'information_card' => 'hint',
       'question' ||
       'quiz' ||
       'mini-question' ||
@@ -517,7 +524,7 @@ extension _ArSessionObjectController on _ArSessionViewState {
         onPrimaryPressed: () => Navigator.of(sheetContext).pop(true),
       ),
     );
-    if (completed == true) {
+    if (completed == true && _isRequiredInteractionType(interactionType)) {
       _recordInteractivePlacement(placement, interactionType: interactionType);
     }
   }
@@ -623,7 +630,9 @@ extension _ArSessionObjectController on _ArSessionViewState {
     required String interactionType,
     int? answerIndex,
   }) {
-    if (!mounted || widget.mode == ArSessionMode.admin) {
+    if (!mounted ||
+        widget.mode == ArSessionMode.admin ||
+        !_isRequiredInteractionType(interactionType)) {
       return;
     }
 
@@ -635,6 +644,13 @@ extension _ArSessionObjectController on _ArSessionViewState {
         answerIndex: answerIndex,
       ),
     );
+  }
+
+  bool _isRequiredInteractionType(String interactionType) {
+    return switch (interactionType) {
+      'mini_question' || 'collectable' => true,
+      _ => false,
+    };
   }
 
   void _applyAnchorReachProgress(ArAnchorReachResultEntity result) {
@@ -652,8 +668,8 @@ extension _ArSessionObjectController on _ArSessionViewState {
     ArAssetEntity? asset,
     Map<String, dynamic> payload,
   ) {
-    return _readInteractionString(payload['title']) ??
-        _readInteractionString(placement.meta['title']) ??
+    return _readInteractionTitle(payload['title']) ??
+        _readInteractionTitle(placement.meta['title']) ??
         arPlacementTitle(placement, asset);
   }
 
@@ -672,8 +688,15 @@ extension _ArSessionObjectController on _ArSessionViewState {
         _readInteractionString(placement.meta['body']) ??
         _readInteractionString(placement.meta['content']) ??
         _readInteractionString(placement.meta['hint']) ??
-        asset?.name ??
-        'Интерактивная точка квеста.';
+        arPlacementTitle(placement, asset);
+  }
+
+  String? _readInteractionTitle(dynamic raw) {
+    final value = _readInteractionString(raw);
+    if (value == null || _looksLikeModelFilename(value)) {
+      return null;
+    }
+    return value;
   }
 
   String? _readInteractionString(dynamic raw) {
@@ -681,6 +704,15 @@ extension _ArSessionObjectController on _ArSessionViewState {
       return null;
     }
     return readString(raw);
+  }
+
+  bool _looksLikeModelFilename(String value) {
+    final normalized = value.trim().toLowerCase();
+    return normalized.endsWith('.glb') ||
+        normalized.endsWith('.gltf') ||
+        normalized.contains('.glb?') ||
+        normalized.contains('.gltf?') ||
+        normalized.startsWith('ar_asset_');
   }
 
   IconData _interactionIcon(String interactionType) {
