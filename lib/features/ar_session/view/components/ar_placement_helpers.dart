@@ -43,6 +43,21 @@ double arPlacementScale(ArAssetPlacementEntity placement) {
   return scale.x <= 0 ? 1 : scale.x;
 }
 
+double arPlacementRenderScale(
+  ArAssetPlacementEntity placement,
+  ArAssetEntity? asset,
+) {
+  final scale = arPlacementScale(placement);
+  if (placement.isActionAnchor) {
+    return scale;
+  }
+  final normalizationScale = asset?.normalizationScale ?? 1;
+  if (!normalizationScale.isFinite || normalizationScale <= 0) {
+    return scale;
+  }
+  return scale * normalizationScale;
+}
+
 bool arPlacementHasDefaultActionTransform(ArAssetPlacementEntity placement) {
   if (!placement.isActionAnchor ||
       placement.localTransform.length !=

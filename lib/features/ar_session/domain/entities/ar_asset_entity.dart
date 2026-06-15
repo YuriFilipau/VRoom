@@ -9,6 +9,7 @@ abstract class ArAssetEntity with _$ArAssetEntity {
     required String name,
     required String modelUri,
     required double scale,
+    @Default(1) double normalizationScale,
     required ArAssetPreviewIcon previewIcon,
     String? previewUrl,
   }) = _ArAssetEntity;

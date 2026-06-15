@@ -71,7 +71,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
       name: placementId,
       type: _nodeTypeForModelUri(selectedAsset.modelUri),
       uri: selectedAsset.modelUri,
-      transformation: _transformWithScale(localTransform, selectedAsset.scale),
+      transformation: _transformWithScale(
+        localTransform,
+        selectedAsset.scale * selectedAsset.normalizationScale,
+      ),
       data: {'assetId': selectedAsset.id},
     );
 
@@ -86,7 +89,10 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
     await _stabilizeNodeTransform(
       node,
-      _transformWithScale(localTransform, selectedAsset.scale),
+      _transformWithScale(
+        localTransform,
+        selectedAsset.scale * selectedAsset.normalizationScale,
+      ),
     );
     _renderedNodes[placementId] = node;
     bloc.add(
@@ -382,7 +388,8 @@ extension _ArSessionObjectController on _ArSessionViewState {
 
     final assetById = {for (final asset in state.assets) asset.id: asset};
     for (final placement in state.placements) {
-      final renderTransform = _renderTransformForPlacement(placement);
+      final asset = assetById[placement.assetId];
+      final renderTransform = _renderTransformForPlacement(placement, asset);
       final renderedNode = _renderedNodes[placement.id];
       if (placement.isActionAnchor &&
           arPlacementHasDefaultActionTransform(placement)) {
@@ -396,7 +403,6 @@ extension _ArSessionObjectController on _ArSessionViewState {
         continue;
       }
 
-      final asset = assetById[placement.assetId];
       if (!placement.isActionAnchor && asset == null) {
         if (kDebugMode) {
           debugPrint(
@@ -472,9 +478,12 @@ extension _ArSessionObjectController on _ArSessionViewState {
         : Matrix4.identity();
   }
 
-  Matrix4 _renderTransformForPlacement(ArAssetPlacementEntity placement) {
+  Matrix4 _renderTransformForPlacement(
+    ArAssetPlacementEntity placement,
+    ArAssetEntity? asset,
+  ) {
     final transform = _matrixFromPlacement(placement);
-    final desiredScale = arPlacementScale(placement);
+    final desiredScale = arPlacementRenderScale(placement, asset);
     final currentScale = Vector3.zero();
     transform.decompose(Vector3.zero(), Quaternion.identity(), currentScale);
     if ((currentScale.x - desiredScale).abs() < 0.001 &&

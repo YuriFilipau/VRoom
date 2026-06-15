@@ -581,6 +581,7 @@ class ArRepositoryImpl implements ArRepository {
                 readDouble(json['scale']) ??
                 readDouble(json['default_scale']) ??
                 1,
+            normalizationScale: _assetNormalizationScale(json, meta),
             previewIcon: previewIcon,
             previewUrl:
                 readString(json['preview_url']) ??
@@ -643,6 +644,28 @@ class ArRepositoryImpl implements ArRepository {
         normalized.endsWith('.gltf') ||
         normalized.contains('.glb?') ||
         normalized.contains('.gltf?');
+  }
+
+  double _assetNormalizationScale(
+    Map<String, dynamic> json,
+    Map<String, dynamic> meta,
+  ) {
+    final bounds = asMap(meta['model_bounds'] ?? meta['modelBounds']);
+    final parsed =
+        readDouble(json['normalization_scale']) ??
+        readDouble(json['normalizationScale']) ??
+        readDouble(json['default_scale_multiplier']) ??
+        readDouble(json['defaultScaleMultiplier']) ??
+        readDouble(meta['normalization_scale']) ??
+        readDouble(meta['normalizationScale']) ??
+        readDouble(meta['default_scale_multiplier']) ??
+        readDouble(meta['defaultScaleMultiplier']) ??
+        readDouble(bounds['normalization_scale']) ??
+        readDouble(bounds['normalizationScale']);
+    if (parsed == null || !parsed.isFinite || parsed <= 0) {
+      return 1;
+    }
+    return parsed;
   }
 
   Map<String, dynamic> _placementMetaFromJson(Map<String, dynamic> json) {
@@ -1084,6 +1107,7 @@ class ArRepositoryImpl implements ArRepository {
               'name': asset.name,
               'modelUri': asset.modelUri,
               'scale': asset.scale,
+              'normalizationScale': asset.normalizationScale,
               'previewIcon': asset.previewIcon.name,
               'previewUrl': asset.previewUrl,
             },
@@ -1118,6 +1142,7 @@ class ArRepositoryImpl implements ArRepository {
               name: readString(map['name']) ?? '',
               modelUri: readString(map['modelUri']) ?? '',
               scale: readDouble(map['scale']) ?? 1,
+              normalizationScale: readDouble(map['normalizationScale']) ?? 1,
               previewIcon: previewIcon,
               previewUrl: readString(map['previewUrl']),
             );
